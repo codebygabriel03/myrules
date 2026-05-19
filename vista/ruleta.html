@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ruleta Rusa - MyRules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        .font-creepster { font-family: 'Creepster', cursive; }
+        .font-special { font-family: 'Special Elite', monospace; }
+        
+        .weapon-spin { animation: weaponSpin 0.4s ease-in-out; }
+        
+        @keyframes weaponSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.15); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .pulse { animation: pulse 2s infinite; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .slide-in { animation: slideIn 0.5s ease-out; }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .shake { animation: shake 0.3s ease-in-out; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .player-selectable { cursor: pointer; transition: all 0.3s ease; }
+        .player-selectable:hover:not(.eliminated) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3); }
+        .player-selected { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.2) !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+        .eliminated { opacity: 0.5; filter: grayscale(100%); pointer-events: none; cursor: not-allowed; }
+        .dead-player { text-decoration: line-through; opacity: 0.6; }
+        .heart-beat { animation: heartBeat 1s infinite; }
+        
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.3); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+        }
+        
+        .spin-notification { animation: fadeInOut 1.5s ease-in-out; }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        @media (max-width: 640px) {
+            .bullet-slot { width: 2.5rem !important; height: 2.5rem !important; font-size: 0.875rem !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white overflow-x-hidden font-body">
+    
+    <!-- ========== HEADER MYRULES ========== -->
+    <header class="border-b border-white/5 backdrop-blur-xl bg-gray-900/70 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14 lg:h-16">
+                
+                <!-- Logo -->
+                <a href="../index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-9 h-9 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center 
+                                shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                        <span class="font-mono font-bold text-base text-white">M</span>
+                    </div>
+                    <span class="font-title font-bold text-lg lg:text-xl tracking-tight  text-white">
+                        My <span class="text-red-400">Rules</span>
+                    </span>
+                </a>
+
+                <!-- Navegación Desktop -->
+                <nav class="hidden md:flex items-center gap-1">
+                    <a href="ruleta.html" 
+                       class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-white bg-red-500/10 border border-red-500/30 transition-all duration-200">
+                        <i class="fa-solid fa-skull text-red-400 text-xs"></i>
+                        <span>Ruleta Rusa</span>
+                    </a>
+                    
+                    <a href="apuestas.html" 
+                       class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-coins text-amber-400 text-xs group-hover:scale-110 transition-transform duration-300"></i>
+                        <span>Blackjack</span>
+                    </a>
+                    
+                    <a href="sorteador.html" 
+                       class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-people-group text-purple-400 text-xs group-hover:scale-110 transition-transform duration-300"></i>
+                        <span>Sorteador</span>
+                    </a>
+                </nav>
+
+                <!-- Botón menú móvil -->
+                <button id="menuToggle" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Menú">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú móvil -->
+        <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-gray-900/95 backdrop-blur-xl">
+            <div class="px-4 py-3 space-y-1">
+                <a href="ruleta.html" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-red-500/10 border border-red-500/30">
+                    <i class="fa-solid fa-skull text-red-400"></i>
+                    <span>Ruleta Rusa</span>
+                </a>
+                <a href="apuestas.html" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 
+                          hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <i class="fa-solid fa-coins text-amber-400"></i>
+                    <span>Blackjack - Saldo</span>
+                </a>
+                <a href="sorteador.html" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 
+                          hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <i class="fa-solid fa-people-group text-purple-400"></i>
+                    <span>Sorteador de Equipos</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- ========== FIN HEADER ========== -->
+
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl pb-28">
+        <header class="text-center mb-6 sm:mb-12">
+            <h1 class="font-creepster text-4xl sm:text-6xl text-red-600 mb-2 sm:mb-4 slide-in">
+                <i class="fas fa-skull-crossbones"></i> Ruleta Rusa <i class="fas fa-skull-crossbones"></i>
+            </h1>
+            <p class="font-special text-gray-400 text-base sm:text-xl">¿Tienes suerte hoy?</p>
+        </header>
+
+        <div id="mainMenu" class="max-w-2xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl p-4 sm:p-8 shadow-2xl border border-gray-700">
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="font-special text-xl sm:text-2xl text-red-500 mb-3 sm:mb-4"><i class="fas fa-gamepad mr-2"></i>Modo de Juego</h2>
+                    <div class="grid grid-cols-2 gap-2 sm:gap-4">
+                        <button onclick="selectMode('individual')" id="individualBtn" class="p-3 sm:p-6 bg-gray-700 rounded-xl border-2 border-red-500 mode-btn">
+                            <i class="fas fa-user-ninja text-2xl sm:text-3xl mb-1 sm:mb-2"></i>
+                            <h3 class="font-special text-sm sm:text-lg">Individual</h3>
+                            <p class="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-2">Cada jugador tiene su propia arma</p>
+                        </button>
+                        <button onclick="selectMode('shared')" id="sharedBtn" class="p-3 sm:p-6 bg-gray-700 rounded-xl border-2 border-gray-600 hover:border-red-500 transition-all mode-btn">
+                            <i class="fas fa-people-arrows text-2xl sm:text-3xl mb-1 sm:mb-2"></i>
+                            <h3 class="font-special text-sm sm:text-lg">Compartido</h3>
+                            <p class="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-2">Todos comparten la misma arma</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="font-special text-xl sm:text-2xl text-red-500 mb-3 sm:mb-4"><i class="fas fa-cogs mr-2"></i>Configuración del Arma</h2>
+                    <div class="space-y-3 sm:space-y-4">
+                        <div>
+                            <label class="block font-special text-gray-300 mb-2 text-sm sm:text-base"><i class="fas fa-circle-notch mr-2"></i>Slots: <span id="slotsValue">6</span></label>
+                            <input type="range" id="slots" min="2" max="12" value="6" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" oninput="updateSlotsValue()">
+                        </div>
+                        <div>
+                            <label class="block font-special text-gray-300 mb-2 text-sm sm:text-base"><i class="fas fa-bullseye mr-2"></i>Balas: <span id="bulletsValue">1</span></label>
+                            <input type="range" id="bullets" min="1" max="6" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" oninput="updateBulletsValue()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="font-special text-xl sm:text-2xl text-red-500 mb-3 sm:mb-4"><i class="fas fa-sync-alt mr-2"></i>Al eliminar jugador</h2>
+                    <div class="space-y-2 sm:space-y-3">
+                        <label class="flex items-center gap-2 sm:gap-3 bg-gray-700 p-3 sm:p-4 rounded-xl cursor-pointer hover:bg-gray-600 transition-colors">
+                            <input type="radio" name="resetMode" value="continue" checked class="form-radio text-red-500 w-4 h-4">
+                            <div><span class="font-special text-white text-sm sm:text-base"><i class="fas fa-arrow-right mr-2"></i>Continuar con slots actuales</span><p class="text-gray-400 text-xs sm:text-sm">El arma mantiene los slots restantes</p></div>
+                        </label>
+                        <label class="flex items-center gap-2 sm:gap-3 bg-gray-700 p-3 sm:p-4 rounded-xl cursor-pointer hover:bg-gray-600 transition-colors">
+                            <input type="radio" name="resetMode" value="reset" class="form-radio text-red-500 w-4 h-4">
+                            <div><span class="font-special text-white text-sm sm:text-base"><i class="fas fa-redo mr-2"></i>Reiniciar slots del arma</span><p class="text-gray-400 text-xs sm:text-sm">Recarga el arma completamente</p></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="font-special text-xl sm:text-2xl text-red-500 mb-3 sm:mb-4"><i class="fas fa-users mr-2"></i>Jugadores</h2>
+                    <div class="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+                        <button onclick="addPlayer()" class="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"><i class="fas fa-user-plus mr-1 sm:mr-2"></i>Añadir</button>
+                        <button onclick="removePlayer()" class="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"><i class="fas fa-user-minus mr-1 sm:mr-2"></i>Quitar</button>
+                    </div>
+                    <div id="playerList" class="space-y-2"></div>
+                </div>
+
+                <button onclick="startGame()" class="w-full bg-red-700 hover:bg-red-800 text-white font-special text-lg sm:text-xl py-3 sm:py-4 rounded-xl transition-all transform hover:scale-105">
+                    <i class="fas fa-play-circle mr-2"></i>COMENZAR JUEGO
+                </button>
+            </div>
+        </div>
+
+        <div id="gameScreen" class="hidden max-w-6xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl p-3 sm:p-8 shadow-2xl border border-gray-700">
+                <div class="flex justify-between items-start mb-4 sm:mb-8 gap-3">
+                    <div>
+                        <h2 class="font-special text-xl sm:text-2xl text-red-500 mb-1 sm:mb-2"><i class="fas fa-crosshairs mr-2"></i>Ronda en curso</h2>
+                        <p class="text-gray-400 text-xs sm:text-sm"><span id="gameModeText"></span> | <span id="resetModeText"></span></p>
+                    </div>
+                    <div class="relative">
+                        <button onclick="toggleMenu()" class="text-gray-400 hover:text-white text-2xl p-2 transition-colors">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div id="dropdownMenu" class="hidden absolute right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded-xl shadow-xl z-50 min-w-[160px]">
+                            <button onclick="restartGame()" class="w-full text-left px-4 py-2.5 hover:bg-gray-600 text-sm text-gray-300 hover:text-white rounded-t-xl transition-colors flex items-center gap-2">
+                                <i class="fas fa-redo-alt"></i> Reiniciar Juego
+                            </button>
+                            <button onclick="backToMenu()" class="w-full text-left px-4 py-2.5 hover:bg-gray-600 text-sm text-gray-300 hover:text-white rounded-b-xl transition-colors flex items-center gap-2">
+                                <i class="fas fa-door-open"></i> Volver al Menú
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="spinNotification" class="hidden text-center mb-4">
+                    <span class="bg-yellow-600 text-white px-4 py-2 rounded-full font-special text-sm inline-block spin-notification">
+                        <i class="fas fa-sync-alt fa-spin mr-2"></i>¡Cilindro girado!
+                    </span>
+                </div>
+
+                <div id="gameContent" class="text-center">
+                    <div id="weaponDisplay" class="mb-6 sm:mb-8">
+                        <div id="weaponContainer" class="text-6xl sm:text-8xl mb-4 sm:mb-6 pulse inline-block">
+                            <i id="weaponIcon" class="fas fa-gun"></i>
+                        </div>
+                        <p class="text-gray-400 mb-3 sm:mb-4 text-sm sm:text-base"><i class="fas fa-arrow-down mr-2"></i>Cámara del arma</p>
+                        <div id="cylinderDisplay" class="flex justify-center gap-2 sm:gap-3 flex-wrap mb-4 sm:mb-6 px-2"></div>
+                        <div class="bg-gray-700 rounded-xl p-3 sm:p-4 inline-block">
+                            <p class="text-gray-400 text-xs sm:text-sm mb-1"><i class="fas fa-chart-bar mr-2"></i>Slots restantes</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-yellow-400"><span id="remainingSlots">6</span> / <span id="totalSlots">6</span></p>
+                        </div>
+                    </div>
+
+                    <div id="gameActions" class="space-y-3 sm:space-y-4 max-w-2xl mx-auto">
+                        <div class="bg-gray-700 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                            <p class="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3"><i class="fas fa-hand-pointer mr-2"></i>Selecciona quién dispara:</p>
+                            <div id="playerSelector" class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameOverModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div class="bg-gray-800 rounded-2xl p-4 sm:p-8 shadow-2xl border border-gray-700 text-center max-w-md w-full mx-4">
+                <div class="text-4xl sm:text-6xl mb-3 sm:mb-4"><i id="modalIcon" class="fas fa-skull-crossbones"></i></div>
+                <h2 id="gameOverTitle" class="font-creepster text-3xl sm:text-4xl text-red-600 mb-3 sm:mb-4"></h2>
+                <p id="gameOverMessage" class="font-special text-gray-300 text-lg sm:text-xl mb-4 sm:mb-6"></p>
+                <div id="eliminatedPlayersList" class="text-left mb-4 sm:mb-6 space-y-2"></div>
+                <p id="gunStatusMessage" class="font-special text-yellow-400 text-xs sm:text-sm mb-4 sm:mb-6"></p>
+                <div class="space-y-2 sm:space-y-3">
+                    <button onclick="continueGame()" id="continueBtn" class="w-full bg-green-700 hover:bg-green-800 text-white font-special text-base sm:text-lg py-2 sm:py-3 rounded-xl transition-all"><i class="fas fa-play-circle mr-2"></i>Continuar Jugando</button>
+                    <button onclick="restartGameFromModal()" class="w-full bg-red-700 hover:bg-red-800 text-white font-special text-base sm:text-lg py-2 sm:py-3 rounded-xl transition-all"><i class="fas fa-redo-alt mr-2"></i>Reiniciar Juego</button>
+                    <button onclick="backToMenuFromGameOver()" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-special text-base sm:text-lg py-2 sm:py-3 rounded-xl transition-all"><i class="fas fa-home mr-2"></i>Volver al Menú</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fixedButtons" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-3 sm:p-4 z-40">
+        <div class="max-w-6xl mx-auto grid grid-cols-2 gap-2 sm:gap-3">
+            <button onclick="spinCylinder()" id="spinBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-special text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-xl transition-all transform hover:scale-105">
+                <i class="fas fa-sync-alt mr-1 sm:mr-2"></i>Girar Cilindro
+            </button>
+            <button onclick="pullTrigger()" id="triggerBtn" class="bg-red-700 hover:bg-red-800 text-white font-special text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-xl transition-all transform hover:scale-105">
+                <i class="fas fa-crosshairs mr-1 sm:mr-2"></i>Jalar Gatillo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ========== HEADER MOBILE MENU ==========
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // ========== AUDIO ENGINE (SONIDOS MÁS FUERTES) ==========
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSpinSound() {
+            initAudio();
+            const now = audioCtx.currentTime;
+            const duration = 0.4;
+
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            const filter1 = audioCtx.createBiquadFilter();
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(60, now);
+            osc1.frequency.linearRampToValueAtTime(300, now + duration);
+            filter1.type = 'lowpass';
+            filter1.frequency.setValueAtTime(300, now);
+            filter1.frequency.linearRampToValueAtTime(1500, now + duration * 0.5);
+            filter1.frequency.linearRampToValueAtTime(200, now + duration);
+            filter1.Q.setValueAtTime(8, now);
+            gain1.gain.setValueAtTime(0.25, now);
+            gain1.gain.linearRampToValueAtTime(0.35, now + duration * 0.3);
+            gain1.gain.linearRampToValueAtTime(0.15, now + duration);
+            osc1.connect(filter1);
+            filter1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.start(now);
+            osc1.stop(now + duration);
+
+            for (let i = 0; i < 8; i++) {
+                const t = now + i * (duration / 8);
+                const clickOsc = audioCtx.createOscillator();
+                const clickGain = audioCtx.createGain();
+                const clickFilter = audioCtx.createBiquadFilter();
+                clickOsc.type = 'square';
+                clickOsc.frequency.setValueAtTime(600 + Math.random() * 800, t);
+                clickFilter.type = 'highpass';
+                clickFilter.frequency.setValueAtTime(1200, t);
+                clickGain.gain.setValueAtTime(0.15, t);
+                clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+                clickOsc.connect(clickFilter);
+                clickFilter.connect(clickGain);
+                clickGain.connect(audioCtx.destination);
+                clickOsc.start(t);
+                clickOsc.stop(t + 0.05);
+            }
+        }
+
+        function playEmptySound() {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            const filter1 = audioCtx.createBiquadFilter();
+            osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(500, now);
+            osc1.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+            filter1.type = 'highpass';
+            filter1.frequency.setValueAtTime(1800, now);
+            gain1.gain.setValueAtTime(0.35, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc1.connect(filter1);
+            filter1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.12);
+
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(200, now);
+            osc2.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+            gain2.gain.setValueAtTime(0.15, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.start(now);
+            osc2.stop(now + 0.4);
+        }
+
+        function playBangSound() {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            const bufferSize = audioCtx.sampleRate * 0.7;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                const t = i / audioCtx.sampleRate;
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 10) * 2.0;
+            }
+            const noiseSource = audioCtx.createBufferSource();
+            const noiseGain = audioCtx.createGain();
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseSource.buffer = noiseBuffer;
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.setValueAtTime(8000, now);
+            noiseFilter.frequency.exponentialRampToValueAtTime(400, now + 0.5);
+            noiseGain.gain.setValueAtTime(1.5, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+            noiseSource.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseSource.start(now);
+            noiseSource.stop(now + 0.7);
+
+            const boomOsc = audioCtx.createOscillator();
+            const boomGain = audioCtx.createGain();
+            boomOsc.type = 'sine';
+            boomOsc.frequency.setValueAtTime(50, now);
+            boomOsc.frequency.exponentialRampToValueAtTime(6, now + 0.6);
+            boomGain.gain.setValueAtTime(2.0, now);
+            boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            boomOsc.connect(boomGain);
+            boomGain.connect(audioCtx.destination);
+            boomOsc.start(now);
+            boomOsc.stop(now + 0.6);
+
+            const subOsc = audioCtx.createOscillator();
+            const subGain = audioCtx.createGain();
+            subOsc.type = 'sine';
+            subOsc.frequency.setValueAtTime(25, now);
+            subOsc.frequency.exponentialRampToValueAtTime(3, now + 0.5);
+            subGain.gain.setValueAtTime(1.5, now);
+            subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            subOsc.connect(subGain);
+            subGain.connect(audioCtx.destination);
+            subOsc.start(now);
+            subOsc.stop(now + 0.5);
+
+            const crackOsc = audioCtx.createOscillator();
+            const crackGain = audioCtx.createGain();
+            const crackFilter = audioCtx.createBiquadFilter();
+            crackOsc.type = 'sawtooth';
+            crackOsc.frequency.setValueAtTime(4000, now);
+            crackOsc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+            crackFilter.type = 'highpass';
+            crackFilter.frequency.setValueAtTime(2000, now);
+            crackGain.gain.setValueAtTime(0.8, now);
+            crackGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            crackOsc.connect(crackFilter);
+            crackFilter.connect(crackGain);
+            crackGain.connect(audioCtx.destination);
+            crackOsc.start(now);
+            crackOsc.stop(now + 0.15);
+
+            const revBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 1.5, audioCtx.sampleRate);
+            const revData = revBuffer.getChannelData(0);
+            for (let i = 0; i < revBuffer.length; i++) {
+                const t = i / audioCtx.sampleRate;
+                revData[i] = (Math.random() * 2 - 1) * Math.exp(-t * 2) * 0.7 * (0.5 + 0.5 * Math.sin(2 * Math.PI * 4 * t));
+            }
+            const revSource = audioCtx.createBufferSource();
+            const revGain = audioCtx.createGain();
+            revSource.buffer = revBuffer;
+            revGain.gain.setValueAtTime(0.6, now + 0.03);
+            revGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+            revSource.connect(revGain);
+            revGain.connect(audioCtx.destination);
+            revSource.start(now + 0.03);
+            revSource.stop(now + 1.5);
+        }
+
+        function playHammerSound() {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            const filter1 = audioCtx.createBiquadFilter();
+            osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(450, now);
+            osc1.frequency.exponentialRampToValueAtTime(120, now + 0.1);
+            filter1.type = 'bandpass';
+            filter1.frequency.setValueAtTime(600, now);
+            filter1.Q.setValueAtTime(4, now);
+            gain1.gain.setValueAtTime(0.5, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc1.connect(filter1);
+            filter1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.15);
+
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1000, now);
+            osc2.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+            gain2.gain.setValueAtTime(0.3, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.start(now);
+            osc2.stop(now + 0.25);
+        }
+
+        // ========== GAME STATE ==========
+        let gameState = {
+            mode: 'individual', resetMode: 'continue', totalSlots: 6, totalBullets: 1,
+            players: [], alivePlayers: [], deadPlayers: [], currentShooterIndex: 0,
+            guns: [], gameActive: false, bulletsRemaining: 1, isSpinning: false
+        };
+
+        function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('hidden'); }
+        
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('dropdownMenu');
+            const btn = e.target.closest('button');
+            if (btn && btn.querySelector('.fa-ellipsis-v')) return;
+            if (!menu.classList.contains('hidden')) menu.classList.add('hidden');
+        });
+
+        function initializePlayers() {
+            document.getElementById('playerList').innerHTML = '';
+            for (let i = 0; i < 2; i++) addPlayer();
+        }
+
+        function addPlayer() {
+            const list = document.getElementById('playerList');
+            if (list.children.length >= 10) return alert('Máximo 10 jugadores');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 sm:gap-3 bg-gray-700 p-2 sm:p-3 rounded-lg slide-in';
+            div.innerHTML = `<i class="fas fa-user-astronaut text-xl sm:text-2xl text-gray-400"></i><input type="text" value="Jugador ${list.children.length + 1}" class="player-name bg-transparent border-b border-gray-500 focus:border-red-500 outline-none text-white flex-1 px-2 py-1 text-sm sm:text-base" placeholder="Nombre del jugador"><i class="fas fa-ellipsis-v text-gray-500 text-sm"></i>`;
+            list.appendChild(div);
+        }
+
+        function removePlayer() {
+            const list = document.getElementById('playerList');
+            if (list.children.length > 2) list.removeChild(list.lastChild);
+        }
+
+        function selectMode(mode) {
+            gameState.mode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => { b.classList.remove('border-red-500','bg-gray-600'); b.classList.add('border-gray-600','bg-gray-700'); });
+            const btn = document.getElementById(mode === 'individual' ? 'individualBtn' : 'sharedBtn');
+            btn.classList.add('border-red-500','bg-gray-600'); btn.classList.remove('border-gray-600','bg-gray-700');
+        }
+
+        function updateSlotsValue() {
+            const v = document.getElementById('slots').value;
+            document.getElementById('slotsValue').textContent = v;
+            document.getElementById('bullets').max = v;
+            if (parseInt(document.getElementById('bullets').value) > parseInt(v)) { document.getElementById('bullets').value = v; updateBulletsValue(); }
+        }
+
+        function updateBulletsValue() { document.getElementById('bulletsValue').textContent = document.getElementById('bullets').value; }
+
+        function showSpinNotification() {
+            const n = document.getElementById('spinNotification');
+            n.classList.remove('hidden');
+            setTimeout(() => n.classList.add('hidden'), 1500);
+        }
+
+        function startGame() {
+            initAudio();
+            const names = [...document.querySelectorAll('.player-name')].map(i => i.value.trim()).filter(n => n);
+            if (names.length < 2) return alert('Necesitas al menos 2 jugadores');
+            const slots = parseInt(document.getElementById('slots').value);
+            const bullets = parseInt(document.getElementById('bullets').value);
+            if (bullets >= slots) return alert('El número de balas debe ser menor que el número de slots');
+            const resetInput = document.querySelector('input[name="resetMode"]:checked');
+            gameState.resetMode = resetInput ? resetInput.value : 'continue';
+            gameState.players = [...names]; gameState.alivePlayers = [...names]; gameState.deadPlayers = [];
+            gameState.totalSlots = slots; gameState.totalBullets = bullets; gameState.bulletsRemaining = bullets;
+            gameState.currentShooterIndex = 0; gameState.gameActive = true; gameState.isSpinning = false;
+            gameState.guns = [];
+            const total = gameState.mode === 'individual' ? names.length : 1;
+            for (let i = 0; i < total; i++) gameState.guns.push(createGun());
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('fixedButtons').classList.remove('hidden');
+            document.getElementById('gameModeText').innerHTML = `<i class="fas fa-${gameState.mode==='individual'?'user-ninja':'people-arrows'} mr-1"></i>${gameState.mode==='individual'?'Armas individuales':'Arma compartida'}`;
+            document.getElementById('resetModeText').innerHTML = `<i class="fas fa-${gameState.resetMode==='continue'?'arrow-right':'redo'} mr-1"></i>${gameState.resetMode==='continue'?'Slots continuos':'Reinicio de slots'}`;
+            document.getElementById('totalSlots').textContent = gameState.totalSlots;
+            document.getElementById('weaponIcon').className = gameState.mode === 'individual' ? 'fas fa-gun' : 'fas fa-skull-crossbones';
+            document.getElementById('weaponContainer').classList.add('pulse');
+            renderGame();
+        }
+
+        function createGun() {
+            const chambers = [];
+            for (let i = 0; i < gameState.totalBullets; i++) chambers.push(true);
+            for (let i = 0; i < gameState.totalSlots - gameState.totalBullets; i++) chambers.push(false);
+            for (let i = chambers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [chambers[i], chambers[j]] = [chambers[j], chambers[i]]; }
+            return { chambers, currentPosition: 0, originalSlots: gameState.totalSlots, bulletsInGun: gameState.totalBullets, hasBeenSpun: false };
+        }
+
+        function getCurrentGun() {
+            const shooter = gameState.alivePlayers[gameState.currentShooterIndex];
+            return gameState.mode === 'individual' ? gameState.guns[gameState.players.indexOf(shooter)] : gameState.guns[0];
+        }
+
+        function selectShooter(index) { if (!gameState.gameActive) return; gameState.currentShooterIndex = index; renderGame(); }
+
+        function renderGame() {
+            if (!gameState.alivePlayers.length) { gameState.gameActive = false; return; }
+            const gun = getCurrentGun();
+            document.getElementById('remainingSlots').textContent = gun.chambers.length;
+            document.getElementById('totalSlots').textContent = gun.originalSlots;
+            const cyl = document.getElementById('cylinderDisplay');
+            cyl.innerHTML = '';
+            gun.chambers.forEach((_, i) => {
+                const slot = document.createElement('div');
+                slot.className = `bullet-slot w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center text-sm sm:text-lg relative ${i===gun.currentPosition?'border-yellow-400 bg-gray-700':'border-gray-600 bg-gray-700'}`;
+                slot.innerHTML = '<i class="far fa-circle text-gray-500 text-xs sm:text-base"></i>';
+                if (i === gun.currentPosition) slot.innerHTML = '<i class="fas fa-caret-down text-yellow-400 absolute -top-4 sm:-top-6 text-lg"></i>' + slot.innerHTML;
+                cyl.appendChild(slot);
+            });
+            renderPlayerSelector();
+        }
+
+        function renderPlayerSelector() {
+            const sel = document.getElementById('playerSelector');
+            sel.innerHTML = '';
+            gameState.alivePlayers.forEach((p, i) => {
+                const gun = gameState.mode === 'individual' ? gameState.guns[gameState.players.indexOf(p)] : gameState.guns[0];
+                const btn = document.createElement('button');
+                btn.className = `player-selectable p-2 sm:p-3 rounded-xl border-2 transition-all ${i===gameState.currentShooterIndex?'player-selected border-red-500':'border-gray-600 hover:border-gray-400'}`;
+                btn.innerHTML = `<div class="text-center"><div class="text-sm sm:text-lg mb-1 sm:mb-2"><i class="fas fa-user-astronaut mr-1"></i>${p}</div><div class="mb-1"><i class="fas fa-heart text-red-500 heart-beat text-lg sm:text-xl"></i></div><div class="text-xs text-gray-400"><i class="fas fa-circle-notch mr-1"></i>${gun.chambers.length} slots</div>${gun.hasBeenSpun?'<div class="text-xs text-yellow-400 mt-1"><i class="fas fa-sync-alt mr-1"></i>Girado</div>':''}${i===gameState.currentShooterIndex?'<div class="mt-1 bg-yellow-600 text-white text-xs px-2 py-1 rounded-full"><i class="fas fa-bullseye mr-1"></i>Disparando</div>':''}</div>`;
+                btn.onclick = () => selectShooter(i);
+                sel.appendChild(btn);
+            });
+            gameState.deadPlayers.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'player-selectable p-2 sm:p-3 rounded-xl border-2 border-gray-700 bg-gray-800 eliminated';
+                btn.innerHTML = `<div class="text-center"><div class="text-sm sm:text-lg mb-1 sm:mb-2 dead-player"><i class="fas fa-skull text-gray-500 mr-1"></i>${p}</div><div class="mb-1"><i class="fas fa-skull text-gray-600 text-xl sm:text-2xl"></i></div><div class="text-xs text-gray-600"><i class="fas fa-times-circle mr-1"></i>Eliminado</div></div>`;
+                sel.appendChild(btn);
+            });
+        }
+
+        function spinCylinder() {
+            if (!gameState.gameActive || gameState.isSpinning) return;
+            gameState.isSpinning = true;
+            const gun = getCurrentGun();
+            for (let i = gun.chambers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gun.chambers[i], gun.chambers[j]] = [gun.chambers[j], gun.chambers[i]]; }
+            gun.currentPosition = 0; gun.hasBeenSpun = true;
+            
+            playSpinSound();
+            showSpinNotification();
+            
+            const icon = document.getElementById('weaponIcon');
+            const container = document.getElementById('weaponContainer');
+            container.classList.remove('pulse');
+            icon.classList.add('weapon-spin');
+            const correctIcon = gameState.mode === 'individual' ? 'fas fa-gun' : 'fas fa-skull-crossbones';
+            icon.className = 'fas fa-sync-alt fa-spin';
+            
+            setTimeout(() => {
+                icon.classList.remove('weapon-spin');
+                icon.className = correctIcon;
+                container.classList.add('pulse');
+                gameState.isSpinning = false;
+                renderGame();
+            }, 400);
+        }
+
+        function pullTrigger() {
+            if (!gameState.gameActive || gameState.isSpinning) return;
+            const gun = getCurrentGun();
+            const shooter = gameState.alivePlayers[gameState.currentShooterIndex];
+            if (!gun.chambers.length) return alert('¡No hay más slots en esta arma!');
+            
+            playHammerSound();
+            
+            const bullet = gun.chambers[gun.currentPosition];
+            const icon = document.getElementById('weaponIcon');
+            const container = document.getElementById('weaponContainer');
+            const correctIcon = gameState.mode === 'individual' ? 'fas fa-gun' : 'fas fa-skull-crossbones';
+            
+            if (bullet) {
+                setTimeout(() => playBangSound(), 120);
+                container.classList.remove('pulse');
+                icon.classList.add('shake');
+                icon.className = 'fas fa-skull-crossbones shake';
+                
+                setTimeout(() => { 
+                    icon.classList.remove('shake'); 
+                    icon.className = correctIcon;
+                    container.classList.add('pulse'); 
+                }, 300);
+                
+                gun.bulletsInGun--; gameState.bulletsRemaining--;
+                gameState.deadPlayers.push(shooter);
+                gameState.alivePlayers = gameState.alivePlayers.filter(p => p !== shooter);
+                gun.chambers.splice(gun.currentPosition, 1);
+                if (gun.currentPosition >= gun.chambers.length) gun.currentPosition = 0;
+                
+                if ((gameState.mode === 'shared' && gun.bulletsInGun <= 0) || gameState.alivePlayers.length <= 1) {
+                    gameState.gameActive = false;
+                    showGameOver(shooter, gameState.alivePlayers[0] || 'Nadie');
+                } else {
+                    if (gameState.currentShooterIndex >= gameState.alivePlayers.length) gameState.currentShooterIndex = 0;
+                    if (gameState.resetMode === 'reset') resetAllGuns();
+                    showEliminationModal(shooter, gun);
+                }
+            } else {
+                setTimeout(() => playEmptySound(), 100);
+                gun.chambers.splice(gun.currentPosition, 1);
+                if (gun.currentPosition >= gun.chambers.length) gun.currentPosition = 0;
+                if (!gun.chambers.length) {
+                    if (gameState.mode === 'individual') { 
+                        const idx = gameState.players.indexOf(shooter); 
+                        if (idx !== -1) gameState.guns[idx] = createGun();
+                    } else { 
+                        gameState.guns[0] = createGun(); 
+                        alert('¡Todos los slots agotados! Se recarga una nueva arma.'); 
+                    }
+                }
+            }
+            renderGame();
+        }
+
+        function resetAllGuns() {
+            if (gameState.mode === 'individual') { gameState.alivePlayers.forEach(p => { const idx = gameState.players.indexOf(p); if (idx !== -1) gameState.guns[idx] = createGun(); }); }
+            else { gameState.guns[0] = createGun(); gameState.bulletsRemaining = gameState.totalBullets; }
+        }
+
+        function showEliminationModal(player, gun) {
+            const modal = document.getElementById('gameOverModal');
+            document.getElementById('modalIcon').className = 'fas fa-skull-crossbones';
+            document.getElementById('gameOverTitle').textContent = '💀 ¡BANG! 💀';
+            document.getElementById('gameOverMessage').textContent = `${player} ha sido eliminado!`;
+            document.getElementById('eliminatedPlayersList').innerHTML = '<p class="text-gray-400 text-sm mb-2"><i class="fas fa-list mr-2"></i>Jugadores eliminados:</p>' + gameState.deadPlayers.map(p => `<div class="flex items-center gap-2 text-gray-300 text-sm"><i class="fas fa-skull text-red-500"></i><span>${p}</span></div>`).join('');
+            document.getElementById('gunStatusMessage').innerHTML = gameState.resetMode === 'continue' ? `<i class="fas fa-info-circle mr-2"></i>Arma: ${gun.chambers.length} slots restantes | Balas: ${gun.bulletsInGun}` : '<i class="fas fa-sync-alt mr-2"></i>Se han reiniciado todas las armas de los jugadores vivos';
+            document.getElementById('continueBtn').style.display = 'block';
+            modal.classList.remove('hidden');
+        }
+
+        function showGameOver(player, winner) {
+            const modal = document.getElementById('gameOverModal');
+            document.getElementById('modalIcon').className = 'fas fa-trophy';
+            document.getElementById('gameOverTitle').textContent = ` ¡${winner} ha ganado! `;
+            document.getElementById('gameOverMessage').textContent = '¡Juego terminado!';
+            document.getElementById('eliminatedPlayersList').innerHTML = '<p class="text-gray-400 text-sm mb-2"><i class="fas fa-list mr-2"></i>Jugadores eliminados:</p>' + gameState.deadPlayers.map(p => `<div class="flex items-center gap-2 text-gray-300 text-sm"><i class="fas fa-skull text-red-500"></i><span>${p}</span></div>`).join('');
+            document.getElementById('gunStatusMessage').textContent = '';
+            document.getElementById('continueBtn').style.display = 'none';
+            modal.classList.remove('hidden');
+        }
+
+        function continueGame() {
+            document.getElementById('gameOverModal').classList.add('hidden');
+            gameState.gameActive = true;
+            if (gameState.mode === 'individual') { gameState.players.forEach((p, i) => { if (gameState.alivePlayers.includes(p) && !gameState.guns[i].chambers.length) gameState.guns[i] = createGun(); }); }
+            else if (!gameState.guns[0].chambers.length && gameState.alivePlayers.length) { gameState.guns[0] = createGun(); gameState.bulletsRemaining = gameState.totalBullets; }
+            if (gameState.currentShooterIndex >= gameState.alivePlayers.length) gameState.currentShooterIndex = 0;
+            document.getElementById('weaponIcon').className = gameState.mode === 'individual' ? 'fas fa-gun' : 'fas fa-skull-crossbones';
+            document.getElementById('weaponContainer').classList.add('pulse');
+            renderGame();
+        }
+
+        function restartGameFromModal() { document.getElementById('gameOverModal').classList.add('hidden'); restartGame(); }
+
+        function restartGame() {
+            gameState.alivePlayers = [...gameState.players]; gameState.deadPlayers = [];
+            gameState.currentShooterIndex = 0; gameState.bulletsRemaining = gameState.totalBullets; gameState.isSpinning = false;
+            gameState.guns = [];
+            const total = gameState.mode === 'individual' ? gameState.players.length : 1;
+            for (let i = 0; i < total; i++) gameState.guns.push(createGun());
+            gameState.gameActive = true;
+            document.getElementById('totalSlots').textContent = gameState.totalSlots;
+            document.getElementById('dropdownMenu').classList.add('hidden');
+            document.getElementById('weaponIcon').className = gameState.mode === 'individual' ? 'fas fa-gun' : 'fas fa-skull-crossbones';
+            document.getElementById('weaponContainer').classList.add('pulse');
+            renderGame();
+        }
+
+        function backToMenu() {
+            if (confirm('¿Estás seguro de volver al menú? El juego actual se perderá.')) {
+                gameState.gameActive = false;
+                document.getElementById('gameScreen').classList.add('hidden');
+                document.getElementById('fixedButtons').classList.add('hidden');
+                document.getElementById('mainMenu').classList.remove('hidden');
+                document.getElementById('dropdownMenu').classList.add('hidden');
+            }
+        }
+
+        function backToMenuFromGameOver() { document.getElementById('gameOverModal').classList.add('hidden'); backToMenu(); }
+
+        initializePlayers(); selectMode('individual'); updateSlotsValue(); updateBulletsValue();
+
+        document.getElementById('slots').addEventListener('input', function() {
+            document.getElementById('bullets').max = this.value;
+            if (parseInt(document.getElementById('bullets').value) >= parseInt(this.value)) { document.getElementById('bullets').value = this.value - 1; updateBulletsValue(); }
+            updateSlotsValue();
+        });
+        document.getElementById('bullets').addEventListener('input', function() {
+            if (parseInt(this.value) >= parseInt(document.getElementById('slots').value)) this.value = document.getElementById('slots').value - 1;
+            updateBulletsValue();
+        });
+    </script>
+</body>
+</html>

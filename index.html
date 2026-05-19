@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRules - Panel Personal</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'bg-dark': '#0b0f19',
+                        'bg-card': '#131a2b',
+                        'accent': '#ef4444',
+                        'accent2': '#f59e0b',
+                        'accent3': '#8b5cf6',
+                    },
+                    animation: {
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(239, 68, 68, 0.2)' },
+                            '100%': { boxShadow: '0 0 40px rgba(239, 68, 68, 0.5)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-bg-dark min-h-screen font-body text-white antialiased">
+
+    <!-- Fondo decorativo -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-red-500/5 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="relative z-10 flex flex-col min-h-screen">
+        
+        <!-- Header -->
+        <header class="border-b border-white/5 backdrop-blur-xl bg-bg-dark/70 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 lg:h-20">
+                    
+                    <!-- Logo -->
+                    <a href="#" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center 
+                                    shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                            <span class="font-mono font-bold text-lg text-white">M</span>
+                        </div>
+                        <span class="font-title font-bold text-xl lg:text-2xl tracking-tight">
+                            My<span class="text-red-400">Rules</span>
+                        </span>
+                    </a>
+
+                    <!-- Navegación Desktop -->
+                    <nav class="hidden md:flex items-center gap-1">
+                        <a href="vista/ruleta.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-skull text-red-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Ruleta Rusa</span>
+                        </a>
+                        
+                        <a href="vista/apuestas.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-coins text-amber-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Blackjack</span>
+                        </a>
+                        
+                        <a href="vista/sorteador.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-people-group text-purple-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Sorteador</span>
+                        </a>
+                    </nav>
+
+                    <!-- Estado / Usuario -->
+                    <div class="hidden md:flex items-center gap-3">
+                        <span class="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Online
+                        </span>
+                    </div>
+
+                    <!-- Botón menú móvil -->
+                    <button id="menuToggle" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Menú">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Menú móvil -->
+            <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-bg-dark/95 backdrop-blur-xl">
+                <div class="px-4 py-4 space-y-1">
+                    <a href="vista/ruleta.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-skull text-red-400"></i>
+                        <span>Ruleta Rusa</span>
+                    </a>
+                    <a href="vista/apuestas.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-coins text-amber-400"></i>
+                        <span>Blackjack - Saldo</span>
+                    </a>
+                    <a href="vista/sorteador.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-people-group text-purple-400"></i>
+                        <span>Sorteador de Equipos</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 flex items-center justify-center px-4 py-12 lg:py-20">
+            <div class="max-w-4xl w-full text-center">
+                
+                <!-- Título Hero -->
+                <div class="mb-12">
+                    <div class="inline-flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full text-xs font-mono text-gray-400 mb-6 
+                                border border-white/5">
+                        <span class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+                        Panel Personal v1.0
+                    </div>
+                    
+                    <h1 class="font-title font-bold text-4xl sm:text-5xl lg:text-7xl leading-tight mb-6">
+                        Bienvenido a
+                        <span class="bg-gradient-to-r from-red-400 via-amber-400 to-purple-400 bg-clip-text text-transparent">
+                            MyRules
+                        </span>
+                    </h1>
+                    
+                    <p class="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto font-light">
+                        Tu centro de control personal. Accede rápidamente a tus herramientas desde un solo lugar.
+                    </p>
+                </div>
+
+                <!-- Tarjetas de Acceso Rápido -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
+                    
+                    <!-- Ruleta Rusa -->
+                    <a href="vista/ruleta.html" 
+                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
+                              hover:border-red-500/30 transition-all duration-300 hover:-translate-y-1
+                              hover:shadow-2xl hover:shadow-red-500/5">
+                        <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent rounded-2xl opacity-0 
+                                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4
+                                        group-hover:bg-red-500/20 group-hover:animate-glow transition-all duration-300">
+                                <i class="fa-solid fa-skull text-2xl text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg mb-2">Ruleta Rusa</h3>
+                            <p class="text-gray-500 text-sm">Juego de azar extremo</p>
+                        </div>
+                    </a>
+
+                    <!-- Blackjack - Control de Saldo -->
+                    <a href="vista/apuestas.html" 
+                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
+                              hover:border-amber-500/30 transition-all duration-300 hover:-translate-y-1
+                              hover:shadow-2xl hover:shadow-amber-500/5">
+                        <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent rounded-2xl opacity-0 
+                                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4
+                                        group-hover:bg-amber-500/20 transition-all duration-300">
+                                <i class="fa-solid fa-coins text-2xl text-amber-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg mb-2">Blackjack</h3>
+                            <p class="text-gray-500 text-sm">Control manual de saldo</p>
+                        </div>
+                    </a>
+
+                    <!-- Sorteador de Equipos -->
+                    <a href="vista/sorteador.html" 
+                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
+                              hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1
+                              hover:shadow-2xl hover:shadow-purple-500/5">
+                        <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent rounded-2xl opacity-0 
+                                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4
+                                        group-hover:bg-purple-500/20 transition-all duration-300">
+                                <i class="fa-solid fa-people-group text-2xl text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg mb-2">Sorteador</h3>
+                            <p class="text-gray-500 text-sm">Asignar equipos a jugadores</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Descripciones detalladas -->
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto text-left">
+                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-skull text-red-400 text-xs"></i>
+                            <span class="font-mono text-xs text-red-400">/vista/ruleta.html</span>
+                        </div>
+                        <p class="text-gray-500 text-xs leading-relaxed">Simulador de ruleta rusa. Ideal para decisiones extremas al azar entre los jugadores.</p>
+                    </div>
+                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+                            <span class="font-mono text-xs text-amber-400">/vista/apuestas.html</span>
+                        </div>
+                        <p class="text-gray-500 text-xs leading-relaxed">Control manual del saldo de cada jugador durante partidas de blackjack. Suma o resta fichas.</p>
+                    </div>
+                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-people-group text-purple-400 text-xs"></i>
+                            <span class="font-mono text-xs text-purple-400">/vista/sorteador.html</span>
+                        </div>
+                        <p class="text-gray-500 text-xs leading-relaxed">Distribuye jugadores en equipos de forma aleatoria. Perfecto para armar partidas equilibradas.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-6">
+            <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-sm">
+                <p class="font-mono">MyRules &copy; 2024 — Panel Personal</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Script para menú móvil -->
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Blackjack - MyRules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .modal {
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 2px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 2px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); }
+            to { transform: translateX(100%); }
+        }
+        .slide-in {
+            animation: slideInRight 0.3s ease-out;
+        }
+        .slide-out {
+            animation: slideOutRight 0.3s ease-out;
+        }
+        .historial-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 h-screen flex flex-col overflow-hidden font-body">
+    
+    <!-- ========== HEADER MYRULES ========== -->
+    <header class="border-b border-white/5 backdrop-blur-xl bg-gray-900/70 sticky top-0 z-50 flex-none">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14 lg:h-16">
+                
+                <!-- Logo -->
+                <a href="../index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-9 h-9 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center 
+                                shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                        <span class="font-mono font-bold text-base text-white">M</span>
+                    </div>
+                    <span class="font-title font-bold text-lg lg:text-xl tracking-tight">
+                        My<span class="text-red-400">Rules</span>
+                    </span>
+                </a>
+
+                <!-- Navegación Desktop -->
+                <nav class="hidden md:flex items-center gap-1">
+                    <a href="ruleta.html" 
+                       class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-skull text-red-400 text-xs group-hover:scale-110 transition-transform duration-300"></i>
+                        <span>Ruleta Rusa</span>
+                    </a>
+                    
+                    <a href="apuestas.html" 
+                       class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-white bg-amber-500/10 border border-amber-500/30 transition-all duration-200">
+                        <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+                        <span>Blackjack</span>
+                    </a>
+                    
+                    <a href="sorteador.html" 
+                       class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-people-group text-purple-400 text-xs group-hover:scale-110 transition-transform duration-300"></i>
+                        <span>Sorteador</span>
+                    </a>
+                </nav>
+
+                <!-- Botón menú móvil -->
+                <button id="menuToggle" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Menú">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú móvil -->
+        <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-gray-900/95 backdrop-blur-xl">
+            <div class="px-4 py-3 space-y-1">
+                <a href="ruleta.html" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 
+                          hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <i class="fa-solid fa-skull text-red-400"></i>
+                    <span>Ruleta Rusa</span>
+                </a>
+                <a href="apuestas.html" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-amber-500/10 border border-amber-500/30">
+                    <i class="fa-solid fa-coins text-amber-400"></i>
+                    <span>Blackjack - Saldo</span>
+                </a>
+                <a href="sorteador.html" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 
+                          hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <i class="fa-solid fa-people-group text-purple-400"></i>
+                    <span>Sorteador de Equipos</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- ========== FIN HEADER ========== -->
+
+    <!-- Sub-header de la app -->
+    <header class="bg-gray-800 border-b border-gray-700 px-4 py-3 flex-none">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-coins text-2xl text-amber-400"></i>
+                <h1 class="text-lg font-bold text-amber-400">Control de Apuestas - Blackjack</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="bg-gray-700 px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
+                    <i class="fas fa-layer-group text-amber-400"></i>
+                    Ronda <span id="rondaActual" class="font-bold text-amber-400">1</span>
+                </span>
+                <button onclick="toggleHistorial()" class="bg-gray-700 hover:bg-gray-600 text-white p-2.5 rounded-lg transition relative">
+                    <i id="historialBtnIcon" class="fas fa-clock-rotate-left text-lg"></i>
+                    <span id="historialBadge" class="absolute -top-1 -right-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
+        </div>
+        <!-- Barra de progreso -->
+        <div class="mt-3">
+            <div class="flex justify-between text-xs text-gray-400 mb-1">
+                <span class="flex items-center gap-1">
+                    <i class="fas fa-tasks"></i>
+                    Progreso de ronda
+                </span>
+                <span id="procesadosInfo">0 de 0 procesados</span>
+            </div>
+            <div id="progressBar" class="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div id="progressFill" class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden relative" style="height: calc(100vh - 180px);">
+        <!-- Panel de Jugadores -->
+        <section id="panelJugadores" class="w-full flex flex-col overflow-hidden">
+            <div id="jugadoresContainer" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin pb-20">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Panel de Historial (overlay en móvil) -->
+        <aside id="panelHistorial" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-gray-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col" style="top: 0; height: 100vh;">
+            <div class="p-4 flex-none border-b border-gray-700 flex items-center justify-between bg-gray-800">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-clock-rotate-left text-amber-400"></i>
+                    Historial
+                </h2>
+                <button onclick="toggleHistorial()" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="historialContainer" class="flex-1 overflow-y-auto p-4 scrollbar-thin space-y-3">
+                <div class="text-gray-500 text-center py-8">
+                    <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                    <p class="text-base">No hay apuestas registradas</p>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Overlay para cerrar historial al tocar fuera -->
+        <div id="historialOverlay" class="historial-overlay fixed inset-0 bg-black bg-opacity-50 z-30 hidden" onclick="toggleHistorial()"></div>
+    </main>
+
+    <!-- Botón flotante para reiniciar -->
+    <button onclick="reiniciarTodo()" class="fixed bottom-20 right-4 bg-red-600 hover:bg-red-700 text-white p-3.5 rounded-full shadow-lg transition z-20 active:scale-95">
+        <i class="fas fa-rotate-right text-xl"></i>
+    </button>
+
+    <!-- Modal de Configuración Inicial -->
+    <div id="modalConfig" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" style="visibility: visible; opacity: 1;">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-fadeIn border border-gray-600">
+            <div class="text-center mb-6">
+                <i class="fas fa-coins text-5xl text-amber-400 mb-3"></i>
+                <h2 class="text-2xl font-bold text-amber-400">Configuración Inicial</h2>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-base font-medium mb-2 flex items-center gap-2">
+                        <i class="fas fa-users text-amber-400"></i>
+                        ¿Cuántas personas jugarán?
+                    </label>
+                    <input type="number" id="numJugadores" min="1" max="20" value="3" 
+                           class="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white text-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none text-center">
+                </div>
+                <button onclick="iniciarConfiguracion()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-3.5 rounded-xl transition text-lg flex items-center justify-center gap-2">
+                    Continuar <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Nombres y Saldos -->
+    <div id="modalNombres" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden" style="visibility: hidden; opacity: 0;">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-fadeIn border border-gray-600 max-h-[85vh] flex flex-col">
+            <div class="text-center mb-4">
+                <i class="fas fa-user-pen text-4xl text-amber-400 mb-2"></i>
+                <h2 class="text-2xl font-bold text-amber-400">Datos de Jugadores</h2>
+            </div>
+            <div id="formNombres" class="flex-1 overflow-y-auto space-y-4 pr-2 scrollbar-thin mb-4">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <button onclick="guardarJugadores()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-3.5 rounded-xl transition text-lg flex items-center justify-center gap-2">
+                <i class="fas fa-play"></i> Iniciar Juego
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Resultado de Apuesta -->
+    <div id="modalResultado" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden" style="visibility: hidden; opacity: 0;">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fadeIn border border-gray-600">
+            <div class="text-center mb-4">
+                <i class="fas fa-trophy text-4xl text-amber-400 mb-2"></i>
+                <h2 class="text-xl font-bold text-amber-400">Resultado</h2>
+            </div>
+            <div class="bg-gray-700 rounded-xl p-3 mb-4">
+                <p class="text-base text-gray-300">Jugador: <span id="resultadoJugadorNombre" class="font-bold text-white"></span></p>
+                <p class="text-base text-gray-300">Apuesta: <span id="resultadoApuesta" class="font-bold text-white"></span></p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="procesarResultado('perder')" class="bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-xl transition text-base font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-circle-xmark"></i> Perder
+                </button>
+                <button onclick="procesarResultado('empatar')" class="bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl transition text-base font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-handshake"></i> Empatar
+                </button>
+                <button onclick="procesarResultado('ganar')" class="bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl transition text-base font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-crown"></i> Ganar
+                </button>
+                <button onclick="procesarResultado('blackjack')" class="bg-purple-600 hover:bg-purple-700 text-white py-3.5 rounded-xl transition text-base font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-spade"></i> Blackjack
+                </button>
+            </div>
+            <button onclick="ocultarModal('modalResultado')" class="mt-3 w-full bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-xl transition text-base flex items-center justify-center gap-2">
+                <i class="fas fa-xmark"></i> Cancelar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ========== HEADER MOBILE MENU ==========
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Función para formatear moneda sin decimales innecesarios
+        function formatearMoneda(valor) {
+            if (Number.isInteger(valor)) {
+                return `$${valor}`;
+            }
+            return `$${valor.toFixed(2)}`;
+        }
+
+        // Estado global de la aplicación
+        const estado = {
+            jugadores: [],
+            rondaActual: 1,
+            apuestasRonda: {},
+            historial: [],
+            procesadosRonda: new Set(),
+            jugadorSeleccionado: null,
+            juegoIniciado: false,
+            todosProcesados: false,
+            historialVisible: false
+        };
+
+        // Elementos del DOM
+        const elementos = {
+            modalConfig: document.getElementById('modalConfig'),
+            modalNombres: document.getElementById('modalNombres'),
+            modalResultado: document.getElementById('modalResultado'),
+            jugadoresContainer: document.getElementById('jugadoresContainer'),
+            historialContainer: document.getElementById('historialContainer'),
+            panelHistorial: document.getElementById('panelHistorial'),
+            historialOverlay: document.getElementById('historialOverlay'),
+            historialBtnIcon: document.getElementById('historialBtnIcon'),
+            historialBadge: document.getElementById('historialBadge'),
+            rondaActual: document.getElementById('rondaActual'),
+            progressFill: document.getElementById('progressFill'),
+            procesadosInfo: document.getElementById('procesadosInfo'),
+            formNombres: document.getElementById('formNombres'),
+            resultadoJugadorNombre: document.getElementById('resultadoJugadorNombre'),
+            resultadoApuesta: document.getElementById('resultadoApuesta'),
+            numJugadores: document.getElementById('numJugadores')
+        };
+
+        // Toggle historial
+        function toggleHistorial() {
+            estado.historialVisible = !estado.historialVisible;
+            
+            if (estado.historialVisible) {
+                elementos.panelHistorial.classList.remove('translate-x-full');
+                elementos.historialOverlay.classList.remove('hidden');
+            } else {
+                elementos.panelHistorial.classList.add('translate-x-full');
+                elementos.historialOverlay.classList.add('hidden');
+            }
+        }
+
+        // Funciones de utilidad para modales
+        function mostrarModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.classList.remove('hidden');
+        }
+
+        function ocultarModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.visibility = 'hidden';
+            modal.style.opacity = '0';
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // Iniciar configuración
+        function iniciarConfiguracion() {
+            const num = parseInt(elementos.numJugadores.value);
+            if (isNaN(num) || num < 1 || num > 20) {
+                alert('Por favor ingrese un número válido entre 1 y 20');
+                return;
+            }
+
+            let html = '';
+            for (let i = 0; i < num; i++) {
+                html += `
+                <div class="bg-gray-700 p-4 rounded-xl">
+                    <h3 class="text-base font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                        <i class="fas fa-user"></i> Jugador ${i + 1}
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                <i class="fas fa-signature"></i> Nombre:
+                            </label>
+                            <input type="text" id="nombre_${i}" value="Jugador ${i + 1}" 
+                                   class="w-full bg-gray-600 border border-gray-500 rounded-lg px-3 py-2.5 text-white text-base focus:ring-2 focus:ring-amber-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                <i class="fas fa-coins"></i> Saldo inicial:
+                            </label>
+                            <input type="number" id="saldo_${i}" value="1000" min="0" step="any"
+                                   class="w-full bg-gray-600 border border-gray-500 rounded-lg px-3 py-2.5 text-white text-base focus:ring-2 focus:ring-amber-400 outline-none">
+                        </div>
+                    </div>
+                </div>`;
+            }
+            elementos.formNombres.innerHTML = html;
+            ocultarModal('modalConfig');
+            mostrarModal('modalNombres');
+        }
+
+        // Guardar jugadores e iniciar juego
+        function guardarJugadores() {
+            const num = parseInt(elementos.numJugadores.value);
+            const jugadores = [];
+
+            for (let i = 0; i < num; i++) {
+                const nombreInput = document.getElementById(`nombre_${i}`);
+                const saldoInput = document.getElementById(`saldo_${i}`);
+                const nombre = nombreInput.value.trim() || `Jugador ${i + 1}`;
+                const saldo = parseFloat(saldoInput.value) || 0;
+
+                if (saldo < 0) {
+                    alert(`El saldo de ${nombre} no puede ser negativo`);
+                    return;
+                }
+
+                jugadores.push({ nombre, saldo });
+            }
+
+            estado.jugadores = jugadores;
+            estado.rondaActual = 1;
+            estado.apuestasRonda = {};
+            estado.procesadosRonda = new Set();
+            estado.historial = [];
+            estado.juegoIniciado = true;
+            estado.todosProcesados = false;
+
+            ocultarModal('modalNombres');
+            construirPanelJugadores();
+            actualizarHistorial();
+            actualizarBarraProgreso();
+            elementos.rondaActual.textContent = estado.rondaActual;
+        }
+
+        // Construir panel de jugadores
+        function construirPanelJugadores() {
+            if (!estado.jugadores.length) {
+                elementos.jugadoresContainer.innerHTML = `
+                    <div class="text-center py-16 text-gray-500">
+                        <i class="fas fa-coins text-6xl mb-4 block"></i>
+                        <p class="text-lg">Configure los jugadores para comenzar</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            estado.jugadores.forEach((jugador, index) => {
+                html += crearHTMLJugador(jugador, index);
+            });
+
+            elementos.jugadoresContainer.innerHTML = html;
+        }
+
+        // Crear HTML para un jugador
+        function crearHTMLJugador(jugador, index) {
+            const apostado = estado.apuestasRonda[index] !== undefined;
+            const procesado = estado.procesadosRonda.has(index);
+            const puedeActuar = !procesado && !estado.todosProcesados;
+            const montoApostado = estado.apuestasRonda[index] || '';
+
+            let estadoClase = '';
+            let estadoIcono = '';
+            let estadoTexto = '';
+            if (procesado) {
+                estadoClase = 'border-green-500 bg-green-900 bg-opacity-20';
+                estadoIcono = 'fa-circle-check text-green-400';
+                estadoTexto = 'Completado';
+            } else if (apostado) {
+                estadoClase = 'border-amber-500 bg-amber-900 bg-opacity-20';
+                estadoIcono = 'fa-clock text-amber-400';
+                estadoTexto = 'Pendiente';
+            } else {
+                estadoClase = 'border-gray-600';
+                estadoIcono = 'fa-circle text-gray-500';
+                estadoTexto = 'Sin apostar';
+            }
+
+            return `
+            <div id="jugador-card-${index}" class="jugador-card bg-gray-800 rounded-2xl border-2 ${estadoClase} p-4 transition-all">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                        <i class="fas ${estadoIcono} text-xl"></i>
+                        <h3 class="font-bold text-white text-lg">${jugador.nombre}</h3>
+                    </div>
+                    <span class="text-sm text-gray-400">${estadoTexto}</span>
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-400 text-sm flex items-center gap-1">
+                        <i class="fas fa-wallet"></i> Saldo
+                    </span>
+                    <span class="text-xl font-mono font-bold text-amber-400 saldo-display">${formatearMoneda(jugador.saldo)}</span>
+                </div>
+                
+                <div class="zona-accion">
+                    ${!procesado ? `
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 relative">
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                                <input type="number" id="apuesta_${index}" placeholder="Monto" 
+                                       value="${montoApostado}" 
+                                       ${!puedeActuar || apostado ? 'disabled' : ''}
+                                       class="input-apuesta w-full bg-gray-700 border border-gray-600 rounded-xl pl-10 pr-4 py-3 text-white text-lg focus:ring-2 focus:ring-amber-400 outline-none disabled:opacity-50 disabled:cursor-not-allowed text-center">
+                            </div>
+                            <div class="zona-botones flex gap-2">
+                                ${apostado ? `
+                                <button onclick="abrirModalResultado(${index})" 
+                                        class="bg-amber-500 hover:bg-amber-600 text-gray-900 px-4 py-3 rounded-xl font-bold text-base transition whitespace-nowrap flex items-center gap-1 pulse-animation">
+                                    <i class="fas fa-gavel"></i> Procesar
+                                </button>
+                                <button onclick="cancelarApuesta(${index})" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-3 rounded-xl text-base transition">
+                                    <i class="fas fa-xmark"></i>
+                                </button>` : `
+                                <button onclick="registrarApuesta(${index})" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold text-base transition whitespace-nowrap flex items-center gap-1">
+                                    <i class="fas fa-check"></i> Apostar
+                                </button>`}
+                            </div>
+                        </div>
+                        ${puedeActuar && !apostado ? `
+                        <button onclick="renunciarJugador(${index})" 
+                                class="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-xl transition text-base font-medium flex items-center justify-center gap-2">
+                            <i class="fas fa-ban"></i> Renunciar / Desistir
+                        </button>` : ''}
+                    </div>
+                    ` : `
+                    <div class="bg-green-900 bg-opacity-30 text-green-400 text-base font-medium text-center py-3 rounded-xl flex items-center justify-center gap-2">
+                        <i class="fas fa-circle-check"></i> Procesado en esta ronda
+                    </div>
+                    `}
+                </div>
+            </div>`;
+        }
+
+        // Actualizar un jugador específico
+        function actualizarJugadorCard(index) {
+            const jugador = estado.jugadores[index];
+            const card = document.getElementById(`jugador-card-${index}`);
+            if (!card) return;
+
+            const apostado = estado.apuestasRonda[index] !== undefined;
+            const procesado = estado.procesadosRonda.has(index);
+            
+            card.className = `jugador-card bg-gray-800 rounded-2xl border-2 p-4 transition-all`;
+            if (procesado) {
+                card.classList.add('border-green-500', 'bg-green-900', 'bg-opacity-20');
+            } else if (apostado) {
+                card.classList.add('border-amber-500', 'bg-amber-900', 'bg-opacity-20');
+            } else {
+                card.classList.add('border-gray-600');
+            }
+
+            // Actualizar estado
+            const estadoIcono = card.querySelector('.fas');
+            const estadoTexto = card.querySelector('.text-sm.text-gray-400');
+            if (procesado) {
+                if (estadoIcono) estadoIcono.className = 'fas fa-circle-check text-green-400 text-xl';
+                if (estadoTexto) estadoTexto.textContent = 'Completado';
+            } else if (apostado) {
+                if (estadoIcono) estadoIcono.className = 'fas fa-clock text-amber-400 text-xl';
+                if (estadoTexto) estadoTexto.textContent = 'Pendiente';
+            } else {
+                if (estadoIcono) estadoIcono.className = 'fas fa-circle text-gray-500 text-xl';
+                if (estadoTexto) estadoTexto.textContent = 'Sin apostar';
+            }
+
+            const saldoDisplay = card.querySelector('.saldo-display');
+            if (saldoDisplay) {
+                saldoDisplay.textContent = formatearMoneda(jugador.saldo);
+            }
+
+            const zonaAccion = card.querySelector('.zona-accion');
+            if (zonaAccion) {
+                const puedeActuar = !procesado && !estado.todosProcesados;
+                const montoApostado = estado.apuestasRonda[index] || '';
+                
+                if (procesado) {
+                    zonaAccion.innerHTML = `
+                        <div class="bg-green-900 bg-opacity-30 text-green-400 text-base font-medium text-center py-3 rounded-xl flex items-center justify-center gap-2">
+                            <i class="fas fa-circle-check"></i> Procesado en esta ronda
+                        </div>`;
+                } else {
+                    zonaAccion.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 relative">
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                                <input type="number" id="apuesta_${index}" placeholder="Monto" 
+                                       value="${montoApostado}" 
+                                       ${!puedeActuar || apostado ? 'disabled' : ''}
+                                       class="input-apuesta w-full bg-gray-700 border border-gray-600 rounded-xl pl-10 pr-4 py-3 text-white text-lg focus:ring-2 focus:ring-amber-400 outline-none disabled:opacity-50 disabled:cursor-not-allowed text-center">
+                            </div>
+                            <div class="zona-botones flex gap-2">
+                                ${apostado ? `
+                                <button onclick="abrirModalResultado(${index})" 
+                                        class="bg-amber-500 hover:bg-amber-600 text-gray-900 px-4 py-3 rounded-xl font-bold text-base transition whitespace-nowrap flex items-center gap-1">
+                                    <i class="fas fa-gavel"></i> Procesar
+                                </button>
+                                <button onclick="cancelarApuesta(${index})" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-3 rounded-xl text-base transition">
+                                    <i class="fas fa-xmark"></i>
+                                </button>` : `
+                                <button onclick="registrarApuesta(${index})" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold text-base transition whitespace-nowrap flex items-center gap-1">
+                                    <i class="fas fa-check"></i> Apostar
+                                </button>`}
+                            </div>
+                        </div>
+                        ${puedeActuar && !apostado ? `
+                        <button onclick="renunciarJugador(${index})" 
+                                class="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-xl transition text-base font-medium flex items-center justify-center gap-2">
+                            <i class="fas fa-ban"></i> Renunciar / Desistir
+                        </button>` : ''}
+                    </div>`;
+                }
+            }
+        }
+
+        // Actualizar todos los saldos
+        function actualizarTodosLosSaldos() {
+            estado.jugadores.forEach((jugador, index) => {
+                const card = document.getElementById(`jugador-card-${index}`);
+                if (card) {
+                    const saldoDisplay = card.querySelector('.saldo-display');
+                    if (saldoDisplay) {
+                        saldoDisplay.textContent = formatearMoneda(jugador.saldo);
+                    }
+                }
+            });
+        }
+
+        // Botón de nueva ronda
+        function actualizarBotonNuevaRonda() {
+            const existente = document.getElementById('boton-nueva-ronda');
+            if (existente) {
+                existente.remove();
+            }
+
+            if (estado.todosProcesados && estado.jugadores.length > 0) {
+                const botonRonda = document.createElement('div');
+                botonRonda.id = 'boton-nueva-ronda';
+                botonRonda.className = 'mt-4 p-4 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl text-center animate-fadeIn';
+                botonRonda.innerHTML = `
+                    <button onclick="iniciarNuevaRonda()" class="w-full bg-gray-900 hover:bg-black text-amber-400 font-bold py-4 rounded-xl transition text-xl flex items-center justify-center gap-2">
+                        <i class="fas fa-forward-step"></i> Iniciar Ronda ${estado.rondaActual + 1}
+                    </button>`;
+                elementos.jugadoresContainer.appendChild(botonRonda);
+            }
+        }
+
+        // Cancelar apuesta
+        function cancelarApuesta(index) {
+            delete estado.apuestasRonda[index];
+            actualizarJugadorCard(index);
+            actualizarBarraProgreso();
+        }
+
+        // Registrar apuesta
+        function registrarApuesta(index) {
+            const input = document.getElementById(`apuesta_${index}`);
+            const monto = parseFloat(input.value);
+
+            if (isNaN(monto) || monto <= 0) {
+                alert('Ingrese un monto válido para la apuesta');
+                return;
+            }
+
+            if (monto > estado.jugadores[index].saldo) {
+                alert('El monto apostado no puede superar el saldo disponible');
+                return;
+            }
+
+            estado.apuestasRonda[index] = monto;
+            input.disabled = true;
+            input.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            actualizarJugadorCard(index);
+            actualizarBarraProgreso();
+        }
+
+        // Renunciar/desistir
+        function renunciarJugador(index) {
+            const jugador = estado.jugadores[index];
+            
+            estado.historial.push({
+                jugador: jugador.nombre,
+                ronda: estado.rondaActual,
+                apuesta: 0,
+                resultado: 'renuncia',
+                cambio: 0,
+                saldoFinal: jugador.saldo
+            });
+
+            estado.procesadosRonda.add(index);
+            actualizarJugadorCard(index);
+            actualizarHistorial();
+            verificarTodosProcesados();
+            actualizarBarraProgreso();
+        }
+
+        // Abrir modal resultado
+        function abrirModalResultado(index) {
+            estado.jugadorSeleccionado = index;
+            const jugador = estado.jugadores[index];
+            elementos.resultadoJugadorNombre.textContent = jugador.nombre;
+            elementos.resultadoApuesta.textContent = formatearMoneda(estado.apuestasRonda[index]);
+            mostrarModal('modalResultado');
+        }
+
+        // Procesar resultado
+        function procesarResultado(resultado) {
+            const index = estado.jugadorSeleccionado;
+            if (index === null) return;
+
+            const jugador = estado.jugadores[index];
+            const apuesta = estado.apuestasRonda[index];
+            let cambio = 0;
+
+            switch (resultado) {
+                case 'perder':
+                    cambio = -apuesta;
+                    break;
+                case 'empatar':
+                    cambio = apuesta * 0.5;
+                    break;
+                case 'ganar':
+                    cambio = apuesta;
+                    break;
+                case 'blackjack':
+                    cambio = apuesta * 2;
+                    break;
+            }
+
+            jugador.saldo += cambio;
+
+            estado.historial.push({
+                jugador: jugador.nombre,
+                ronda: estado.rondaActual,
+                apuesta: apuesta,
+                resultado: resultado,
+                cambio: cambio,
+                saldoFinal: jugador.saldo
+            });
+
+            estado.procesadosRonda.add(index);
+            delete estado.apuestasRonda[index];
+
+            actualizarJugadorCard(index);
+            actualizarTodosLosSaldos();
+            actualizarHistorial();
+            verificarTodosProcesados();
+            actualizarBarraProgreso();
+
+            estado.jugadorSeleccionado = null;
+            ocultarModal('modalResultado');
+        }
+
+        // Verificar todos procesados
+        function verificarTodosProcesados() {
+            if (estado.procesadosRonda.size === estado.jugadores.length && estado.jugadores.length > 0) {
+                estado.todosProcesados = true;
+                actualizarBotonNuevaRonda();
+            }
+        }
+
+        // Iniciar nueva ronda
+        function iniciarNuevaRonda() {
+            estado.rondaActual++;
+            estado.apuestasRonda = {};
+            estado.procesadosRonda = new Set();
+            estado.todosProcesados = false;
+            
+            construirPanelJugadores();
+            actualizarHistorial();
+            actualizarBarraProgreso();
+            elementos.rondaActual.textContent = estado.rondaActual;
+        }
+
+        // Actualizar barra de progreso
+        function actualizarBarraProgreso() {
+            const total = estado.jugadores.length;
+            const procesados = estado.procesadosRonda.size;
+            const porcentaje = total > 0 ? (procesados / total) * 100 : 0;
+
+            elementos.progressFill.style.width = `${porcentaje}%`;
+            elementos.procesadosInfo.textContent = `${procesados} de ${total} procesados`;
+            
+            // Actualizar badge del historial
+            if (estado.historial.length > 0) {
+                elementos.historialBadge.classList.remove('hidden');
+                elementos.historialBadge.textContent = estado.historial.length;
+            } else {
+                elementos.historialBadge.classList.add('hidden');
+            }
+        }
+
+        // Actualizar historial
+        function actualizarHistorial() {
+            if (estado.historial.length === 0) {
+                elementos.historialContainer.innerHTML = `
+                    <div class="text-gray-500 text-center py-8">
+                        <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                        <p class="text-base">No hay apuestas registradas</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            const historialReverso = [...estado.historial].reverse();
+
+            historialReverso.forEach(entry => {
+                let resultadoClase = '';
+                let resultadoIcono = '';
+                switch (entry.resultado) {
+                    case 'perder':
+                        resultadoClase = 'text-red-400';
+                        resultadoIcono = 'fa-circle-xmark';
+                        break;
+                    case 'empatar':
+                        resultadoClase = 'text-blue-400';
+                        resultadoIcono = 'fa-handshake';
+                        break;
+                    case 'ganar':
+                        resultadoClase = 'text-green-400';
+                        resultadoIcono = 'fa-crown';
+                        break;
+                    case 'blackjack':
+                        resultadoClase = 'text-purple-400';
+                        resultadoIcono = 'fa-spade';
+                        break;
+                    case 'renuncia':
+                        resultadoClase = 'text-gray-400';
+                        resultadoIcono = 'fa-ban';
+                        break;
+                }
+
+                const cambioClase = entry.cambio > 0 ? 'text-green-400' : entry.cambio < 0 ? 'text-red-400' : 'text-gray-400';
+                const cambioSigno = entry.cambio > 0 ? '+' : '';
+
+                html += `
+                <div class="bg-gray-700 p-4 rounded-xl">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-user text-amber-400"></i>
+                            <span class="font-bold text-white text-base">${entry.jugador}</span>
+                        </div>
+                        <span class="text-xs bg-gray-600 px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <i class="fas fa-layer-group"></i> Ronda ${entry.ronda}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-dollar-sign text-gray-400"></i>
+                            <span class="text-gray-400">Apuesta:</span>
+                            <span class="text-white ml-1">${formatearMoneda(entry.apuesta)}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fas ${resultadoIcono} ${resultadoClase}"></i>
+                            <span class="text-gray-400">Resultado:</span>
+                            <span class="${resultadoClase} ml-1">${entry.resultado}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-arrow-trend-up text-gray-400"></i>
+                            <span class="text-gray-400">Cambio:</span>
+                            <span class="${cambioClase} ml-1">${cambioSigno}${formatearMoneda(Math.abs(entry.cambio))}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-wallet text-gray-400"></i>
+                            <span class="text-gray-400">Saldo final:</span>
+                            <span class="text-amber-400 ml-1">${formatearMoneda(entry.saldoFinal)}</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            elementos.historialContainer.innerHTML = html;
+        }
+
+        // Reiniciar todo
+        function reiniciarTodo() {
+            if (confirm('¿Está seguro de reiniciar todo? Se perderá todo el progreso.')) {
+                estado.jugadores = [];
+                estado.rondaActual = 1;
+                estado.apuestasRonda = {};
+                estado.procesadosRonda = new Set();
+                estado.historial = [];
+                estado.juegoIniciado = false;
+                estado.todosProcesados = false;
+                estado.jugadorSeleccionado = null;
+
+                if (estado.historialVisible) {
+                    toggleHistorial();
+                }
+
+                construirPanelJugadores();
+                actualizarHistorial();
+                actualizarBarraProgreso();
+                elementos.rondaActual.textContent = estado.rondaActual;
+                
+                ocultarModal('modalNombres');
+                ocultarModal('modalResultado');
+                mostrarModal('modalConfig');
+            }
+        }
+
+        // Inicialización
+        window.addEventListener('DOMContentLoaded', () => {
+            mostrarModal('modalConfig');
+            construirPanelJugadores();
+            actualizarHistorial();
+            actualizarBarraProgreso();
+        });
+
+        // Enter para apostar
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+                const match = e.target.id.match(/apuesta_(\d+)/);
+                if (match) {
+                    const index = parseInt(match[1]);
+                    if (!estado.procesadosRonda.has(index) && !estado.todosProcesados && !estado.apuestasRonda[index]) {
+                        registrarApuesta(index);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
