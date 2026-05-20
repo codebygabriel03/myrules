@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRules - Contador de Puntos</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'bg-dark': '#0b0f19',
+                        'bg-card': '#131a2b',
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-bg-dark min-h-screen font-body text-white antialiased">
+
+    <!-- Fondo sutil -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-emerald-500/3 rounded-full blur-[100px]"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <!-- Header -->
+        <header class="border-b border-white/5 backdrop-blur-xl bg-bg-dark/70 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 lg:h-20">
+                    
+                    <!-- Logo -->
+                    <a href="../index.html" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center 
+                                    shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                            <span class="font-mono font-bold text-lg text-white">M</span>
+                        </div>
+                        <span class="font-title font-bold text-xl lg:text-2xl tracking-tight">
+                            My<span class="text-red-400">Rules</span>
+                        </span>
+                    </a>
+
+                    <!-- Navegación Desktop -->
+                    <nav class="hidden md:flex items-center gap-1">
+                        <a href="../vista/ruleta.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-skull text-red-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Ruleta Rusa</span>
+                        </a>
+                        
+                        <a href="../vista/apuestas.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-coins text-amber-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Blackjack</span>
+                        </a>
+                        
+                        <a href="../vista/sorteador.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-people-group text-purple-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Sorteador</span>
+                        </a>
+
+                        <a href="#" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-white bg-emerald-500/10
+                                  border border-emerald-500/20 transition-all duration-200 group">
+                            <i class="fa-solid fa-calculator text-emerald-400 text-sm"></i>
+                            <span>Contador</span>
+                        </a>
+                    </nav>
+
+                    <!-- Estado -->
+                    <div class="hidden md:flex items-center gap-3">
+                        <span class="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Online
+                        </span>
+                    </div>
+
+                    <!-- Menú móvil -->
+                    <button id="menuToggle" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Menú">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Menú móvil -->
+            <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-bg-dark/95 backdrop-blur-xl">
+                <div class="px-4 py-4 space-y-1">
+                    <a href="../vista/ruleta.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-skull text-red-400"></i>
+                        <span>Ruleta Rusa</span>
+                    </a>
+                    <a href="../vista/apuestas.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-coins text-amber-400"></i>
+                        <span>Blackjack - Saldo</span>
+                    </a>
+                    <a href="../vista/sorteador.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-people-group text-purple-400"></i>
+                        <span>Sorteador de Equipos</span>
+                    </a>
+                    <a href="#" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-white bg-emerald-500/10
+                              border border-emerald-500/20">
+                        <i class="fa-solid fa-calculator text-emerald-400"></i>
+                        <span>Contador de Puntos</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Contenido -->
+        <main class="flex-1 px-4 py-6 lg:py-10">
+            <div class="max-w-2xl mx-auto">
+                
+                <!-- Setup -->
+                <div id="setupScreen">
+                    <div class="mb-6">
+                        <h2 class="font-title font-bold text-2xl mb-1">Nuevo contador</h2>
+                        <p class="text-gray-500 text-sm">Configurá los jugadores y el puntaje inicial</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Cantidad de jugadores -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1.5">Jugadores</label>
+                            <div class="flex items-center gap-2">
+                                <button onclick="adjustCount(-1)" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                                    <i class="fa-solid fa-minus text-sm"></i>
+                                </button>
+                                <input type="number" id="playerCount" value="2" min="1" max="8" 
+                                       class="w-16 h-10 bg-white/5 border border-white/10 rounded-xl text-center text-base font-mono
+                                              focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                       onchange="updateInputs()">
+                                <button onclick="adjustCount(1)" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                                    <i class="fa-solid fa-plus text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Puntaje inicial -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1.5">Puntaje inicial</label>
+                            <input type="number" id="initialScore" value="0" 
+                                   class="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-3 text-base font-mono
+                                          focus:outline-none focus:border-emerald-500/50 transition-colors">
+                        </div>
+
+                        <!-- Incremento personalizado -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1.5">Incremento rápido (+/-)</label>
+                            <input type="number" id="quickIncrement" value="5" min="1" max="100" 
+                                   class="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-3 text-base font-mono
+                                          focus:outline-none focus:border-emerald-500/50 transition-colors">
+                        </div>
+
+                        <!-- Nombres -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-2">Nombres</label>
+                            <div id="playerInputs" class="space-y-2"></div>
+                        </div>
+
+                        <button onclick="startGame()" 
+                                class="w-full h-12 bg-emerald-500 hover:bg-emerald-600 rounded-xl font-semibold text-base
+                                       transition-colors flex items-center justify-center gap-2 mt-2">
+                            <i class="fa-solid fa-play"></i>
+                            Comenzar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Juego -->
+                <div id="gameScreen" class="hidden">
+                    <div class="flex items-center justify-between mb-5">
+                        <h2 class="font-title font-bold text-xl">Puntos</h2>
+                        <div class="flex gap-2">
+                            <button onclick="resetAll()" class="h-9 px-3 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-400
+                                                             hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                                Reiniciar
+                            </button>
+                            <button onclick="backToSetup()" class="h-9 px-3 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-400
+                                                              hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-gear text-[10px]"></i>
+                                Editar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="playerCards" class="space-y-2"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-5 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-xs">
+                <p class="font-mono">MyRules &copy; 2024 — Contador de Puntos</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let players = [];
+        let scores = [];
+        let quickIncrement = 5;
+
+        function updateInputs() {
+            const count = parseInt(document.getElementById('playerCount').value) || 1;
+            const container = document.getElementById('playerInputs');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2';
+                div.innerHTML = `
+                    <span class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center font-mono text-xs text-emerald-400 flex-shrink-0">${i+1}</span>
+                    <input type="text" id="name${i}" placeholder="Jugador ${i+1}" 
+                           class="flex-1 h-11 bg-white/5 border border-white/10 rounded-xl px-3 text-base
+                                  focus:outline-none focus:border-emerald-500/50 transition-colors placeholder-gray-600">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function adjustCount(delta) {
+            const input = document.getElementById('playerCount');
+            input.value = Math.max(1, Math.min(8, (parseInt(input.value) || 1) + delta));
+            updateInputs();
+        }
+
+        function startGame() {
+            const count = parseInt(document.getElementById('playerCount').value) || 1;
+            const initialScore = parseInt(document.getElementById('initialScore').value) || 0;
+            quickIncrement = parseInt(document.getElementById('quickIncrement').value) || 5;
+            
+            players = [];
+            scores = [];
+            
+            for (let i = 0; i < count; i++) {
+                const name = document.getElementById(`name${i}`)?.value?.trim() || `Jugador ${i+1}`;
+                players.push(name);
+                scores.push(initialScore);
+            }
+
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            renderCards();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderCards() {
+            const container = document.getElementById('playerCards');
+            container.innerHTML = '';
+
+            // Crear array de índices ordenados por puntaje (mayor a menor)
+            const sortedIndices = players.map((_, i) => i)
+                .sort((a, b) => scores[b] - scores[a]);
+
+            // Colores para los tops
+            const topColors = [
+                'border-amber-500/30 bg-amber-500/5',
+                'border-gray-400/20 bg-gray-400/5',
+                'border-amber-700/20 bg-amber-700/5',
+            ];
+
+            sortedIndices.forEach((originalIndex, position) => {
+                const player = players[originalIndex];
+                const score = scores[originalIndex];
+                
+                const card = document.createElement('div');
+                
+                // Clase especial para el top 3
+                let specialClass = '';
+                if (position < 3) {
+                    specialClass = topColors[position];
+                }
+                
+                card.className = `bg-bg-card border border-white/5 rounded-2xl p-4 flex items-center gap-4 ${specialClass} transition-all duration-300`;
+                
+                // Color del puntaje
+                let scoreColor = 'text-gray-400';
+                if (score > 0) scoreColor = 'text-emerald-400';
+                if (score < 0) scoreColor = 'text-red-400';
+                if (position === 0 && score > 0) scoreColor = 'text-amber-400'; // Líder en dorado
+                
+                // Medalla para top 3
+                let medal = '';
+                if (position === 0) medal = '🥇';
+                else if (position === 1) medal = '🥈';
+                else if (position === 2) medal = '🥉';
+                
+                card.innerHTML = `
+                    <!-- Avatar -->
+                    <div class="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 relative">
+                        <span class="font-mono font-bold text-base text-emerald-400">${player.charAt(0).toUpperCase()}</span>
+                        ${medal ? `<span class="absolute -top-1.5 -right-1.5 text-sm">${medal}</span>` : ''}
+                    </div>
+                    
+                    <!-- Nombre -->
+                    <div class="flex-1 min-w-0">
+                        <p class="text-base font-semibold truncate">${player}</p>
+                        ${position === 0 ? '<p class="text-[10px] text-amber-400/70 font-mono">Líder</p>' : ''}
+                    </div>
+
+                    <!-- Controles -->
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="changeScore(${originalIndex}, -${quickIncrement})" 
+                                class="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center
+                                       text-xs text-gray-500 hover:bg-white/10 hover:text-white transition-colors font-mono">
+                            -${quickIncrement}
+                        </button>
+                        <button onclick="changeScore(${originalIndex}, -1)" 
+                                class="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/10 flex items-center justify-center
+                                       text-red-400 hover:bg-red-500/20 transition-colors">
+                            <i class="fa-solid fa-minus text-sm"></i>
+                        </button>
+                        
+                        <span id="score${originalIndex}" class="font-mono font-bold text-2xl w-14 text-center ${scoreColor} transition-all duration-200">
+                            ${score}
+                        </span>
+                        
+                        <button onclick="changeScore(${originalIndex}, 1)" 
+                                class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/10 flex items-center justify-center
+                                       text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                            <i class="fa-solid fa-plus text-sm"></i>
+                        </button>
+                        <button onclick="changeScore(${originalIndex}, ${quickIncrement})" 
+                                class="w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center
+                                       text-xs text-gray-500 hover:bg-white/10 hover:text-white transition-colors font-mono">
+                            +${quickIncrement}
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function changeScore(index, amount) {
+            scores[index] += amount;
+            updateDisplay(index);
+            renderCards(); // Re-render para reordenar
+        }
+
+        function updateDisplay(index) {
+            const display = document.getElementById(`score${index}`);
+            if (display) {
+                display.textContent = scores[index];
+            }
+        }
+
+        function resetAll() {
+            const initial = parseInt(document.getElementById('initialScore').value) || 0;
+            scores = scores.map(() => initial);
+            renderCards();
+        }
+
+        function backToSetup() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.remove('hidden');
+            updateInputs();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Menú móvil
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Init
+        updateInputs();
+    </script>
+</body>
+</html>
