@@ -95,6 +95,13 @@
                             <i class="fa-solid fa-people-group text-purple-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
                             <span>Sorteador</span>
                         </a>
+
+                        <a href="vista/contador.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-calculator text-green-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Contador</span>
+                        </a>
                     </nav>
 
                     <!-- Estado / Usuario -->
@@ -133,6 +140,12 @@
                         <i class="fa-solid fa-people-group text-purple-400"></i>
                         <span>Sorteador de Equipos</span>
                     </a>
+                    <a href="vista/contador.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-calculator text-green-400"></i>
+                        <span>Contador de Puntos</span>
+                    </a>
                 </div>
             </div>
         </header>
@@ -162,7 +175,7 @@
                 </div>
 
                 <!-- Tarjetas de Acceso Rápido -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
                     
                     <!-- Ruleta Rusa -->
                     <a href="vista/ruleta.html" 
@@ -214,10 +227,27 @@
                             <p class="text-gray-500 text-sm">Asignar equipos a jugadores</p>
                         </div>
                     </a>
+
+                    <!-- Contador de Puntos -->
+                    <a href="vista/contador.html" 
+                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
+                              hover:border-green-500/30 transition-all duration-300 hover:-translate-y-1
+                              hover:shadow-2xl hover:shadow-green-500/5">
+                        <div class="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent rounded-2xl opacity-0 
+                                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4
+                                        group-hover:bg-green-500/20 transition-all duration-300">
+                                <i class="fa-solid fa-calculator text-2xl text-green-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg mb-2">Contador</h3>
+                            <p class="text-gray-500 text-sm">Contador de puntos</p>
+                        </div>
+                    </a>
                 </div>
 
                 <!-- Descripciones detalladas -->
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto text-left">
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
                     <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <i class="fa-solid fa-skull text-red-400 text-xs"></i>
@@ -238,6 +268,13 @@
                             <span class="font-mono text-xs text-purple-400">/vista/sorteador.html</span>
                         </div>
                         <p class="text-gray-500 text-xs leading-relaxed">Distribuye jugadores en equipos de forma aleatoria. Perfecto para armar partidas equilibradas.</p>
+                    </div>
+                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-calculator text-green-400 text-xs"></i>
+                            <span class="font-mono text-xs text-green-400">/vista/contador.html</span>
+                        </div>
+                        <p class="text-gray-500 text-xs leading-relaxed">Contador de puntos interactivo. Lleva el registro de puntuaciones para cualquier juego o actividad.</p>
                     </div>
                 </div>
             </div>
