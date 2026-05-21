@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRules - Minijuegos Poker</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'bg-dark': '#0b0f19',
+                        'bg-card': '#131a2b',
+                    },
+                    keyframes: {
+                        'bounce-slow': {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.05)' },
+                        }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce-slow 0.5s ease-in-out',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-bg-dark min-h-screen font-body text-white antialiased">
+
+    <!-- Fondo sutil -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-red-500/3 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-amber-500/3 rounded-full blur-[100px]"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <!-- Header simplificado -->
+        <header class="border-b border-white/5 backdrop-blur-xl bg-bg-dark/70 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 lg:h-20">
+                    
+                    <a href="../index.html" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                            <span class="font-mono font-bold text-lg text-white">M</span>
+                        </div>
+                        <span class="font-title font-bold text-xl lg:text-2xl tracking-tight">My<span class="text-red-400">Rules</span></span>
+                    </a>
+
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Online
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Overlay -->
+        <div id="modalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden" onclick="closeAllModals()"></div>
+
+        <!-- Modal Ranking -->
+        <div id="rankingModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-sm bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between p-4 border-b border-white/5">
+                <h3 class="font-title font-bold text-lg"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i>Ranking de Jugadas</h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-1.5 text-sm">
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-amber-400 w-6">1</span> Escalera Real <span class="text-gray-500 text-xs">A-K-Q-J-10 mismo palo</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-amber-400 w-6">2</span> Escalera de Color <span class="text-gray-500 text-xs">5 cartas consecutivas mismo palo</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-purple-400 w-6">3</span> Poker <span class="text-gray-500 text-xs">4 cartas mismo valor</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-purple-400 w-6">4</span> Full House <span class="text-gray-500 text-xs">Trío + Pareja</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-blue-400 w-6">5</span> Color <span class="text-gray-500 text-xs">5 cartas mismo palo</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-blue-400 w-6">6</span> Escalera <span class="text-gray-500 text-xs">5 cartas consecutivas</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-green-400 w-6">7</span> Trío <span class="text-gray-500 text-xs">3 cartas mismo valor</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-green-400 w-6">8</span> Doble Pareja <span class="text-gray-500 text-xs">2 parejas distintas</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-gray-400 w-6">9</span> Pareja <span class="text-gray-500 text-xs">2 cartas mismo valor</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-gray-400 w-6">10</span> Carta Alta <span class="text-gray-500 text-xs">La carta más alta</span></p>
+            </div>
+        </div>
+
+        <!-- Modal Info -->
+        <div id="infoModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-lg max-h-[80vh] overflow-y-auto bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="sticky top-0 bg-bg-card border-b border-white/5 p-4 rounded-t-2xl flex items-center justify-between z-10">
+                <h3 class="font-title font-bold text-lg"><i class="fa-solid fa-circle-info text-blue-400 mr-2"></i>Modos de Juego</h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-4 text-sm">
+                <div><h4 class="font-semibold text-red-400 mb-1"><i class="fa-solid fa-fire mr-1"></i> 01. ELIMINACIÓN</h4><p class="text-gray-400 leading-relaxed">Se jugarán rondas normales de póker. El ganador de cada ronda quedará fuera de la siguiente y estará protegido de la eliminación. El último jugador restante recibirá una penalización de puntos.</p><p class="text-gray-500 text-xs mt-1">Puntos base: ≥10 y ≤50 (intervalos de 5)</p></div>
+                <div><h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-hat-wizard mr-1"></i> 02. PASCUA</h4><p class="text-gray-400 leading-relaxed">Se juega una ronda normal de póker. El primer jugador que consiga una jugada específica recibirá una cantidad de puntos.</p><p class="text-gray-500 text-xs mt-1">Jugadas: FULL HOUSE (20pts), POKER (30pts), ESCALERA DE COLOR (40pts), ESCALERA REAL (50pts)</p></div>
+                <div><h4 class="font-semibold text-green-400 mb-1"><i class="fa-solid fa-clover mr-1"></i> 03. SUERTE</h4><p class="text-gray-400 leading-relaxed">Cada jugador lanzará un dado. Según el número obtenido, podrá robar esa cantidad de cartas del mazo. El dado podrá lanzarse un máximo de 2 veces. La mejor jugada obtendrá puntos.</p><p class="text-gray-500 text-xs mt-1">Puntos base: 10, 15, 20, 25 o 30</p></div>
+                <div><h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-coins mr-1"></i> 04. APUESTA</h4><p class="text-gray-400 leading-relaxed">Los jugadores apostarán una cantidad determinada de puntos. Si ganan, multiplicarán X veces lo apostado; si pierden, se descuenta.</p><p class="text-gray-500 text-xs mt-1">Apuesta mín: 10 | Máx: 25% del saldo | Multiplicador: X1, X2, X3, X4, X5</p></div>
+                <div><h4 class="font-semibold text-blue-400 mb-1"><i class="fa-solid fa-bolt mr-1"></i> 05. RACHA</h4><p class="text-gray-400 leading-relaxed">Un jugador deberá ganar al menos 3 rondas consecutivas. Puntos = puntos base × número de rachas.</p><p class="text-gray-500 text-xs mt-1">Puntos base: 10, 20 o 25</p></div>
+                <div><h4 class="font-semibold text-gray-400 mb-1"><i class="fa-solid fa-theater-masks mr-1"></i> 06. RATA</h4><p class="text-gray-400 leading-relaxed">El ganador roba puntos de los derrotados. Cantidad = puntos base × (11 − ranking de la jugada).</p><p class="text-gray-500 text-xs mt-1">Puntos base: 5, 10 o 15</p></div>
+                <div><h4 class="font-semibold text-purple-400 mb-1"><i class="fa-solid fa-skull mr-1"></i> 07. EXTERMINIO</h4><p class="text-gray-400 leading-relaxed">Todos pierden puntos obligatoriamente. Puntos perdidos = puntos base × ranking de la jugada.</p><p class="text-gray-500 text-xs mt-1">Puntos base: -10, -15 o -20</p></div>
+                <div><h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-biohazard mr-1"></i> 08. INFECCIÓN</h4><p class="text-gray-400 leading-relaxed">Se elige cartas rojas o negras. Ganador: puntos positivos, perdedores: negativos. Puntos = puntos base × cantidad de cartas inválidas.</p><p class="text-gray-500 text-xs mt-1">Puntos base: 10, 15 o 20</p></div>
+            </div>
+        </div>
+
+        <!-- Modal Configuración -->
+        <div id="configModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-sm bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between p-4 border-b border-white/5">
+                <h3 class="font-title font-bold text-lg"><i class="fa-solid fa-gear text-gray-400 mr-2"></i>Configuración</h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Velocidad sorteo principal (ms)</label>
+                    <input type="number" id="configVelocidadSorteo" value="50" min="20" max="200" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Cantidad de giros sorteo principal</label>
+                    <input type="number" id="configGirosSorteo" value="20" min="5" max="40" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Velocidad sorteos secundarios (ms)</label>
+                    <input type="number" id="configVelocidadSecundario" value="40" min="15" max="150" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Giros sorteos secundarios</label>
+                    <input type="number" id="configGirosSecundario" value="15" min="5" max="30" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50 transition-colors">
+                </div>
+                <button onclick="guardarConfig()" class="w-full h-11 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold text-sm hover:bg-amber-500/20 transition-colors">
+                    <i class="fa-solid fa-floppy-disk mr-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 px-4 py-8 lg:py-12">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Título con 3 iconos -->
+                <div class="mb-8 flex items-center justify-between">
+                    <button onclick="openRankingModal()" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-amber-500/30 transition-all duration-200 group flex-shrink-0">
+                        <i class="fa-solid fa-trophy text-amber-400 text-lg group-hover:scale-110 transition-transform"></i>
+                    </button>
+
+                    <div class="text-center px-2">
+                        <h1 class="font-title font-bold text-2xl lg:text-4xl leading-tight">
+                            <span class="bg-gradient-to-r from-red-400 via-amber-400 to-red-400 bg-clip-text text-transparent">MINIJUEGOS POKER</span>
+                        </h1>
+                        <p class="text-gray-500 text-sm lg:text-base mt-1">¿Tendrás suerte hoy? 🍀</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="openConfigModal()" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-gray-400/30 transition-all duration-200 group">
+                            <i class="fa-solid fa-gear text-gray-400 text-lg group-hover:scale-110 transition-transform"></i>
+                        </button>
+                        <button onclick="openInfoModal()" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-blue-500/30 transition-all duration-200 group">
+                            <i class="fa-solid fa-circle-info text-blue-400 text-lg group-hover:scale-110 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contenedores -->
+                <div class="space-y-4 lg:space-y-6">
+                    
+                    <!-- Contenedor 1: Sorteo principal -->
+                    <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-shuffle text-red-400"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg">Sorteo de Modo de Juego</h3>
+                        </div>
+
+                        <div class="mb-6">
+                            <div id="sorteoResultado" class="bg-white/[0.02] border border-white/5 rounded-2xl p-10 text-center min-h-[180px] flex items-center justify-center">
+                                <span class="text-gray-600 text-xl font-mono">Gira para sortear...</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button id="btnGirar" onclick="girarSorteo()" class="flex-1 h-14 bg-red-500 hover:bg-red-600 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-rotate"></i> Girar
+                            </button>
+                            <button id="btnAceptar" onclick="aceptarSorteo()" class="flex-1 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl font-semibold text-lg text-emerald-400 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-500/20" disabled>
+                                <i class="fa-solid fa-check"></i> Aceptar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor 2: Dinámico -->
+                    <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-layer-group text-amber-400"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg" id="contenedor2Titulo">Detalle del Juego</h3>
+                        </div>
+                        <div id="contenedor2Contenido" class="bg-white/[0.02] border border-white/5 rounded-xl p-6 flex items-center justify-center min-h-[120px]">
+                            <span class="text-gray-600 text-sm font-mono">Acepta un sorteo para ver el detalle</span>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor 3: Contador -->
+                    <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-chart-bar text-purple-400"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg">Contador de Juegos</h3>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-fire text-red-400 mr-2 text-xs"></i>ELIMINACIÓN</span><span id="countEliminacion" class="font-mono font-bold text-base text-red-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-hat-wizard text-amber-400 mr-2 text-xs"></i>PASCUA</span><span id="countPascua" class="font-mono font-bold text-base text-amber-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-clover text-green-400 mr-2 text-xs"></i>SUERTE</span><span id="countSuerte" class="font-mono font-bold text-base text-green-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-coins text-amber-400 mr-2 text-xs"></i>APUESTA</span><span id="countApuesta" class="font-mono font-bold text-base text-amber-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-bolt text-blue-400 mr-2 text-xs"></i>RACHA</span><span id="countRacha" class="font-mono font-bold text-base text-blue-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-theater-masks text-gray-400 mr-2 text-xs"></i>RATA</span><span id="countRata" class="font-mono font-bold text-base text-gray-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-skull text-purple-400 mr-2 text-xs"></i>EXTERMINIO</span><span id="countExterminio" class="font-mono font-bold text-base text-purple-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-biohazard text-emerald-400 mr-2 text-xs"></i>INFECCIÓN</span><span id="countInfeccion" class="font-mono font-bold text-base text-emerald-400">0</span></p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <footer class="border-t border-white/5 py-5 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-xs">
+                <p class="font-mono">MyRules &copy; 2024 — Minijuegos Poker</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let config = {
+            velocidadSorteo: 50,
+            girosSorteo: 20,
+            velocidadSecundario: 40,
+            girosSecundario: 15
+        };
+
+        const juegos = ['ELIMINACIÓN', 'PASCUA', 'SUERTE', 'APUESTA', 'RACHA', 'RATA', 'EXTERMINIO', 'INFECCIÓN'];
+        
+        const iconosHTML = [
+            '<i class="fa-solid fa-fire text-red-400 text-6xl"></i>',
+            '<i class="fa-solid fa-hat-wizard text-amber-400 text-6xl"></i>',
+            '<i class="fa-solid fa-clover text-green-400 text-6xl"></i>',
+            '<i class="fa-solid fa-coins text-amber-400 text-6xl"></i>',
+            '<i class="fa-solid fa-bolt text-blue-400 text-6xl"></i>',
+            '<i class="fa-solid fa-theater-masks text-gray-400 text-6xl"></i>',
+            '<i class="fa-solid fa-skull text-purple-400 text-6xl"></i>',
+            '<i class="fa-solid fa-biohazard text-emerald-400 text-6xl"></i>'
+        ];
+        
+        const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countRacha', 'countRata', 'countExterminio', 'countInfeccion'];
+        
+        let juegoSeleccionado = null;
+        let juegoAceptado = null;
+        let ultimoJuegoAceptado = null;
+        let girando = false;
+        let puntosSuerteSorteados = null;
+
+        function girarSorteo() {
+            if (girando) return;
+            girando = true;
+            
+            const btnGirar = document.getElementById('btnGirar');
+            const btnAceptar = document.getElementById('btnAceptar');
+            const resultado = document.getElementById('sorteoResultado');
+            
+            btnGirar.disabled = true;
+            btnAceptar.disabled = true;
+            
+            document.getElementById('contenedor2Titulo').textContent = 'Detalle del Juego';
+            document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-600 text-sm font-mono">Girando ruleta...</span>';
+            
+            let contador = 0;
+            const maxGiros = config.girosSorteo;
+            let velocidad = config.velocidadSorteo;
+            
+            function animarGiro() {
+                if (contador < maxGiros) {
+                    const index = contador % juegos.length;
+                    resultado.innerHTML = `
+                        <div class="text-center">
+                            <div class="mb-4">${iconosHTML[index]}</div>
+                            <span class="font-title font-bold text-2xl text-white">${juegos[index]}</span>
+                        </div>
+                    `;
+                    contador++;
+                    velocidad += contador * 3;
+                    setTimeout(animarGiro, velocidad);
+                } else {
+                    let finalIndex;
+                    do {
+                        finalIndex = Math.floor(Math.random() * juegos.length);
+                    } while (juegos[finalIndex] === ultimoJuegoAceptado && juegos.length > 1);
+                    
+                    juegoSeleccionado = juegos[finalIndex];
+                    
+                    resultado.innerHTML = `
+                        <div class="text-center">
+                            <div class="mb-4">${iconosHTML[finalIndex]}</div>
+                            <span class="font-title font-bold text-3xl bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">${juegoSeleccionado}</span>
+                        </div>
+                    `;
+                    resultado.classList.add('animate-bounce-slow');
+                    setTimeout(() => resultado.classList.remove('animate-bounce-slow'), 500);
+                    
+                    btnGirar.disabled = false;
+                    btnAceptar.disabled = false;
+                    girando = false;
+                }
+            }
+            
+            animarGiro();
+        }
+
+        function aceptarSorteo() {
+            if (!juegoSeleccionado || girando) return;
+            
+            const index = juegos.indexOf(juegoSeleccionado);
+            if (index !== -1) {
+                const countElement = document.getElementById(countIds[index]);
+                let currentCount = parseInt(countElement.textContent);
+                countElement.textContent = currentCount + 1;
+                countElement.classList.add('scale-125');
+                setTimeout(() => countElement.classList.remove('scale-125'), 200);
+            }
+            
+            juegoAceptado = juegoSeleccionado;
+            ultimoJuegoAceptado = juegoSeleccionado;
+            juegoSeleccionado = null;
+            
+            document.getElementById('btnAceptar').disabled = true;
+            actualizarContenedor2(juegoAceptado);
+        }
+
+        function animarResultado(elementId, valores, callback) {
+            const elemento = document.getElementById(elementId);
+            let contador = 0;
+            const maxGiros = config.girosSecundario;
+            let velocidad = config.velocidadSecundario;
+            
+            function girar() {
+                if (contador < maxGiros) {
+                    const randomVal = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.textContent = randomVal;
+                    elemento.classList.remove('animate-bounce-slow');
+                    contador++;
+                    velocidad += contador * 4;
+                    setTimeout(girar, velocidad);
+                } else {
+                    const final = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.textContent = final;
+                    elemento.classList.add('animate-bounce-slow');
+                    setTimeout(() => elemento.classList.remove('animate-bounce-slow'), 500);
+                    if (callback) callback(final);
+                }
+            }
+            
+            girar();
+        }
+
+        function actualizarContenedor2(modo) {
+            const titulo = document.getElementById('contenedor2Titulo');
+            const contenido = document.getElementById('contenedor2Contenido');
+            
+            titulo.textContent = 'Detalle: ' + modo;
+            
+            switch(modo) {
+                case 'ELIMINACIÓN':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Puntos a perder</p>
+                            <div id="resultadoEliminacion" class="font-mono font-bold text-4xl text-red-400 mb-4">--</div>
+                            <button onclick="girarEliminacion()" class="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 font-semibold hover:bg-red-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+                case 'PASCUA':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Sortear jugada objetivo</p>
+                            <div id="resultadoPascua" class="font-mono font-bold text-xl text-amber-400 mb-4">--</div>
+                            <button onclick="girarPascua()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+                case 'SUERTE':
+                    if (!puntosSuerteSorteados || puntosSuerteSorteados.modo !== modo) {
+                        const puntosPosibles = [10, 15, 20, 25, 30];
+                        puntosSuerteSorteados = { modo: modo, puntos: puntosPosibles[Math.floor(Math.random() * puntosPosibles.length)] };
+                    }
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Lanzar dado</p>
+                            <div class="flex items-center justify-center gap-4 mb-4">
+                                <div id="dadoContenedor" class="w-20 h-20 rounded-2xl bg-white/5 border-2 border-white/10 flex items-center justify-center transition-all duration-200">
+                                    <span id="dadoResultado" class="font-mono font-bold text-5xl text-white">?</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-green-400 mb-3">Puntos: <span id="puntosSuerte" class="font-mono font-bold">${puntosSuerteSorteados.puntos}</span></p>
+                            <button onclick="girarDado()" class="px-6 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 font-semibold hover:bg-green-500/20 transition-colors">
+                                <i class="fa-solid fa-dice mr-2"></i>Lanzar dado
+                            </button>
+                        </div>`;
+                    break;
+                case 'APUESTA':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Sortear multiplicador</p>
+                            <div id="resultadoApuesta" class="font-mono font-bold text-4xl text-amber-400 mb-4">--</div>
+                            <button onclick="girarApuesta()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+                case 'RACHA':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Sortear puntos base</p>
+                            <div id="resultadoRacha" class="font-mono font-bold text-4xl text-blue-400 mb-2">--</div>
+                            <p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaRacha" class="text-blue-400 font-bold">--</span> × racha</p>
+                            <button onclick="girarRacha()" class="px-6 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 font-semibold hover:bg-blue-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+                case 'RATA':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Sortear puntos base</p>
+                            <div id="resultadoRata" class="font-mono font-bold text-4xl text-gray-400 mb-2">--</div>
+                            <p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaRata" class="text-gray-400 font-bold">--</span> × (11 − <span class="text-amber-400 font-bold">RK</span>)</p>
+                            <button onclick="girarRata()" class="px-6 py-2 bg-gray-500/10 border border-gray-500/20 rounded-xl text-gray-400 font-semibold hover:bg-gray-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+                case 'EXTERMINIO':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Sortear puntos a perder</p>
+                            <div id="resultadoExterminio" class="font-mono font-bold text-4xl text-purple-400 mb-2">--</div>
+                            <p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaExterminio" class="text-purple-400 font-bold">--</span> × <span class="text-amber-400 font-bold">RK</span></p>
+                            <button onclick="girarExterminio()" class="px-6 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 font-semibold hover:bg-purple-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+                case 'INFECCIÓN':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full">
+                            <p class="text-sm text-gray-400 mb-3">Sortear color y puntos base</p>
+                            <div class="flex gap-4 justify-center items-center mb-3">
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-1">Color</p>
+                                    <div id="colorInfeccion" class="flex items-center justify-center h-14">
+                                        <i class="fa-solid fa-circle-half-stroke text-3xl text-gray-500"></i>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-1">Puntos</p>
+                                    <div id="puntosInfeccion" class="font-mono font-bold text-4xl text-emerald-400 leading-[3.5rem]">--</div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaInfeccion" class="text-emerald-400 font-bold">--</span> × cartas inválidas</p>
+                            <button onclick="girarInfeccion()" class="px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-colors">
+                                <i class="fa-solid fa-rotate mr-2"></i>Girar
+                            </button>
+                        </div>`;
+                    break;
+            }
+        }
+
+        function girarEliminacion() {
+            const valores = [];
+            for (let i = 10; i <= 50; i += 5) valores.push('-' + i);
+            animarResultado('resultadoEliminacion', valores);
+        }
+
+        function girarPascua() {
+            animarResultado('resultadoPascua', ['FULL HOUSE (20pts)', 'POKER (30pts)', 'ESCALERA DE COLOR (40pts)', 'ESCALERA REAL (50pts)']);
+        }
+
+        function girarDado() {
+            const elemento = document.getElementById('dadoResultado');
+            const contenedor = document.getElementById('dadoContenedor');
+            let contador = 0;
+            const maxGiros = config.girosSecundario;
+            let velocidad = config.velocidadSecundario;
+            
+            contenedor.classList.remove('border-amber-500/50', 'shadow-lg', 'shadow-amber-500/20');
+            contenedor.classList.add('border-white/10');
+            
+            function girar() {
+                if (contador < maxGiros) {
+                    elemento.textContent = Math.floor(Math.random() * 6) + 1;
+                    contador++;
+                    velocidad += contador * 5;
+                    setTimeout(girar, velocidad);
+                } else {
+                    const final = Math.floor(Math.random() * 6) + 1;
+                    elemento.textContent = final;
+                    elemento.classList.add('animate-bounce-slow');
+                    setTimeout(() => elemento.classList.remove('animate-bounce-slow'), 500);
+                    contenedor.classList.remove('border-white/10');
+                    contenedor.classList.add('border-amber-500/50', 'shadow-lg', 'shadow-amber-500/20');
+                }
+            }
+            girar();
+        }
+
+        function girarApuesta() {
+            animarResultado('resultadoApuesta', ['X1', 'X2', 'X3', 'X4', 'X5']);
+        }
+
+        function girarRacha() {
+            const valores = ['10', '20', '25'];
+            const elemento = document.getElementById('resultadoRacha');
+            const formulaEl = document.getElementById('formulaRacha');
+            let contador = 0;
+            const maxGiros = config.girosSecundario;
+            let velocidad = config.velocidadSecundario;
+            
+            function girar() {
+                if (contador < maxGiros) {
+                    elemento.textContent = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.classList.remove('animate-bounce-slow');
+                    contador++;
+                    velocidad += contador * 4;
+                    setTimeout(girar, velocidad);
+                } else {
+                    const final = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.textContent = final;
+                    formulaEl.textContent = final;
+                    elemento.classList.add('animate-bounce-slow');
+                    setTimeout(() => elemento.classList.remove('animate-bounce-slow'), 500);
+                }
+            }
+            girar();
+        }
+
+        function girarRata() {
+            const valores = ['5', '10', '15'];
+            const elemento = document.getElementById('resultadoRata');
+            const formulaEl = document.getElementById('formulaRata');
+            let contador = 0;
+            const maxGiros = config.girosSecundario;
+            let velocidad = config.velocidadSecundario;
+            
+            function girar() {
+                if (contador < maxGiros) {
+                    elemento.textContent = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.classList.remove('animate-bounce-slow');
+                    contador++;
+                    velocidad += contador * 4;
+                    setTimeout(girar, velocidad);
+                } else {
+                    const final = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.textContent = final;
+                    formulaEl.textContent = final;
+                    elemento.classList.add('animate-bounce-slow');
+                    setTimeout(() => elemento.classList.remove('animate-bounce-slow'), 500);
+                }
+            }
+            girar();
+        }
+
+        function girarExterminio() {
+            const valores = ['-10', '-15', '-20'];
+            const elemento = document.getElementById('resultadoExterminio');
+            const formulaEl = document.getElementById('formulaExterminio');
+            let contador = 0;
+            const maxGiros = config.girosSecundario;
+            let velocidad = config.velocidadSecundario;
+            
+            function girar() {
+                if (contador < maxGiros) {
+                    elemento.textContent = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.classList.remove('animate-bounce-slow');
+                    contador++;
+                    velocidad += contador * 4;
+                    setTimeout(girar, velocidad);
+                } else {
+                    const final = valores[Math.floor(Math.random() * valores.length)];
+                    elemento.textContent = final;
+                    formulaEl.textContent = final;
+                    elemento.classList.add('animate-bounce-slow');
+                    setTimeout(() => elemento.classList.remove('animate-bounce-slow'), 500);
+                }
+            }
+            girar();
+        }
+
+        function girarInfeccion() {
+            const colorEl = document.getElementById('colorInfeccion');
+            const puntosEl = document.getElementById('puntosInfeccion');
+            const formulaEl = document.getElementById('formulaInfeccion');
+            const puntosValores = ['10', '15', '20'];
+            
+            let contador = 0;
+            const maxGiros = config.girosSecundario;
+            let velocidad = config.velocidadSecundario;
+            
+            function girar() {
+                if (contador < maxGiros) {
+                    const esRoja = Math.random() < 0.5;
+                    colorEl.innerHTML = esRoja ? '<i class="fa-solid fa-heart text-red-500 text-3xl"></i>' : '<i class="fa-solid fa-heart text-gray-700 text-3xl"></i>';
+                    puntosEl.textContent = puntosValores[Math.floor(Math.random() * puntosValores.length)];
+                    puntosEl.classList.remove('animate-bounce-slow');
+                    contador++;
+                    velocidad += contador * 4;
+                    setTimeout(girar, velocidad);
+                } else {
+                    const esRoja = Math.random() < 0.5;
+                    const puntosFinal = puntosValores[Math.floor(Math.random() * puntosValores.length)];
+                    colorEl.innerHTML = esRoja ? '<i class="fa-solid fa-heart text-red-500 text-3xl"></i>' : '<i class="fa-solid fa-heart text-gray-700 text-3xl"></i>';
+                    puntosEl.textContent = puntosFinal;
+                    formulaEl.textContent = puntosFinal;
+                    puntosEl.classList.add('animate-bounce-slow');
+                    setTimeout(() => puntosEl.classList.remove('animate-bounce-slow'), 500);
+                }
+            }
+            girar();
+        }
+
+        function openConfigModal() {
+            document.getElementById('configVelocidadSorteo').value = config.velocidadSorteo;
+            document.getElementById('configGirosSorteo').value = config.girosSorteo;
+            document.getElementById('configVelocidadSecundario').value = config.velocidadSecundario;
+            document.getElementById('configGirosSecundario').value = config.girosSecundario;
+            document.getElementById('configModal').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function guardarConfig() {
+            config.velocidadSorteo = parseInt(document.getElementById('configVelocidadSorteo').value) || 50;
+            config.girosSorteo = parseInt(document.getElementById('configGirosSorteo').value) || 20;
+            config.velocidadSecundario = parseInt(document.getElementById('configVelocidadSecundario').value) || 40;
+            config.girosSecundario = parseInt(document.getElementById('configGirosSecundario').value) || 15;
+            closeAllModals();
+        }
+
+        function openRankingModal() {
+            document.getElementById('rankingModal').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function openInfoModal() {
+            document.getElementById('infoModal').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function closeAllModals() {
+            document.getElementById('rankingModal').classList.add('hidden');
+            document.getElementById('infoModal').classList.add('hidden');
+            document.getElementById('configModal').classList.add('hidden');
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
