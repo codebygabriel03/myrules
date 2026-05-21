@@ -102,6 +102,13 @@
                             <i class="fa-solid fa-calculator text-green-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
                             <span>Contador</span>
                         </a>
+
+                        <a href="vista/minijuegos.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-gamepad text-amber-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Minijuegos</span>
+                        </a>
                     </nav>
 
                     <!-- Estado / Usuario -->
@@ -146,6 +153,12 @@
                         <i class="fa-solid fa-calculator text-green-400"></i>
                         <span>Contador de Puntos</span>
                     </a>
+                    <a href="vista/minijuegos.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-gamepad text-amber-400"></i>
+                        <span>Minijuegos Poker</span>
+                    </a>
                 </div>
             </div>
         </header>
@@ -159,7 +172,7 @@
                     <div class="inline-flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full text-xs font-mono text-gray-400 mb-6 
                                 border border-white/5">
                         <span class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
-                        Panel Personal v1.0
+                        Panel Personal v2.0
                     </div>
                     
                     <h1 class="font-title font-bold text-4xl sm:text-5xl lg:text-7xl leading-tight mb-6">
@@ -175,7 +188,7 @@
                 </div>
 
                 <!-- Tarjetas de Acceso Rápido -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 max-w-5xl mx-auto">
                     
                     <!-- Ruleta Rusa -->
                     <a href="vista/ruleta.html" 
@@ -194,7 +207,7 @@
                         </div>
                     </a>
 
-                    <!-- Blackjack - Control de Saldo -->
+                    <!-- Blackjack -->
                     <a href="vista/apuestas.html" 
                        class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
                               hover:border-amber-500/30 transition-all duration-300 hover:-translate-y-1
@@ -211,7 +224,7 @@
                         </div>
                     </a>
 
-                    <!-- Sorteador de Equipos -->
+                    <!-- Sorteador -->
                     <a href="vista/sorteador.html" 
                        class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
                               hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1
@@ -228,7 +241,7 @@
                         </div>
                     </a>
 
-                    <!-- Contador de Puntos -->
+                    <!-- Contador -->
                     <a href="vista/contador.html" 
                        class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
                               hover:border-green-500/30 transition-all duration-300 hover:-translate-y-1
@@ -244,10 +257,27 @@
                             <p class="text-gray-500 text-sm">Contador de puntos</p>
                         </div>
                     </a>
+
+                    <!-- Minijuegos Poker - NUEVO -->
+                    <a href="vista/minijuegos.html" 
+                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
+                              hover:border-amber-500/30 transition-all duration-300 hover:-translate-y-1
+                              hover:shadow-2xl hover:shadow-amber-500/5">
+                        <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent rounded-2xl opacity-0 
+                                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4
+                                        group-hover:bg-amber-500/20 transition-all duration-300">
+                                <i class="fa-solid fa-gamepad text-2xl text-amber-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg mb-2">Minijuegos</h3>
+                            <p class="text-gray-500 text-sm">Poker - Sorteo de modos</p>
+                        </div>
+                    </a>
                 </div>
 
                 <!-- Descripciones detalladas -->
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-5xl mx-auto text-left">
                     <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <i class="fa-solid fa-skull text-red-400 text-xs"></i>
@@ -260,21 +290,28 @@
                             <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
                             <span class="font-mono text-xs text-amber-400">/vista/apuestas.html</span>
                         </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Control manual del saldo de cada jugador durante partidas de blackjack. Suma o resta fichas.</p>
+                        <p class="text-gray-500 text-xs leading-relaxed">Control manual del saldo de cada jugador durante partidas de blackjack.</p>
                     </div>
                     <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <i class="fa-solid fa-people-group text-purple-400 text-xs"></i>
                             <span class="font-mono text-xs text-purple-400">/vista/sorteador.html</span>
                         </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Distribuye jugadores en equipos de forma aleatoria. Perfecto para armar partidas equilibradas.</p>
+                        <p class="text-gray-500 text-xs leading-relaxed">Distribuye jugadores en equipos de forma aleatoria.</p>
                     </div>
                     <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <i class="fa-solid fa-calculator text-green-400 text-xs"></i>
                             <span class="font-mono text-xs text-green-400">/vista/contador.html</span>
                         </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Contador de puntos interactivo. Lleva el registro de puntuaciones para cualquier juego o actividad.</p>
+                        <p class="text-gray-500 text-xs leading-relaxed">Contador de puntos interactivo para cualquier juego o actividad.</p>
+                    </div>
+                    <div class="bg-white/[0.02] border border-amber-500/20 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-gamepad text-amber-400 text-xs"></i>
+                            <span class="font-mono text-xs text-amber-400">/vista/minijuegos.html</span>
+                        </div>
+                        <p class="text-gray-500 text-xs leading-relaxed">Minijuegos Poker: sorteo de modos de juego con reglas especiales.</p>
                     </div>
                 </div>
             </div>
