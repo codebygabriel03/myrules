@@ -117,28 +117,30 @@
                     <p class="text-gray-500 text-xs mt-1">Apuesta mín: 10 | Máx: 25% del saldo | Multiplicador: X1, X2, X3, X4, X5</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-blue-400 mb-1"><i class="fa-solid fa-bolt mr-1"></i> 05. RACHA</h4>
-                    <p class="text-gray-400 leading-relaxed">Un jugador deberá ganar al menos 3 rondas consecutivas. Puntos = puntos base × número de rachas.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 20 o 25</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-gray-400 mb-1"><i class="fa-solid fa-theater-masks mr-1"></i> 06. IMPOSTOR</h4>
-                    <p class="text-gray-400 leading-relaxed">El ganador roba puntos de los derrotados. Cantidad = puntos base × (11 − ranking de la jugada).</p>
+                    <h4 class="font-semibold text-gray-400 mb-1"><i class="fa-solid fa-theater-masks mr-1"></i> 05. IMPOSTOR</h4>
+                    <p class="text-gray-400 leading-relaxed">El ganador roba puntos de los derrotados.</p>
+                    <p class="text-gray-400 leading-relaxed">Puntos = puntos base × (11 − RK).</p>
                     <p class="text-gray-500 text-xs mt-1">Puntos base: 5, 10 o 15</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-purple-400 mb-1"><i class="fa-solid fa-skull mr-1"></i> 07. EXTERMINIO</h4>
-                    <p class="text-gray-400 leading-relaxed">Todos pierden puntos obligatoriamente. Puntos perdidos = puntos base × ranking de la jugada.</p>
+                    <h4 class="font-semibold text-purple-400 mb-1"><i class="fa-solid fa-skull mr-1"></i> 06. EXTERMINIO</h4>
+                    <p class="text-gray-400 leading-relaxed">Todos pierden puntos obligatoriamente.</p>
+                    <p class="text-gray-400 leading-relaxed">Puntos perdidos = puntos base × RK.</p>
                     <p class="text-gray-500 text-xs mt-1">Puntos base: -10, -15 o -20</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-biohazard mr-1"></i> 08. INFECCIÓN</h4>
-                    <p class="text-gray-400 leading-relaxed">Se sorteará el color de las cartas infectadas. Los jugadores deberán robar de a dos o más cartas del mazo. Las cartas descartadas no podrán ser usadas. Ganador: recibe puntos positivos, perdedores: negativos. Puntos = puntos base × cartas infectadas de todo el juego.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 15 o 20</p>
+                    <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-biohazard mr-1"></i> 07. INFECCIÓN</h4>
+                    <p class="text-gray-400 leading-relaxed">Rondas normales. Cada perdedor se lleva 1 virus. El ganador cura todos los virus que posea. En cuanto alguien junta 3 virus (muere), se acaba el juego. Los jugadores que sigan vivos obtienen los puntos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 30, 35 o 40</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-red-500 mb-1"><i class="fa-solid fa-droplet mr-1"></i> 08. MASACRE</h4>
+                    <p class="text-gray-400 leading-relaxed">Rondas normales. Cada jugador empieza con 5 vidas. El ganador roba 1 vida a quien quiera. El peor RK de la ronda debe donar 1 vida al bote. Quien muere (0 vidas) se lleva puntos negativos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 45, 50 o 55</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-yin-yang mr-1"></i> 09. KARMA</h4>
-                    <p class="text-gray-400 leading-relaxed">El ganador de cada ronda elige a un jugador para darle 1 punto de KARMA. Al juntar 3 KARMA, si ganas una ronda obtienes el triple de puntos y los demás pierden puntos base. Pero si llegas a 4 KARMA, pierdes el doble de puntos automáticamente.</p>
+                    <p class="text-gray-400 leading-relaxed">El ganador de cada ronda elige a un jugador para darle 1 punto de KARMA. Al juntar 3 KARMA, si ganas una ronda obtienes el triple de puntos y los demás pierden puntos base. Pero si llegas a 4 KARMA, pierdes el triple de puntos automáticamente y los demás ganan puntos base.</p>
                     <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 20 o 30</p>
                 </div>
                 <div>
@@ -229,10 +231,10 @@
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-hat-wizard text-amber-400 mr-2 text-xs"></i>PASCUA</span><span id="countPascua" class="font-mono font-bold text-base text-amber-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-clover text-green-400 mr-2 text-xs"></i>SUERTE</span><span id="countSuerte" class="font-mono font-bold text-base text-green-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-coins text-amber-400 mr-2 text-xs"></i>APUESTA</span><span id="countApuesta" class="font-mono font-bold text-base text-amber-400">0</span></p>
-                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-bolt text-blue-400 mr-2 text-xs"></i>RACHA</span><span id="countRacha" class="font-mono font-bold text-base text-blue-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-theater-masks text-gray-400 mr-2 text-xs"></i>IMPOSTOR</span><span id="countImpostor" class="font-mono font-bold text-base text-gray-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-skull text-purple-400 mr-2 text-xs"></i>EXTERMINIO</span><span id="countExterminio" class="font-mono font-bold text-base text-purple-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-biohazard text-emerald-400 mr-2 text-xs"></i>INFECCIÓN</span><span id="countInfeccion" class="font-mono font-bold text-base text-emerald-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-droplet text-red-500 mr-2 text-xs"></i>MASACRE</span><span id="countMasacre" class="font-mono font-bold text-base text-red-500">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-yin-yang text-amber-400 mr-2 text-xs"></i>KARMA</span><span id="countKarma" class="font-mono font-bold text-base text-amber-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-tornado text-teal-400 mr-2 text-xs"></i>CAOS</span><span id="countCaos" class="font-mono font-bold text-base text-teal-400">0</span></p>
                         </div>
@@ -356,22 +358,22 @@
         // ==================== LÓGICA DEL JUEGO ====================
         let config = { velocidadSorteo: 50, girosSorteo: 20, velocidadSecundario: 40, girosSecundario: 15 };
 
-        const juegos = ['ELIMINACIÓN', 'PASCUA', 'SUERTE', 'APUESTA', 'RACHA', 'IMPOSTOR', 'EXTERMINIO', 'INFECCIÓN', 'KARMA', 'CAOS'];
+        const juegos = ['ELIMINACIÓN', 'PASCUA', 'SUERTE', 'APUESTA', 'IMPOSTOR', 'EXTERMINIO', 'INFECCIÓN', 'MASACRE', 'KARMA', 'CAOS'];
         
         const iconosHTML = [
             '<i class="fa-solid fa-fire text-red-400 text-6xl"></i>',
             '<i class="fa-solid fa-hat-wizard text-amber-400 text-6xl"></i>',
             '<i class="fa-solid fa-clover text-green-400 text-6xl"></i>',
             '<i class="fa-solid fa-coins text-amber-400 text-6xl"></i>',
-            '<i class="fa-solid fa-bolt text-blue-400 text-6xl"></i>',
             '<i class="fa-solid fa-theater-masks text-gray-400 text-6xl"></i>',
             '<i class="fa-solid fa-skull text-purple-400 text-6xl"></i>',
             '<i class="fa-solid fa-biohazard text-emerald-400 text-6xl"></i>',
+            '<i class="fa-solid fa-droplet text-red-500 text-6xl"></i>',
             '<i class="fa-solid fa-yin-yang text-amber-400 text-6xl"></i>',
             '<i class="fa-solid fa-tornado text-teal-400 text-6xl"></i>'
         ];
         
-        const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countRacha', 'countImpostor', 'countExterminio', 'countInfeccion', 'countKarma', 'countCaos'];
+        const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countImpostor', 'countExterminio', 'countInfeccion', 'countMasacre', 'countKarma', 'countCaos'];
         
         let juegoSeleccionado = null, juegoAceptado = null, ultimoJuegoAceptado = null, girando = false, puntosSuerteSorteados = null;
 
@@ -447,11 +449,11 @@
                 case 'PASCUA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear jugada objetivo</p><div id="resultadoPascua" class="font-mono font-bold text-xl text-amber-400 mb-4">--</div><button onclick="girarPascua()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'SUERTE': if (!puntosSuerteSorteados || puntosSuerteSorteados.modo !== modo) { const pp = [10,15,20,25,30]; puntosSuerteSorteados = { modo, puntos: pp[Math.floor(Math.random()*pp.length)] }; } contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Lanzar dado</p><div class="flex items-center justify-center gap-4 mb-4"><div id="dadoContenedor" class="w-20 h-20 rounded-2xl bg-white/5 border-2 border-white/10 flex items-center justify-center transition-all duration-200"><span id="dadoResultado" class="font-mono font-bold text-5xl text-white">?</span></div></div><p class="text-sm text-green-400 mb-3">Puntos: <span id="puntosSuerte" class="font-mono font-bold">${puntosSuerteSorteados.puntos}</span></p><button onclick="girarDado()" class="px-6 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 font-semibold hover:bg-green-500/20 transition-colors"><i class="fa-solid fa-dice mr-2"></i>Lanzar dado</button></div>`; break;
                 case 'APUESTA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear multiplicador</p><div id="resultadoApuesta" class="font-mono font-bold text-4xl text-amber-400 mb-4">--</div><button onclick="girarApuesta()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
-                case 'RACHA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoRacha" class="font-mono font-bold text-4xl text-blue-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaRacha" class="text-blue-400 font-bold">--</span> × racha</p><button onclick="girarRacha()" class="px-6 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 font-semibold hover:bg-blue-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'IMPOSTOR': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoImpostor" class="font-mono font-bold text-4xl text-gray-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaImpostor" class="text-gray-400 font-bold">--</span> × (11 − <span class="text-amber-400 font-bold">RK</span>)</p><button onclick="girarImpostor()" class="px-6 py-2 bg-gray-500/10 border border-gray-500/20 rounded-xl text-gray-400 font-semibold hover:bg-gray-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'EXTERMINIO': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos a perder</p><div id="resultadoExterminio" class="font-mono font-bold text-4xl text-purple-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaExterminio" class="text-purple-400 font-bold">--</span> × <span class="text-amber-400 font-bold">RK</span></p><button onclick="girarExterminio()" class="px-6 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 font-semibold hover:bg-purple-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
-                case 'INFECCIÓN': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear color y puntos base</p><div class="flex gap-4 justify-center items-center mb-3"><div class="text-center"><p class="text-xs text-gray-500 mb-1">Color</p><div id="colorInfeccion" class="flex items-center justify-center h-14"><i class="fa-solid fa-circle-half-stroke text-3xl text-gray-500"></i></div></div><div class="text-center"><p class="text-xs text-gray-500 mb-1">Puntos</p><div id="puntosInfeccion" class="font-mono font-bold text-4xl text-emerald-400 leading-[3.5rem]">--</div></div></div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaInfeccion" class="text-emerald-400 font-bold">--</span> × cartas infectadas</p><button onclick="girarInfeccion()" class="px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
-                case 'KARMA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoKarma" class="font-mono font-bold text-4xl text-amber-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">3 KARMA = <span class="text-amber-400 font-bold">triple</span> | 4 KARMA = <span class="text-red-400 font-bold">doble negativo</span></p><button onclick="girarKarma()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
+                case 'INFECCIÓN': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoInfeccion" class="font-mono font-bold text-4xl text-emerald-400 mb-4">--</div><button onclick="girarInfeccion()" class="px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
+                case 'MASACRE': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoMasacre" class="font-mono font-bold text-4xl text-red-500 mb-4">--</div><button onclick="girarMasacre()" class="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 font-semibold hover:bg-red-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
+                case 'KARMA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoKarma" class="font-mono font-bold text-4xl text-amber-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">3 KARMA + juego ganado = <span class="text-amber-400 font-bold">triplica</span> | 4 KARMA = <span class="text-red-400 font-bold">doble negativo</span></p><button onclick="girarKarma()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'CAOS': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoCaos" class="font-mono font-bold text-4xl text-teal-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">Ganar = <span class="text-teal-400 font-bold">doble</span> | Perder = <span class="text-red-400 font-bold">triple negativo</span></p><button onclick="girarCaos()" class="px-6 py-2 bg-teal-500/10 border border-teal-500/20 rounded-xl text-teal-400 font-semibold hover:bg-teal-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
             }
         }
@@ -485,34 +487,10 @@
         }
         
         function girarApuesta() { animarResultado('resultadoApuesta', ['X1','X2','X3','X4','X5']); }
-        function girarRacha() { const v=['10','20','25'], el=document.getElementById('resultadoRacha'), fe=document.getElementById('formulaRacha'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
         function girarImpostor() { const v=['5','10','15'], el=document.getElementById('resultadoImpostor'), fe=document.getElementById('formulaImpostor'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
         function girarExterminio() { const v=['-10','-15','-20'], el=document.getElementById('resultadoExterminio'), fe=document.getElementById('formulaExterminio'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
-        
-        function girarInfeccion() { 
-            audio.init();
-            const ce=document.getElementById('colorInfeccion'), pe=document.getElementById('puntosInfeccion'), fe=document.getElementById('formulaInfeccion'), pv=['10','15','20']; 
-            let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; 
-            function g(){ 
-                if(c<mg){ 
-                    ce.innerHTML = Math.random()<0.5 ? '<i class="fa-solid fa-heart text-red-500 text-3xl"></i>' : '<i class="fa-solid fa-heart text-gray-700 text-3xl"></i>'; 
-                    pe.textContent=pv[Math.floor(Math.random()*pv.length)]; 
-                    pe.classList.remove('animate-bounce-slow'); 
-                    audio.playTick(0.05);
-                    c++; vel+=c*4; 
-                    setTimeout(g,vel); 
-                } else { 
-                    const er=Math.random()<0.5, pf=pv[Math.floor(Math.random()*pv.length)]; 
-                    ce.innerHTML = er ? '<i class="fa-solid fa-heart text-red-500 text-3xl"></i>' : '<i class="fa-solid fa-heart text-gray-700 text-3xl"></i>'; 
-                    pe.textContent=pf; fe.textContent=pf; 
-                    pe.classList.add('animate-bounce-slow'); 
-                    audio.playClick(0.1);
-                    setTimeout(()=>pe.classList.remove('animate-bounce-slow'),500); 
-                } 
-            } 
-            g(); 
-        }
-        
+        function girarInfeccion() { animarResultado('resultadoInfeccion', ['30','35','40']); }
+        function girarMasacre() { animarResultado('resultadoMasacre', ['-45','-50','-55']); }
         function girarKarma() { animarResultado('resultadoKarma', ['10','20','30']); }
         function girarCaos() { animarResultado('resultadoCaos', ['20','25','30']); }
 
