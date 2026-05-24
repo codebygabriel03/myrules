@@ -139,12 +139,22 @@
                     <p class="text-gray-500 text-xs mt-1">Puntos base: 45, 50 o 55</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-yin-yang mr-1"></i> 09. KARMA</h4>
+                    <h4 class="font-semibold text-sky-400 mb-1"><i class="fa-solid fa-handshake mr-1"></i> 09. COMUNIDAD</h4>
+                    <p class="text-gray-400 leading-relaxed">3 cartas en mano + 2 cartas comunitarias en mesa. El que forme la jugada más alta obtiene ×3 puntos, la jugada más baja pierde ×2 puntos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 15, 20 o 25</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-orange-400 mb-1"><i class="fa-solid fa-scale-balanced mr-1"></i> 10. AVARICIA</h4>
+                    <p class="text-gray-400 leading-relaxed">Solo jugadas TRÍO o POKER. Si todos hacen TRÍO: reciben ×2 puntos. Si uno traiciona con POKER: recibe ×3 puntos. Pero si hay más de un traidor: pierden ×3 puntos. Si alguien hace otra jugada fuera de TRÍO o POKER: todos pierden ×4 puntos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 20, 25 o 30</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-yin-yang mr-1"></i> 11. KARMA</h4>
                     <p class="text-gray-400 leading-relaxed">El ganador de cada ronda elige a un jugador para darle 1 punto de KARMA. Al juntar 3 KARMA, si ganas una ronda obtienes el triple de puntos y los demás pierden puntos base. Pero si llegas a 4 KARMA, pierdes el triple de puntos automáticamente y los demás ganan puntos base.</p>
                     <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 20 o 30</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-teal-400 mb-1"><i class="fa-solid fa-tornado mr-1"></i> 10. CAOS</h4>
+                    <h4 class="font-semibold text-teal-400 mb-1"><i class="fa-solid fa-tornado mr-1"></i> 12. CAOS</h4>
                     <p class="text-gray-400 leading-relaxed">Ronda normal. Si robas una carta y no terminas el juego, cuatro de tus cartas se intercambian en el sentido de rotación (tus 4 cartas pasan al siguiente jugador y recibes las del anterior). Si terminas el juego y ganas: doble de puntos. Si terminas y pierdes: triple de puntos negativos.</p>
                     <p class="text-gray-500 text-xs mt-1">Puntos base: 20, 25 o 30</p>
                 </div>
@@ -235,6 +245,8 @@
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-skull text-purple-400 mr-2 text-xs"></i>EXTERMINIO</span><span id="countExterminio" class="font-mono font-bold text-base text-purple-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-biohazard text-emerald-400 mr-2 text-xs"></i>INFECCIÓN</span><span id="countInfeccion" class="font-mono font-bold text-base text-emerald-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-droplet text-red-500 mr-2 text-xs"></i>MASACRE</span><span id="countMasacre" class="font-mono font-bold text-base text-red-500">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-handshake text-sky-400 mr-2 text-xs"></i>COMUNIDAD</span><span id="countComunidad" class="font-mono font-bold text-base text-sky-400">0</span></p>
+                            <p class="flex items-center justify-between"><span><i class="fa-solid fa-scale-balanced text-orange-400 mr-2 text-xs"></i>AVARICIA</span><span id="countAvaricia" class="font-mono font-bold text-base text-orange-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-yin-yang text-amber-400 mr-2 text-xs"></i>KARMA</span><span id="countKarma" class="font-mono font-bold text-base text-amber-400">0</span></p>
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-tornado text-teal-400 mr-2 text-xs"></i>CAOS</span><span id="countCaos" class="font-mono font-bold text-base text-teal-400">0</span></p>
                         </div>
@@ -358,7 +370,7 @@
         // ==================== LÓGICA DEL JUEGO ====================
         let config = { velocidadSorteo: 50, girosSorteo: 20, velocidadSecundario: 40, girosSecundario: 15 };
 
-        const juegos = ['ELIMINACIÓN', 'PASCUA', 'SUERTE', 'APUESTA', 'IMPOSTOR', 'EXTERMINIO', 'INFECCIÓN', 'MASACRE', 'KARMA', 'CAOS'];
+        const juegos = ['ELIMINACIÓN', 'PASCUA', 'SUERTE', 'APUESTA', 'IMPOSTOR', 'EXTERMINIO', 'INFECCIÓN', 'MASACRE', 'COMUNIDAD', 'AVARICIA', 'KARMA', 'CAOS'];
         
         const iconosHTML = [
             '<i class="fa-solid fa-fire text-red-400 text-6xl"></i>',
@@ -369,11 +381,13 @@
             '<i class="fa-solid fa-skull text-purple-400 text-6xl"></i>',
             '<i class="fa-solid fa-biohazard text-emerald-400 text-6xl"></i>',
             '<i class="fa-solid fa-droplet text-red-500 text-6xl"></i>',
+            '<i class="fa-solid fa-handshake text-sky-400 text-6xl"></i>',
+            '<i class="fa-solid fa-scale-balanced text-orange-400 text-6xl"></i>',
             '<i class="fa-solid fa-yin-yang text-amber-400 text-6xl"></i>',
             '<i class="fa-solid fa-tornado text-teal-400 text-6xl"></i>'
         ];
         
-        const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countImpostor', 'countExterminio', 'countInfeccion', 'countMasacre', 'countKarma', 'countCaos'];
+        const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countImpostor', 'countExterminio', 'countInfeccion', 'countMasacre', 'countComunidad', 'countAvaricia', 'countKarma', 'countCaos'];
         
         let juegoSeleccionado = null, juegoAceptado = null, ultimoJuegoAceptado = null, girando = false, puntosSuerteSorteados = null;
 
@@ -453,6 +467,8 @@
                 case 'EXTERMINIO': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos a perder</p><div id="resultadoExterminio" class="font-mono font-bold text-4xl text-purple-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaExterminio" class="text-purple-400 font-bold">--</span> × <span class="text-amber-400 font-bold">RK</span></p><button onclick="girarExterminio()" class="px-6 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 font-semibold hover:bg-purple-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'INFECCIÓN': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoInfeccion" class="font-mono font-bold text-4xl text-emerald-400 mb-4">--</div><button onclick="girarInfeccion()" class="px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'MASACRE': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoMasacre" class="font-mono font-bold text-4xl text-red-500 mb-4">--</div><button onclick="girarMasacre()" class="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 font-semibold hover:bg-red-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
+                case 'COMUNIDAD': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoComunidad" class="font-mono font-bold text-4xl text-sky-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">Mejor jugada = <span class="text-sky-400 font-bold">×3</span> | Peor jugada = <span class="text-red-400 font-bold">-×2</span></p><button onclick="girarComunidad()" class="px-6 py-2 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400 font-semibold hover:bg-sky-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
+                case 'AVARICIA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoAvaricia" class="font-mono font-bold text-4xl text-orange-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">Todos TRÍO = <span class="text-orange-400 font-bold">×2</span> | 1 POKER = <span class="text-orange-400 font-bold">×3</span> | 2+ POKER = <span class="text-red-400 font-bold">-×3</span> | Otra = <span class="text-red-400 font-bold">-×4</span></p><button onclick="girarAvaricia()" class="px-6 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 font-semibold hover:bg-orange-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'KARMA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoKarma" class="font-mono font-bold text-4xl text-amber-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">3 KARMA + juego ganado = <span class="text-amber-400 font-bold">triplica</span> | 4 KARMA = <span class="text-red-400 font-bold">doble negativo</span></p><button onclick="girarKarma()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'CAOS': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoCaos" class="font-mono font-bold text-4xl text-teal-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3">Ganar = <span class="text-teal-400 font-bold">doble</span> | Perder = <span class="text-red-400 font-bold">triple negativo</span></p><button onclick="girarCaos()" class="px-6 py-2 bg-teal-500/10 border border-teal-500/20 rounded-xl text-teal-400 font-semibold hover:bg-teal-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
             }
@@ -490,7 +506,9 @@
         function girarImpostor() { const v=['5','10','15'], el=document.getElementById('resultadoImpostor'), fe=document.getElementById('formulaImpostor'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
         function girarExterminio() { const v=['-10','-15','-20'], el=document.getElementById('resultadoExterminio'), fe=document.getElementById('formulaExterminio'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
         function girarInfeccion() { animarResultado('resultadoInfeccion', ['30','35','40']); }
-        function girarMasacre() { animarResultado('resultadoMasacre', ['-45','-50','-55']); }
+        function girarMasacre() { animarResultado('resultadoMasacre', ['45','50','55']); }
+        function girarComunidad() { animarResultado('resultadoComunidad', ['15','20','25']); }
+        function girarAvaricia() { animarResultado('resultadoAvaricia', ['20','25','30']); }
         function girarKarma() { animarResultado('resultadoKarma', ['10','20','30']); }
         function girarCaos() { animarResultado('resultadoCaos', ['20','25','30']); }
 
