@@ -162,16 +162,35 @@
         </div>
 
         <!-- Modal Configuración -->
-        <div id="configModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-sm bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
-            <div class="flex items-center justify-between p-4 border-b border-white/5">
+        <div id="configModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-md max-h-[85vh] overflow-y-auto bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="sticky top-0 bg-bg-card border-b border-white/5 p-4 rounded-t-2xl flex items-center justify-between z-10">
                 <h3 class="font-title font-bold text-lg"><i class="fa-solid fa-gear text-gray-400 mr-2"></i>Configuración</h3>
                 <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 space-y-4">
-                <div><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteo principal (ms)</label><input type="number" id="configVelocidadSorteo" value="50" min="20" max="200" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
-                <div><label class="block text-xs text-gray-400 mb-1.5">Giros sorteo principal</label><input type="number" id="configGirosSorteo" value="20" min="5" max="40" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
-                <div><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteos secundarios (ms)</label><input type="number" id="configVelocidadSecundario" value="40" min="15" max="150" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
-                <div><label class="block text-xs text-gray-400 mb-1.5">Giros sorteos secundarios</label><input type="number" id="configGirosSecundario" value="15" min="5" max="30" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
+                <div class="border-b border-white/10 pb-4">
+                    <h4 class="font-semibold text-sm text-amber-400 mb-3"><i class="fa-solid fa-sliders-h mr-2"></i>Animaciones</h4>
+                    <div><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteo principal (ms)</label><input type="number" id="configVelocidadSorteo" value="50" min="20" max="200" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
+                    <div class="mt-2"><label class="block text-xs text-gray-400 mb-1.5">Giros sorteo principal</label><input type="number" id="configGirosSorteo" value="20" min="5" max="40" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
+                    <div class="mt-2"><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteos secundarios (ms)</label><input type="number" id="configVelocidadSecundario" value="40" min="15" max="150" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
+                    <div class="mt-2"><label class="block text-xs text-gray-400 mb-1.5">Giros sorteos secundarios</label><input type="number" id="configGirosSecundario" value="15" min="5" max="30" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-sm text-purple-400 mb-3"><i class="fa-solid fa-ban mr-2"></i>Control de Repetición</h4>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Veces que puede repetirse cada juego</label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="configRepeticion" min="1" max="10" value="3" class="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                            <span id="repeticionValor" class="font-mono font-bold text-lg text-purple-400 w-12 text-center">3</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+                            Valor 1 = No repite hasta jugar todos | Valor 10 = Repite hasta 10 veces
+                        </p>
+                    </div>
+                </div>
+
                 <button onclick="guardarConfig()" class="w-full h-11 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold text-sm hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar</button>
             </div>
         </div>
@@ -367,8 +386,14 @@
 
         const audio = new AudioSystem();
 
-        // ==================== LÓGICA DEL JUEGO ====================
-        let config = { velocidadSorteo: 50, girosSorteo: 20, velocidadSecundario: 40, girosSecundario: 15 };
+        // ==================== LÓGICA DEL JUEGO CON CONTROL DE REPETICIÓN ====================
+        let config = { 
+            velocidadSorteo: 50, 
+            girosSorteo: 20, 
+            velocidadSecundario: 40, 
+            girosSecundario: 15,
+            maxRepeticion: 3
+        };
 
         const juegos = ['ELIMINACIÓN', 'PASCUA', 'SUERTE', 'APUESTA', 'IMPOSTOR', 'EXTERMINIO', 'INFECCIÓN', 'MASACRE', 'COMUNIDAD', 'AVARICIA', 'KARMA', 'CAOS'];
         
@@ -390,6 +415,53 @@
         const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countImpostor', 'countExterminio', 'countInfeccion', 'countMasacre', 'countComunidad', 'countAvaricia', 'countKarma', 'countCaos'];
         
         let juegoSeleccionado = null, juegoAceptado = null, ultimoJuegoAceptado = null, girando = false, puntosSuerteSorteados = null;
+        
+        let historialJuegos = [];
+        let conteoRepeticiones = {};
+
+        function inicializarConteoRepeticiones() {
+            juegos.forEach(juego => { conteoRepeticiones[juego] = 0; });
+        }
+        inicializarConteoRepeticiones();
+
+        function getJuegosDisponibles() {
+            const disponibles = juegos.filter(juego => conteoRepeticiones[juego] < config.maxRepeticion);
+            if (disponibles.length === 0) {
+                juegos.forEach(juego => { conteoRepeticiones[juego] = 0; });
+                return [...juegos];
+            }
+            return disponibles;
+        }
+
+        function guardarEstado() {
+            const estado = {
+                historialJuegos: historialJuegos,
+                conteoRepeticiones: conteoRepeticiones,
+                contadores: {}
+            };
+            countIds.forEach(id => {
+                estado.contadores[id] = document.getElementById(id).textContent;
+            });
+            localStorage.setItem('myRulesGameState', JSON.stringify(estado));
+        }
+
+        function cargarEstado() {
+            const guardado = localStorage.getItem('myRulesGameState');
+            if (guardado) {
+                try {
+                    const estado = JSON.parse(guardado);
+                    if (estado.historialJuegos) historialJuegos = estado.historialJuegos;
+                    if (estado.conteoRepeticiones) conteoRepeticiones = estado.conteoRepeticiones;
+                    if (estado.contadores) {
+                        countIds.forEach(id => {
+                            if (estado.contadores[id]) {
+                                document.getElementById(id).textContent = estado.contadores[id];
+                            }
+                        });
+                    }
+                } catch(e) { console.error("Error cargando estado:", e); }
+            }
+        }
 
         function girarSorteo() {
             if (girando) return;
@@ -399,23 +471,37 @@
             btnGirar.disabled = true; btnAceptar.disabled = true;
             document.getElementById('contenedor2Titulo').textContent = 'Detalle del Juego';
             document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-600 text-sm font-mono">Girando ruleta...</span>';
+            
+            const juegosDisponibles = getJuegosDisponibles();
+            
             let contador = 0, maxGiros = config.girosSorteo, velocidad = config.velocidadSorteo;
             
             function animarGiro() {
                 if (contador < maxGiros) {
-                    const index = contador % juegos.length;
-                    resultado.innerHTML = `<div class="text-center"><div class="mb-4">${iconosHTML[index]}</div><span class="font-title font-bold text-2xl text-white">${juegos[index]}</span></div>`;
+                    const index = contador % juegosDisponibles.length;
+                    const juegoActual = juegosDisponibles[index];
+                    const iconIndex = juegos.indexOf(juegoActual);
+                    resultado.innerHTML = `<div class="text-center"><div class="mb-4">${iconosHTML[iconIndex]}</div><span class="font-title font-bold text-2xl text-white">${juegoActual}</span></div>`;
                     audio.playTick(0.06);
                     contador++; velocidad += contador * 3;
                     setTimeout(animarGiro, velocidad);
                 } else {
                     let finalIndex;
-                    do { finalIndex = Math.floor(Math.random() * juegos.length); } while (juegos[finalIndex] === ultimoJuegoAceptado && juegos.length > 1);
-                    juegoSeleccionado = juegos[finalIndex];
-                    resultado.innerHTML = `<div class="text-center"><div class="mb-4">${iconosHTML[finalIndex]}</div><span class="font-title font-bold text-3xl bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">${juegoSeleccionado}</span></div>`;
+                    let juegoFinal;
+                    
+                    do {
+                        finalIndex = Math.floor(Math.random() * juegosDisponibles.length);
+                        juegoFinal = juegosDisponibles[finalIndex];
+                    } while (juegoFinal === ultimoJuegoAceptado && juegosDisponibles.length > 1);
+                    
+                    juegoSeleccionado = juegoFinal;
+                    const iconIndex = juegos.indexOf(juegoSeleccionado);
+                    const repeticionesRestantes = config.maxRepeticion - conteoRepeticiones[juegoSeleccionado];
+                    resultado.innerHTML = `<div class="text-center"><div class="mb-4">${iconosHTML[iconIndex]}</div><span class="font-title font-bold text-3xl bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">${juegoSeleccionado}</span><div class="text-xs text-gray-500 mt-3"><i class="fa-solid fa-chart-simple mr-1"></i> Puede aparecer ${repeticionesRestantes} veces más</div></div>`;
                     resultado.classList.add('animate-bounce-slow'); 
                     audio.playWin(0.12);
                     setTimeout(() => resultado.classList.remove('animate-bounce-slow'), 500);
+                    
                     btnGirar.disabled = false; btnAceptar.disabled = false; girando = false;
                 }
             }
@@ -426,8 +512,21 @@
             if (!juegoSeleccionado || girando) return;
             audio.playClick(0.08);
             const index = juegos.indexOf(juegoSeleccionado);
-            if (index !== -1) { const el = document.getElementById(countIds[index]); el.textContent = parseInt(el.textContent) + 1; el.classList.add('scale-125'); setTimeout(() => el.classList.remove('scale-125'), 200); }
-            juegoAceptado = juegoSeleccionado; ultimoJuegoAceptado = juegoSeleccionado; juegoSeleccionado = null;
+            if (index !== -1) { 
+                const el = document.getElementById(countIds[index]); 
+                el.textContent = parseInt(el.textContent) + 1; 
+                el.classList.add('scale-125'); 
+                setTimeout(() => el.classList.remove('scale-125'), 200); 
+            }
+            juegoAceptado = juegoSeleccionado; 
+            ultimoJuegoAceptado = juegoSeleccionado; 
+            
+            conteoRepeticiones[juegoSeleccionado]++;
+            historialJuegos.unshift(juegoSeleccionado);
+            if (historialJuegos.length > 10) historialJuegos.pop();
+            guardarEstado();
+            
+            juegoSeleccionado = null;
             document.getElementById('btnAceptar').disabled = true;
             actualizarContenedor2(juegoAceptado);
         }
@@ -458,6 +557,8 @@
         function actualizarContenedor2(modo) {
             const titulo = document.getElementById('contenedor2Titulo'), contenido = document.getElementById('contenedor2Contenido');
             titulo.textContent = 'Detalle: ' + modo;
+            
+            // Ya no se muestra el mensaje de repeticiones aquí, solo el contenido del juego
             switch(modo) {
                 case 'ELIMINACIÓN': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Puntos a perder</p><div id="resultadoEliminacion" class="font-mono font-bold text-4xl text-red-400 mb-4">--</div><button onclick="girarEliminacion()" class="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 font-semibold hover:bg-red-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'PASCUA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear jugada objetivo</p><div id="resultadoPascua" class="font-mono font-bold text-xl text-amber-400 mb-4">--</div><button onclick="girarPascua()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
@@ -512,8 +613,42 @@
         function girarKarma() { animarResultado('resultadoKarma', ['10','20','30']); }
         function girarCaos() { animarResultado('resultadoCaos', ['20','25','30']); }
 
-        function openConfigModal() { document.getElementById('configVelocidadSorteo').value=config.velocidadSorteo; document.getElementById('configGirosSorteo').value=config.girosSorteo; document.getElementById('configVelocidadSecundario').value=config.velocidadSecundario; document.getElementById('configGirosSecundario').value=config.girosSecundario; document.getElementById('configModal').classList.remove('hidden'); document.getElementById('modalOverlay').classList.remove('hidden'); }
-        function guardarConfig() { config.velocidadSorteo=parseInt(document.getElementById('configVelocidadSorteo').value)||50; config.girosSorteo=parseInt(document.getElementById('configGirosSorteo').value)||20; config.velocidadSecundario=parseInt(document.getElementById('configVelocidadSecundario').value)||40; config.girosSecundario=parseInt(document.getElementById('configGirosSecundario').value)||15; closeAllModals(); }
+        function openConfigModal() { 
+            document.getElementById('configVelocidadSorteo').value = config.velocidadSorteo; 
+            document.getElementById('configGirosSorteo').value = config.girosSorteo; 
+            document.getElementById('configVelocidadSecundario').value = config.velocidadSecundario; 
+            document.getElementById('configGirosSecundario').value = config.girosSecundario; 
+            document.getElementById('configRepeticion').value = config.maxRepeticion;
+            document.getElementById('repeticionValor').textContent = config.maxRepeticion;
+            document.getElementById('configModal').classList.remove('hidden'); 
+            document.getElementById('modalOverlay').classList.remove('hidden'); 
+        }
+        
+        function guardarConfig() { 
+            config.velocidadSorteo = parseInt(document.getElementById('configVelocidadSorteo').value) || 50; 
+            config.girosSorteo = parseInt(document.getElementById('configGirosSorteo').value) || 20; 
+            config.velocidadSecundario = parseInt(document.getElementById('configVelocidadSecundario').value) || 40; 
+            config.girosSecundario = parseInt(document.getElementById('configGirosSecundario').value) || 15; 
+            const nuevaRepeticion = parseInt(document.getElementById('configRepeticion').value);
+            if (nuevaRepeticion !== config.maxRepeticion) {
+                config.maxRepeticion = nuevaRepeticion;
+                inicializarConteoRepeticiones();
+                historialJuegos = [];
+                guardarEstado();
+            }
+            closeAllModals(); 
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('configRepeticion');
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    document.getElementById('repeticionValor').textContent = e.target.value;
+                });
+            }
+            cargarEstado();
+        });
+        
         function openRankingModal() { document.getElementById('rankingModal').classList.remove('hidden'); document.getElementById('modalOverlay').classList.remove('hidden'); }
         function openInfoModal() { document.getElementById('infoModal').classList.remove('hidden'); document.getElementById('modalOverlay').classList.remove('hidden'); }
         function closeAllModals() { document.getElementById('rankingModal').classList.add('hidden'); document.getElementById('infoModal').classList.add('hidden'); document.getElementById('configModal').classList.add('hidden'); document.getElementById('modalOverlay').classList.add('hidden'); }
