@@ -96,6 +96,13 @@
                             <span>Sorteador</span>
                         </a>
 
+                        <a href="vista/stop.html" 
+                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
+                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                            <i class="fa-solid fa-hand text-red-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            <span>Stop</span>
+                        </a>
+
                         <a href="vista/contador.html" 
                            class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
                                   hover:text-white hover:bg-white/5 transition-all duration-200 group">
@@ -147,6 +154,12 @@
                         <i class="fa-solid fa-people-group text-purple-400"></i>
                         <span>Sorteador de Equipos</span>
                     </a>
+                    <a href="vista/stop.html" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
+                              hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <i class="fa-solid fa-hand text-red-400"></i>
+                        <span>Stop - Juego de Palabras</span>
+                    </a>
                     <a href="vista/contador.html" 
                        class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
                               hover:text-white hover:bg-white/5 transition-all duration-200">
@@ -188,7 +201,7 @@
                 </div>
 
                 <!-- Tarjetas de Acceso Rápido -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 max-w-5xl mx-auto">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 max-w-6xl mx-auto">
                     
                     <!-- Ruleta Rusa -->
                     <a href="vista/ruleta.html" 
@@ -241,6 +254,23 @@
                         </div>
                     </a>
 
+                    <!-- Stop - NUEVO -->
+                    <a href="vista/stop.html" 
+                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
+                              hover:border-red-500/30 transition-all duration-300 hover:-translate-y-1
+                              hover:shadow-2xl hover:shadow-red-500/5">
+                        <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent rounded-2xl opacity-0 
+                                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4
+                                        group-hover:bg-red-500/20 group-hover:animate-glow transition-all duration-300">
+                                <i class="fa-solid fa-hand text-2xl text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg mb-2">Stop</h3>
+                            <p class="text-gray-500 text-sm">Juego de palabras por turnos</p>
+                        </div>
+                    </a>
+
                     <!-- Contador -->
                     <a href="vista/contador.html" 
                        class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
@@ -258,7 +288,7 @@
                         </div>
                     </a>
 
-                    <!-- Minijuegos Poker - NUEVO -->
+                    <!-- Minijuegos Poker -->
                     <a href="vista/minijuegos.html" 
                        class="group relative bg-bg-card border border-white/5 rounded-2xl p-6 sm:p-8 
                               hover:border-amber-500/30 transition-all duration-300 hover:-translate-y-1
@@ -277,7 +307,7 @@
                 </div>
 
                 <!-- Descripciones detalladas -->
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-5xl mx-auto text-left">
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
                     <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <i class="fa-solid fa-skull text-red-400 text-xs"></i>
@@ -298,6 +328,13 @@
                             <span class="font-mono text-xs text-purple-400">/vista/sorteador.html</span>
                         </div>
                         <p class="text-gray-500 text-xs leading-relaxed">Distribuye jugadores en equipos de forma aleatoria.</p>
+                    </div>
+                    <div class="bg-white/[0.02] border border-red-500/20 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-hand text-red-400 text-xs"></i>
+                            <span class="font-mono text-xs text-red-400">/vista/stop.html</span>
+                        </div>
+                        <p class="text-gray-500 text-xs leading-relaxed">Juego de palabras por turnos. ¡Responde antes que se acabe el tiempo!</p>
                     </div>
                     <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
