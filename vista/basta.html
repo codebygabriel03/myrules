@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basta! - MyRules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+        }
+        
+        .dashboard {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .letter-cell {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            border: 1.5px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.03);
+            color: #cbd5e1;
+            position: relative;
+            user-select: none;
+        }
+        
+        .letter-cell:hover:not(.used):not(.disabled) {
+            background: rgba(34,197,94,0.15);
+            border-color: rgba(34,197,94,0.4);
+            color: #4ade80;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34,197,94,0.2);
+        }
+        
+        .letter-cell:active:not(.used):not(.disabled) {
+            transform: scale(0.9);
+        }
+        
+        .letter-cell.used {
+            background: rgba(239,68,68,0.2);
+            border-color: rgba(239,68,68,0.4);
+            color: #f87171;
+            text-decoration: line-through;
+            text-decoration-color: rgba(239,68,68,0.5);
+            text-decoration-thickness: 2px;
+            cursor: not-allowed;
+            opacity: 0.5;
+            animation: letter-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .letter-cell.disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+        
+        @keyframes letter-pop {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.3); }
+            60% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        
+        .timer-ring {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto;
+            transition: opacity 0.3s;
+        }
+        
+        .timer-ring.hidden-timer {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .timer-ring svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .timer-ring .bg-circle {
+            fill: none;
+            stroke: rgba(255,255,255,0.06);
+            stroke-width: 5;
+        }
+        
+        .timer-ring .progress-circle {
+            fill: none;
+            stroke: #22c55e;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear, stroke 0.3s;
+            filter: drop-shadow(0 0 6px rgba(34,197,94,0.5));
+        }
+        
+        .timer-ring .progress-circle.warning {
+            stroke: #f59e0b;
+            filter: drop-shadow(0 0 6px rgba(245,158,11,0.5));
+        }
+        
+        .timer-ring .progress-circle.danger {
+            stroke: #ef4444;
+            filter: drop-shadow(0 0 10px rgba(239,68,68,0.7));
+        }
+        
+        .timer-display {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .category-card {
+            background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.03));
+            border: 2px solid rgba(34,197,94,0.25);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .category-card.playing {
+            animation: pulse-border-green 1.5s infinite;
+            border-color: rgba(34,197,94,0.55);
+        }
+        
+        @keyframes pulse-border-green {
+            0%, 100% { border-color: rgba(34,197,94,0.3); box-shadow: 0 0 20px rgba(34,197,94,0.08); }
+            50% { border-color: rgba(34,197,94,0.7); box-shadow: 0 0 40px rgba(34,197,94,0.2); }
+        }
+        
+        .category-card.rolling {
+            animation: rapid-pulse-green 0.08s infinite;
+            border-color: rgba(34,197,94,0.8);
+            background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.08));
+        }
+        
+        @keyframes rapid-pulse-green {
+            0%, 100% { border-color: rgba(34,197,94,0.6); box-shadow: 0 0 30px rgba(34,197,94,0.3); }
+            50% { border-color: rgba(34,197,94,1); box-shadow: 0 0 60px rgba(34,197,94,0.6); }
+        }
+        
+        .player-active {
+            background: rgba(34,197,94,0.2) !important;
+            border-color: rgba(34,197,94,0.55) !important;
+            animation: pulse-bg-green 1s infinite;
+            box-shadow: 0 0 25px rgba(34,197,94,0.2);
+        }
+        
+        @keyframes pulse-bg-green {
+            0%, 100% { background: rgba(34,197,94,0.1); }
+            50% { background: rgba(34,197,94,0.25); }
+        }
+        
+        .player-eliminated {
+            opacity: 0.35;
+            text-decoration: line-through;
+            text-decoration-color: #ef4444;
+            text-decoration-thickness: 2px;
+        }
+        
+        .modal-centered {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-dialog {
+            background: #1a2332;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        }
+        
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-radius: 18px;
+            padding: 18px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 35px rgba(34,197,94,0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-action:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(34,197,94,0.2);
+        }
+        
+        .btn-action:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        .custom-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+        }
+        
+        .timer-danger {
+            animation: shake 0.4s infinite;
+            color: #ef4444 !important;
+        }
+        
+        .timer-hidden-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .timer-hidden-message.show { display: block; }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #334155;
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.06);
+            color: white;
+            border-color: rgba(255,255,255,0.15);
+        }
+        .icon-btn.active {
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+            border-color: rgba(34,197,94,0.3);
+        }
+
+        .result-message {
+            animation: result-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes result-pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .result-winner {
+            animation: winner-glow 1s ease, result-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes winner-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(250,204,21,0.3); }
+            50% { text-shadow: 0 0 30px rgba(250,204,21,0.8), 0 0 60px rgba(250,204,21,0.4); }
+        }
+
+        .instruction-banner {
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #86efac;
+            animation: fadeInOut 2s ease;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-5px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="font-body">
+
+    <!-- ========== HEADER MYRULES ========== -->
+    <header class="border-b border-white/5 backdrop-blur-xl bg-gray-900/70 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14 lg:h-16">
+                <a href="../index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-9 h-9 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                        <span class="font-mono font-bold text-base text-white">M</span>
+                    </div>
+                    <span class="font-title font-bold text-lg lg:text-xl tracking-tight text-white">My<span class="text-red-400">Rules</span></span>
+                </a>
+                <nav class="hidden md:flex items-center gap-1">
+                    <a href="ruleta.html" class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-skull text-red-400 text-xs group-hover:scale-110 transition-transform duration-300"></i><span>Ruleta Rusa</span>
+                    </a>
+                    <a href="apuestas.html" class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-coins text-amber-400 text-xs group-hover:scale-110 transition-transform duration-300"></i><span>Blackjack</span>
+                    </a>
+                    <a href="sorteador.html" class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-shuffle text-purple-400 text-xs group-hover:scale-110 transition-transform duration-300"></i><span>Sorteador</span>
+                    </a>
+                    <a href="stop.html" class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 group">
+                        <i class="fa-solid fa-hand text-red-400 text-xs group-hover:scale-110 transition-transform duration-300"></i><span>Stop</span>
+                    </a>
+                    <a href="basta.html" class="flex items-center gap-2 px-3 py-2 rounded-xl font-medium text-sm text-white bg-green-500/10 border border-green-500/30 transition-all duration-200">
+                        <i class="fa-solid fa-font text-green-400 text-xs"></i><span>Basta!</span>
+                    </a>
+                </nav>
+                <button id="menuToggle" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Menú">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-gray-900/95 backdrop-blur-xl">
+            <div class="px-4 py-3 space-y-1">
+                <a href="ruleta.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-skull text-red-400"></i><span>Ruleta Rusa</span></a>
+                <a href="apuestas.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-coins text-amber-400"></i><span>Blackjack</span></a>
+                <a href="sorteador.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-shuffle text-purple-400"></i><span>Sorteador</span></a>
+                <a href="stop.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-hand text-red-400"></i><span>Stop</span></a>
+                <a href="basta.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-green-500/10 border border-green-500/30"><i class="fa-solid fa-font text-green-400"></i><span>Basta! - Letras</span></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="p-4 pb-28">
+        <div class="max-w-md mx-auto space-y-4">
+            <div class="text-center mb-1 pt-2">
+                <h1 class="text-2xl font-bold text-white flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-font text-green-400"></i>
+                    Basta!
+                </h1>
+                <p class="text-gray-500 text-xs mt-1">¡Cada palabra con una letra diferente!</p>
+            </div>
+
+            <div class="dashboard rounded-2xl p-4 space-y-4">
+                <!-- Categoría Actual -->
+                <div id="categoryCard" class="category-card">
+                    <div class="flex items-center justify-center gap-2 mb-2">
+                        <i class="fa-solid fa-tag text-green-400/60 text-xs"></i>
+                        <span class="text-xs text-gray-500 uppercase tracking-widest font-medium">Categoría</span>
+                    </div>
+                    <div id="currentCategory" class="text-3xl font-black text-white category-text py-2">---</div>
+                </div>
+
+                <!-- Instrucción -->
+                <div id="instructionBanner" class="instruction-banner hidden">
+                    <i class="fa-solid fa-hand-pointer mr-2"></i>
+                    <span id="instructionText">Di una palabra en voz alta y toca su letra inicial</span>
+                </div>
+
+                <!-- Abecedario -->
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-2 text-center">
+                        <i class="fa-solid fa-keyboard mr-1"></i>Selecciona una letra
+                    </p>
+                    <div id="alphabetGrid" class="grid grid-cols-9 gap-1.5 sm:gap-2">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <p class="text-xs text-gray-600 text-center mt-2">
+                        <span id="availableLettersCount">27</span> letras disponibles
+                    </p>
+                </div>
+
+                <!-- Temporizador Circular -->
+                <div class="timer-ring" id="timerContainer">
+                    <svg viewBox="0 0 160 160">
+                        <circle class="bg-circle" cx="80" cy="80" r="70"/>
+                        <circle id="progressCircle" class="progress-circle" cx="80" cy="80" r="70" stroke-dasharray="439.82" stroke-dashoffset="0"/>
+                    </svg>
+                    <div class="timer-display" id="timerDisplay">10</div>
+                </div>
+                
+                <div class="timer-hidden-message" id="timerHiddenMessage">
+                    <i class="fa-solid fa-eye-slash text-2xl mb-2 block opacity-40"></i>
+                    <p class="font-medium">Temporizador oculto</p>
+                </div>
+
+                <!-- Jugador Actual -->
+                <div id="currentPlayerInfo" class="text-center py-2">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1" id="playerInfoLabel">Turno de</p>
+                    <p id="currentPlayerName" class="text-xl font-bold text-white">---</p>
+                </div>
+
+                <!-- Botón de Acción -->
+                <button id="btnAction" onclick="handleAction()" class="btn-action" disabled>
+                    <i class="fa-solid fa-play mr-2"></i>Iniciar Juego
+                </button>
+
+                <!-- Botón para ver jugadores -->
+                <div class="flex items-center justify-center gap-3">
+                    <button onclick="togglePlayersVisibility()" id="btnTogglePlayers" class="icon-btn" title="Ver jugadores">
+                        <i class="fa-solid fa-users"></i>
+                    </button>
+                    <span class="text-xs text-gray-500"><span id="activePlayersCount">0</span> jugadores activos</span>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex gap-2">
+                <button onclick="openModalPlayers()" class="flex-1 bg-gray-800/80 text-gray-300 py-3 rounded-xl text-sm font-medium border border-gray-700/40 hover:bg-gray-700 transition-colors">
+                    <i class="fa-solid fa-user-plus mr-2 text-green-400"></i>Jugadores
+                </button>
+                <button onclick="openModalCategories()" class="flex-1 bg-gray-800/80 text-gray-300 py-3 rounded-xl text-sm font-medium border border-gray-700/40 hover:bg-gray-700 transition-colors">
+                    <i class="fa-solid fa-layer-group mr-2 text-yellow-400"></i>Categorías
+                </button>
+                <button onclick="openModalConfig()" class="flex-1 bg-gray-800/80 text-gray-300 py-3 rounded-xl text-sm font-medium border border-gray-700/40 hover:bg-gray-700 transition-colors">
+                    <i class="fa-solid fa-sliders mr-2 text-blue-400"></i>Config
+                </button>
+                <button onclick="resetGame()" class="flex-1 bg-gray-800/80 text-gray-300 py-3 rounded-xl text-sm font-medium border border-gray-700/40 hover:bg-gray-700 transition-colors">
+                    <i class="fa-solid fa-rotate-right mr-2 text-green-400"></i>Reiniciar
+                </button>
+            </div>
+            
+            <!-- Lista de jugadores oculta -->
+            <div id="playersPanel" class="hidden dashboard rounded-2xl p-4 space-y-2">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">
+                        <i class="fa-solid fa-users mr-2 text-green-400"></i>Jugadores
+                    </h3>
+                </div>
+                <div id="playersList" class="space-y-1.5 max-h-56 overflow-y-auto custom-scroll pr-1">
+                    <p class="text-sm text-gray-500 text-center py-6">No hay jugadores</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Jugadores -->
+    <div id="modalPlayers" class="hidden modal-centered">
+        <div class="modal-dialog p-5 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user-group text-green-400"></i>Jugadores</h3>
+                <button onclick="closeModalPlayers()" class="text-gray-500 hover:text-white text-xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="inputPlayer" placeholder="Nombre del jugador" class="flex-1 px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-green-500/50 outline-none transition-all">
+                <button onclick="addPlayer()" class="bg-green-600 text-white px-5 py-3 rounded-xl text-sm font-semibold whitespace-nowrap hover:bg-green-500 transition-colors"><i class="fa-solid fa-plus mr-1"></i>Agregar</button>
+            </div>
+            <div id="modalPlayersList" class="space-y-2 max-h-64 overflow-y-auto custom-scroll mb-2"><p class="text-gray-500 text-sm text-center py-6">Sin jugadores</p></div>
+            <p class="text-xs text-gray-600 mb-4"><i class="fa-solid fa-circle-info mr-1"></i>Mínimo 2 jugadores</p>
+            <button onclick="closeModalPlayers()" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-500 transition-colors"><i class="fa-solid fa-check mr-2"></i>Listo</button>
+        </div>
+    </div>
+
+    <!-- Modal Categorías -->
+    <div id="modalCategories" class="hidden modal-centered">
+        <div class="modal-dialog p-5 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-layer-group text-yellow-400"></i>Categorías</h3>
+                <button onclick="closeModalCategories()" class="text-gray-500 hover:text-white text-xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="inputCategory" placeholder="Nueva categoría" class="flex-1 px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500/50 outline-none transition-all">
+                <button onclick="addCategory()" class="bg-yellow-600 text-white px-5 py-3 rounded-xl text-sm font-semibold whitespace-nowrap hover:bg-yellow-500 transition-colors"><i class="fa-solid fa-plus mr-1"></i>Agregar</button>
+            </div>
+            <div class="mb-3">
+                <p class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wider">Categorías activas</p>
+                <div id="categoriesList" class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto custom-scroll"></div>
+            </div>
+            <button onclick="closeModalCategories()" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-500 transition-colors"><i class="fa-solid fa-check mr-2"></i>Listo</button>
+        </div>
+    </div>
+
+    <!-- Modal Configuración -->
+    <div id="modalConfig" class="hidden modal-centered">
+        <div class="modal-dialog p-5 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-blue-400"></i>Configuración</h3>
+                <button onclick="closeModalConfig()" class="text-gray-500 hover:text-white text-xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="text-sm text-gray-300 block mb-2 font-medium">Tiempo por turno</label>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="changeTimerConfig(-1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">−</button>
+                        <div class="flex-1 bg-gray-800/80 rounded-xl flex items-center justify-center py-2">
+                            <span id="configTimerValue" class="text-3xl font-bold text-white font-mono">10</span><span class="text-sm text-gray-500 ml-1">seg</span>
+                        </div>
+                        <button onclick="changeTimerConfig(1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">+</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-300 block mb-2 font-medium">Segundos críticos (alarma)</label>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="changeCriticalConfig(-1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">−</button>
+                        <div class="flex-1 bg-gray-800/80 rounded-xl flex items-center justify-center py-2">
+                            <span id="configCriticalValue" class="text-3xl font-bold text-white font-mono">3</span><span class="text-sm text-gray-500 ml-1">seg</span>
+                        </div>
+                        <button onclick="changeCriticalConfig(1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">+</button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div><span class="text-sm text-gray-300 font-medium">Eliminación inmediata</span><p class="text-xs text-gray-500">El primero que falle, pierde</p></div>
+                    <label class="switch"><input type="checkbox" id="configInstantElim"><span class="slider"></span></label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div><span class="text-sm text-gray-300 font-medium">Ocultar temporizador</span></div>
+                    <label class="switch"><input type="checkbox" id="configHideTimer"><span class="slider"></span></label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div><span class="text-sm text-gray-300 font-medium">Efectos de sonido</span></div>
+                    <label class="switch"><input type="checkbox" id="configSound" checked><span class="slider"></span></label>
+                </div>
+            </div>
+            <button onclick="closeModalConfig()" class="w-full mt-5 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-500 transition-colors"><i class="fa-solid fa-check mr-2"></i>Guardar</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== HEADER MOBILE MENU ==========
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        menuToggle.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) mobileMenu.classList.add('hidden');
+        });
+
+        // ========== SISTEMA DE SONIDOS ==========
+        let audioCtx = null;
+        let soundEnabled = true;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        
+        function playTick() {
+            if (!soundEnabled || !audioCtx) return;
+            try { const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.setValueAtTime(1000,audioCtx.currentTime); g.gain.setValueAtTime(0.06,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.04); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.04); } catch(e) {}
+        }
+        function playTickLow() {
+            if (!soundEnabled || !audioCtx) return;
+            try { const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.setValueAtTime(500,audioCtx.currentTime); g.gain.setValueAtTime(0.12,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.08); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.08); } catch(e) {}
+        }
+        function playAlarm() {
+            if (!soundEnabled || !audioCtx) return;
+            try { for(let i=0;i<3;i++){ setTimeout(()=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='square'; o.frequency.setValueAtTime(700,audioCtx.currentTime); g.gain.setValueAtTime(0.15,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.18); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.18); },i*220); } } catch(e) {}
+        }
+        function playEliminationSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                [800,600,400,200,100].forEach((f,i)=>{ setTimeout(()=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sawtooth'; o.frequency.setValueAtTime(f,audioCtx.currentTime); o.frequency.linearRampToValueAtTime(f*0.5,audioCtx.currentTime+0.3); g.gain.setValueAtTime(0.25,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.35); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.35); },i*180); });
+                setTimeout(()=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='triangle'; o.frequency.setValueAtTime(50,audioCtx.currentTime); g.gain.setValueAtTime(0.5,audioCtx.currentTime); g.gain.linearRampToValueAtTime(0.001,audioCtx.currentTime+0.8); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.8); },900);
+            } catch(e) {}
+        }
+        function playWinSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try { [523,659,784,1047].forEach((f,i)=>{ setTimeout(()=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.setValueAtTime(f,audioCtx.currentTime); g.gain.setValueAtTime(0.2,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.4); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.4); },i*200); }); } catch(e) {}
+        }
+        function playLetterSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try { const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.setValueAtTime(1200,audioCtx.currentTime); o.frequency.linearRampToValueAtTime(800,audioCtx.currentTime+0.15); g.gain.setValueAtTime(0.15,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.2); } catch(e) {}
+        }
+
+        // ========== CATEGORÍAS ==========
+        const DEFAULT_CATEGORIES = [
+            'Frutas', 'Países', 'Animales', 'Películas', 'Ciudades', 'Deportes',
+            'Marcas', 'Profesiones', 'Instrumentos', 'Actores', 'Flores',
+            'Cantantes', 'Videojuegos', 'Series TV', 'Comidas'
+        ];
+
+        const CATEGORY_ICONS = {
+            'Frutas': 'fa-apple-whole', 'Países': 'fa-earth-americas', 'Animales': 'fa-paw',
+            'Películas': 'fa-film', 'Ciudades': 'fa-city', 'Deportes': 'fa-futbol',
+            'Marcas': 'fa-copyright', 'Profesiones': 'fa-briefcase', 'Instrumentos': 'fa-guitar',
+            'Actores': 'fa-masks-theater', 'Flores': 'fa-seedling', 'Cantantes': 'fa-microphone',
+            'Videojuegos': 'fa-gamepad', 'Series TV': 'fa-tv', 'Comidas': 'fa-utensils'
+        };
+
+        const ALPHABET = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+
+        // ========== ESTADO ==========
+        let gameState = {
+            players: [],
+            categories: [...DEFAULT_CATEGORIES],
+            currentCategory: null,
+            currentPlayerIndex: 0,
+            usedLetters: [],
+            eliminatedPlayers: [],
+            isPlaying: false,
+            timer: 10,
+            criticalSeconds: 3,
+            timeLeft: 10,
+            timerInterval: null,
+            hideTimer: false,
+            instantElim: false,
+            warningPlayed: false,
+        };
+
+        let configTemp = { timer: 10, criticalSeconds: 3, hideTimer: false, instantElim: false, sound: true };
+
+        // ========== FUNCIONES ==========
+        function buildAlphabet() {
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = ALPHABET.map(letter => {
+                const used = gameState.usedLetters.includes(letter);
+                const disabled = !gameState.isPlaying;
+                let cls = 'letter-cell';
+                if (used) cls += ' used';
+                if (disabled) cls += ' disabled';
+                return `<div class="${cls}" data-letter="${letter}" onclick="selectLetter('${letter}')">${letter}</div>`;
+            }).join('');
+            
+            document.getElementById('availableLettersCount').textContent = 
+                ALPHABET.length - gameState.usedLetters.length;
+        }
+
+        function selectLetter(letter) {
+            if (!gameState.isPlaying) return;
+            if (gameState.usedLetters.includes(letter)) return;
+            
+            tacharLetra(letter);
+            stopTimer();
+            nextPlayer();
+        }
+
+        function tacharLetra(letra) {
+            if (!ALPHABET.includes(letra) || gameState.usedLetters.includes(letra)) return false;
+            
+            gameState.usedLetters.push(letra);
+            playLetterSound();
+            
+            const cell = document.querySelector(`.letter-cell[data-letter="${letra}"]`);
+            if (cell) {
+                cell.classList.add('used');
+                cell.style.animation = 'none';
+                cell.offsetHeight;
+                cell.style.animation = 'letter-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+            }
+            
+            document.getElementById('availableLettersCount').textContent = 
+                ALPHABET.length - gameState.usedLetters.length;
+            
+            showInstruction('¡' + letra + ' tachada! Siguiente jugador');
+            
+            return true;
+        }
+
+        function showInstruction(text) {
+            const banner = document.getElementById('instructionBanner');
+            const textEl = document.getElementById('instructionText');
+            textEl.textContent = text;
+            banner.classList.remove('hidden');
+            banner.style.animation = 'none';
+            banner.offsetHeight;
+            banner.style.animation = 'fadeInOut 2s ease';
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 2000);
+        }
+
+        function sortearCategoria() {
+            if (!gameState.categories.length) return null;
+            return gameState.categories[Math.floor(Math.random() * gameState.categories.length)];
+        }
+
+        function animateCategoryRoll(callback) {
+            const card = document.getElementById('categoryCard');
+            const text = document.getElementById('currentCategory');
+            card.classList.add('rolling');
+            
+            let iterations = 0;
+            const interval = setInterval(() => {
+                const randomCat = gameState.categories[Math.floor(Math.random() * gameState.categories.length)];
+                text.innerHTML = `<i class="fa-solid ${CATEGORY_ICONS[randomCat] || 'fa-tag'} mr-2 text-green-400/70"></i>${randomCat}`;
+                iterations++;
+                if (iterations >= 12) {
+                    clearInterval(interval);
+                    card.classList.remove('rolling');
+                    if (callback) callback();
+                }
+            }, 80);
+        }
+
+        function startGame() {
+            if (gameState.players.length < 2) { alert('Se necesitan al menos 2 jugadores'); return; }
+            
+            const category = sortearCategoria();
+            if (!category) return;
+            
+            initAudio();
+            gameState.currentCategory = category;
+            gameState.currentPlayerIndex = 0;
+            gameState.usedLetters = [];
+            gameState.eliminatedPlayers = [];
+            gameState.isPlaying = false;
+            gameState.timeLeft = gameState.timer;
+            gameState.warningPlayed = false;
+            
+            buildAlphabet();
+            document.getElementById('playerInfoLabel').textContent = 'Turno de';
+            document.getElementById('currentPlayerName').className = 'text-xl font-bold text-white';
+            
+            const btn = document.getElementById('btnAction');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Sorteando...';
+            
+            updateUI();
+            updateTimerDisplay();
+            updateCategoryDisplay();
+            updateTimerVisibility();
+            highlightCurrentPlayer();
+            
+            animateCategoryRoll(() => {
+                gameState.isPlaying = true;
+                gameState.timeLeft = gameState.timer;
+                gameState.warningPlayed = false;
+                
+                updateCategoryDisplay();
+                updateTimerDisplay();
+                updateUI();
+                buildAlphabet();
+                
+                btn.innerHTML = '<i class="fa-solid fa-font mr-2"></i>Elige una letra en el tablero';
+                btn.disabled = true;
+                btn.classList.remove('animate-pulse');
+                document.getElementById('categoryCard').classList.add('playing');
+                
+                showInstruction('Di una palabra en voz alta y toca su letra inicial');
+                
+                startTimer();
+            });
+        }
+
+        function handleAction() {
+            if (!gameState.isPlaying) {
+                startGame();
+                return;
+            }
+        }
+
+        function nextPlayer() {
+            if (!gameState.isPlaying) return;
+            
+            let nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+            let attempts = 0;
+            while (gameState.eliminatedPlayers.includes(gameState.players[nextIndex]) && attempts < gameState.players.length) {
+                nextIndex = (nextIndex + 1) % gameState.players.length;
+                attempts++;
+            }
+            
+            const activePlayers = gameState.players.filter(p => !gameState.eliminatedPlayers.includes(p));
+            
+            if (activePlayers.length <= 1) {
+                endGame(activePlayers[0]);
+                return;
+            }
+            
+            if (gameState.usedLetters.length >= ALPHABET.length) {
+                endGame(null);
+                return;
+            }
+            
+            gameState.currentPlayerIndex = nextIndex;
+            gameState.timeLeft = gameState.timer;
+            gameState.warningPlayed = false;
+            updateTimerDisplay();
+            highlightCurrentPlayer();
+            startTimer();
+            updateUI();
+        }
+
+        function timeUp() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            stopTimer();
+            gameState.eliminatedPlayers.push(currentPlayer);
+            playEliminationSound();
+            
+            if (gameState.instantElim) {
+                gameState.isPlaying = false;
+                document.getElementById('categoryCard').classList.remove('playing');
+                document.getElementById('playerInfoLabel').textContent = '¡Eliminado!';
+                const nd = document.getElementById('currentPlayerName');
+                nd.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2 text-red-400"></i>${currentPlayer} PERDIÓ`;
+                nd.className = 'text-xl font-bold text-red-400 result-message';
+                document.getElementById('btnAction').innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i>Jugar de nuevo';
+                document.getElementById('btnAction').disabled = false;
+                document.getElementById('btnAction').classList.remove('animate-pulse');
+                buildAlphabet();
+                updateTimerDisplay();
+                updateUI();
+                return;
+            }
+            
+            const activePlayers = gameState.players.filter(p => !gameState.eliminatedPlayers.includes(p));
+            if (activePlayers.length <= 1) { endGame(activePlayers[0] || null); return; }
+            if (gameState.usedLetters.length >= ALPHABET.length) { endGame(null); return; }
+            
+            gameState.warningPlayed = false;
+            nextPlayer();
+        }
+
+        function endGame(winner) {
+            stopTimer();
+            gameState.isPlaying = false;
+            document.getElementById('categoryCard').classList.remove('playing');
+            
+            const nd = document.getElementById('currentPlayerName');
+            if (winner) {
+                playWinSound();
+                document.getElementById('playerInfoLabel').textContent = '¡Ganador!';
+                nd.innerHTML = `<i class="fa-solid fa-trophy mr-2 text-yellow-400"></i>${winner} GANÓ`;
+                nd.className = 'text-xl font-bold text-yellow-400 result-message result-winner';
+            } else {
+                document.getElementById('playerInfoLabel').textContent = 'Fin del juego';
+                nd.textContent = '¡Se acabaron las letras!';
+                nd.className = 'text-xl font-bold text-white result-message';
+            }
+            
+            document.getElementById('btnAction').innerHTML = '<i class="fa-solid fa-rotate-right mr-2"></i>Jugar de nuevo';
+            document.getElementById('btnAction').disabled = false;
+            document.getElementById('btnAction').classList.remove('animate-pulse');
+            buildAlphabet();
+            updateTimerDisplay();
+            updateUI();
+        }
+
+        function startTimer() {
+            stopTimer();
+            let lastSecond = Math.ceil(gameState.timeLeft);
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft -= 0.1;
+                const cs = Math.ceil(gameState.timeLeft);
+                if (cs !== lastSecond && gameState.timeLeft > 0) {
+                    lastSecond = cs;
+                    gameState.timeLeft <= gameState.criticalSeconds ? playTickLow() : playTick();
+                }
+                if (gameState.timeLeft <= 0) { gameState.timeLeft = 0; updateTimerDisplay(); updateProgressCircle(); timeUp(); }
+                else {
+                    updateTimerDisplay(); updateProgressCircle();
+                    if (gameState.timeLeft <= gameState.criticalSeconds && !gameState.warningPlayed) { gameState.warningPlayed = true; playAlarm(); }
+                }
+            }, 100);
+        }
+
+        function stopTimer() {
+            if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; }
+        }
+
+        function updateTimerDisplay() {
+            const d = document.getElementById('timerDisplay');
+            d.textContent = Math.ceil(gameState.timeLeft);
+            d.classList.remove('timer-danger');
+            d.style.color = gameState.timeLeft <= gameState.criticalSeconds ? '#ef4444' : gameState.timeLeft <= gameState.criticalSeconds + 2 ? '#f59e0b' : '#22c55e';
+            if (gameState.timeLeft <= gameState.criticalSeconds && gameState.isPlaying) d.classList.add('timer-danger');
+        }
+
+        function updateProgressCircle() {
+            const c = document.getElementById('progressCircle');
+            const circ = 439.82;
+            c.style.strokeDashoffset = circ * (1 - gameState.timeLeft / gameState.timer);
+            c.classList.remove('warning', 'danger');
+            c.style.stroke = gameState.timeLeft <= gameState.criticalSeconds ? '#ef4444' : gameState.timeLeft <= gameState.criticalSeconds + 2 ? '#f59e0b' : '#22c55e';
+            if (gameState.timeLeft <= gameState.criticalSeconds) c.classList.add('danger');
+            else if (gameState.timeLeft <= gameState.criticalSeconds + 2) c.classList.add('warning');
+        }
+
+        function updateTimerVisibility() {
+            document.getElementById('timerContainer').classList.toggle('hidden-timer', gameState.hideTimer && gameState.isPlaying);
+            document.getElementById('timerHiddenMessage').classList.toggle('show', gameState.hideTimer && gameState.isPlaying);
+        }
+
+        function updateCategoryDisplay() {
+            const cat = gameState.currentCategory;
+            const d = document.getElementById('currentCategory');
+            d.innerHTML = cat ? `<i class="fa-solid ${CATEGORY_ICONS[cat] || 'fa-tag'} mr-2 text-green-400/70"></i>${cat}` : '---';
+        }
+
+        function highlightCurrentPlayer() {
+            document.getElementById('currentPlayerName').textContent = gameState.players[gameState.currentPlayerIndex] || '---';
+            document.getElementById('currentPlayerName').className = 'text-xl font-bold text-white';
+            document.getElementById('playerInfoLabel').textContent = 'Turno de';
+            updateUI();
+        }
+
+        function togglePlayersVisibility() {
+            const p = document.getElementById('playersPanel');
+            const b = document.getElementById('btnTogglePlayers');
+            p.classList.toggle('hidden'); b.classList.toggle('active');
+        }
+
+        function resetGame() {
+            stopTimer();
+            gameState.isPlaying = false;
+            gameState.currentCategory = null;
+            gameState.currentPlayerIndex = 0;
+            gameState.usedLetters = [];
+            gameState.eliminatedPlayers = [];
+            gameState.timeLeft = gameState.timer;
+            gameState.warningPlayed = false;
+            
+            document.getElementById('currentCategory').innerHTML = '---';
+            document.getElementById('playerInfoLabel').textContent = 'Turno de';
+            document.getElementById('currentPlayerName').textContent = '---';
+            document.getElementById('currentPlayerName').className = 'text-xl font-bold text-white';
+            document.getElementById('categoryCard').classList.remove('playing');
+            document.getElementById('instructionBanner').classList.add('hidden');
+            
+            document.getElementById('btnAction').innerHTML = '<i class="fa-solid fa-play mr-2"></i>Iniciar Juego';
+            document.getElementById('btnAction').disabled = gameState.players.length < 2;
+            document.getElementById('btnAction').classList.remove('animate-pulse');
+            
+            document.getElementById('progressCircle').style.strokeDashoffset = '0';
+            document.getElementById('progressCircle').style.stroke = '#22c55e';
+            document.getElementById('progressCircle').classList.remove('warning', 'danger');
+            document.getElementById('timerDisplay').textContent = gameState.timer;
+            document.getElementById('timerDisplay').style.color = '#22c55e';
+            document.getElementById('timerDisplay').classList.remove('timer-danger');
+            
+            buildAlphabet();
+            updateTimerVisibility();
+            updateUI();
+        }
+
+        function updateUI() {
+            updatePlayersList();
+            updateModalPlayersList();
+            updateCategoriesList();
+            updateButtonState();
+            updateTimerVisibility();
+            document.getElementById('activePlayersCount').textContent = gameState.players.filter(p => !gameState.eliminatedPlayers.includes(p)).length;
+        }
+
+        function updatePlayersList() {
+            const c = document.getElementById('playersList');
+            if (!gameState.players.length) { c.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">No hay jugadores</p>'; return; }
+            c.innerHTML = gameState.players.map((p, i) => {
+                const elim = gameState.eliminatedPlayers.includes(p);
+                const act = gameState.isPlaying && i === gameState.currentPlayerIndex && !elim;
+                let cls = 'flex items-center justify-between bg-white/5 rounded-xl p-3 border border-white/5';
+                if (act) cls += ' player-active';
+                if (elim) cls += ' player-eliminated';
+                return `<div class="${cls}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 ${act?'bg-green-600/40':elim?'bg-gray-700/30':'bg-gray-700/50'} rounded-full flex items-center justify-center text-sm font-bold">
+                            ${act?'<i class="fa-solid fa-play text-green-400 text-xs animate-pulse"></i>':elim?'<i class="fa-solid fa-skull text-red-500 text-xs"></i>':(i+1)}
+                        </div>
+                        <span class="text-sm font-medium ${act?'text-green-400':'text-white'}">${p}</span>
+                    </div>
+                    ${act?'<span class="text-xs text-green-400 font-bold animate-pulse bg-green-600/20 px-2.5 py-1 rounded-full">AHORA</span>':''}
+                    ${elim?'<span class="text-xs text-red-500 bg-red-600/10 px-2.5 py-1 rounded-full">FUERA</span>':''}
+                </div>`;
+            }).join('');
+        }
+
+        function updateButtonState() {
+            const b = document.getElementById('btnAction');
+            if (!gameState.isPlaying) {
+                b.disabled = gameState.players.length < 2;
+                if (!b.innerHTML.includes('Jugar de nuevo')) b.innerHTML = '<i class="fa-solid fa-play mr-2"></i>Iniciar Juego';
+            } else {
+                b.disabled = true;
+            }
+        }
+
+        // ========== CONFIG ==========
+        function openModalConfig() {
+            configTemp = { timer: gameState.timer, criticalSeconds: gameState.criticalSeconds, hideTimer: gameState.hideTimer, instantElim: gameState.instantElim, sound: soundEnabled };
+            document.getElementById('configTimerValue').textContent = configTemp.timer;
+            document.getElementById('configCriticalValue').textContent = configTemp.criticalSeconds;
+            document.getElementById('configHideTimer').checked = configTemp.hideTimer;
+            document.getElementById('configInstantElim').checked = configTemp.instantElim;
+            document.getElementById('configSound').checked = configTemp.sound;
+            document.getElementById('modalConfig').classList.remove('hidden');
+        }
+        function closeModalConfig() {
+            gameState.timer = configTemp.timer;
+            gameState.criticalSeconds = configTemp.criticalSeconds;
+            gameState.hideTimer = configTemp.hideTimer;
+            gameState.instantElim = configTemp.instantElim;
+            soundEnabled = configTemp.sound;
+            if (!gameState.isPlaying) { gameState.timeLeft = gameState.timer; document.getElementById('timerDisplay').textContent = gameState.timer; }
+            document.getElementById('modalConfig').classList.add('hidden');
+            if (soundEnabled) initAudio();
+            updateUI();
+        }
+        function changeTimerConfig(d) { configTemp.timer = Math.max(5, Math.min(30, configTemp.timer + d)); document.getElementById('configTimerValue').textContent = configTemp.timer; }
+        function changeCriticalConfig(d) { configTemp.criticalSeconds = Math.max(1, Math.min(10, configTemp.criticalSeconds + d)); document.getElementById('configCriticalValue').textContent = configTemp.criticalSeconds; }
+
+        // ========== MODALES ==========
+        function openModalPlayers() { updateModalPlayersList(); document.getElementById('modalPlayers').classList.remove('hidden'); setTimeout(() => document.getElementById('inputPlayer').focus(), 100); }
+        function closeModalPlayers() { document.getElementById('modalPlayers').classList.add('hidden'); updateUI(); }
+        function addPlayer() {
+            const i = document.getElementById('inputPlayer');
+            const n = i.value.trim();
+            if (n && !gameState.players.includes(n)) { gameState.players.push(n); i.value = ''; updateUI(); i.focus(); }
+            else if (gameState.players.includes(n)) alert('Ese jugador ya existe');
+        }
+        function removePlayer(idx) {
+            if (gameState.isPlaying) return;
+            gameState.eliminatedPlayers = gameState.eliminatedPlayers.filter(p => p !== gameState.players[idx]);
+            gameState.players.splice(idx, 1);
+            updateUI();
+        }
+        function updateModalPlayersList() {
+            const c = document.getElementById('modalPlayersList');
+            if (!gameState.players.length) { c.innerHTML = '<p class="text-gray-500 text-sm text-center py-6">Sin jugadores</p>'; return; }
+            c.innerHTML = gameState.players.map((p,i) => `
+                <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3 border border-gray-700/30">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-green-600/20 rounded-full flex items-center justify-center font-bold text-sm text-green-400">${i+1}</div>
+                        <span class="text-white text-sm font-medium">${p}</span>
+                    </div>
+                    <button onclick="removePlayer(${i})" class="text-gray-600 hover:text-red-400 p-2" ${gameState.isPlaying?'disabled':''}><i class="fa-solid fa-trash"></i></button>
+                </div>`).join('');
+        }
+
+        function openModalCategories() { updateCategoriesList(); document.getElementById('modalCategories').classList.remove('hidden'); setTimeout(() => document.getElementById('inputCategory').focus(), 100); }
+        function closeModalCategories() { document.getElementById('modalCategories').classList.add('hidden'); updateUI(); }
+        function addCategory() {
+            const i = document.getElementById('inputCategory');
+            const n = i.value.trim();
+            if (n && !gameState.categories.includes(n)) { gameState.categories.push(n); i.value = ''; updateCategoriesList(); i.focus(); }
+        }
+        function removeCategory(idx) {
+            if (gameState.isPlaying) return;
+            if (gameState.categories.length <= 1) { alert('Debe haber al menos 1 categoría'); return; }
+            gameState.categories.splice(idx, 1);
+            updateCategoriesList();
+        }
+        function updateCategoriesList() {
+            const c = document.getElementById('categoriesList');
+            if (!gameState.categories.length) { c.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Sin categorías</p>'; return; }
+            c.innerHTML = gameState.categories.map((cat,i) => `
+                <span class="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-800/80 text-gray-200 rounded-full text-xs border border-gray-700/50">
+                    <i class="fa-solid ${CATEGORY_ICONS[cat]||'fa-tag'} text-green-400/70 text-xs"></i>${cat}
+                    <i class="fa-solid fa-xmark cursor-pointer hover:text-red-400 ml-1" onclick="removeCategory(${i})"></i>
+                </span>`).join('');
+        }
+
+        // ========== EVENTOS ==========
+        document.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                if (document.activeElement?.id === 'inputPlayer') addPlayer();
+                if (document.activeElement?.id === 'inputCategory') addCategory();
+            }
+        });
+        document.querySelectorAll('.modal-centered').forEach(m => {
+            m.addEventListener('click', function(e) { if (e.target === this) { this.classList.add('hidden'); updateUI(); } });
+        });
+
+        // ========== INIT ==========
+        buildAlphabet();
+        updateUI();
+        document.getElementById('timerDisplay').textContent = gameState.timer;
+    </script>
+</body>
+</html>
