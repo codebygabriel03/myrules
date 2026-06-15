@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyRules - Minijuegos Poker</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -38,6 +37,33 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        .scene {
+            perspective: 800px;
+        }
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
 </head>
 <body class="bg-bg-dark min-h-screen font-body text-white antialiased">
 
@@ -78,12 +104,12 @@
             <div class="p-4 space-y-1.5 text-sm">
                 <p class="flex items-center gap-2"><span class="font-mono font-bold text-amber-400 w-6">1</span> Escalera Real <span class="text-gray-500 text-xs">A-K-Q-J-10 mismo palo</span></p>
                 <p class="flex items-center gap-2"><span class="font-mono font-bold text-amber-400 w-6">2</span> Escalera de Color <span class="text-gray-500 text-xs">5 cartas consecutivas mismo palo</span></p>
-                <p class="flex items-center gap-2"><span class="font-mono font-bold text-purple-400 w-6">3</span> Poker <span class="text-gray-500 text-xs">4 cartas mismo valor</span></p>
-                <p class="flex items-center gap-2"><span class="font-mono font-bold text-purple-400 w-6">4</span> Full House <span class="text-gray-500 text-xs">Trío + Pareja</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-green-400 w-6">3</span> Poker <span class="text-gray-500 text-xs">4 cartas mismo valor</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-green-400 w-6">4</span> Full House <span class="text-gray-500 text-xs">Trío + Pareja</span></p>
                 <p class="flex items-center gap-2"><span class="font-mono font-bold text-blue-400 w-6">5</span> Color <span class="text-gray-500 text-xs">5 cartas mismo palo</span></p>
                 <p class="flex items-center gap-2"><span class="font-mono font-bold text-blue-400 w-6">6</span> Escalera <span class="text-gray-500 text-xs">5 cartas consecutivas</span></p>
-                <p class="flex items-center gap-2"><span class="font-mono font-bold text-green-400 w-6">7</span> Trío <span class="text-gray-500 text-xs">3 cartas mismo valor</span></p>
-                <p class="flex items-center gap-2"><span class="font-mono font-bold text-green-400 w-6">8</span> Doble Pareja <span class="text-gray-500 text-xs">2 parejas distintas</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold  text-purple-400 w-6">7</span> Trío <span class="text-gray-500 text-xs">3 cartas mismo valor</span></p>
+                <p class="flex items-center gap-2"><span class="font-mono font-bold text-purple-400 w-6">8</span> Doble Pareja <span class="text-gray-500 text-xs">2 parejas distintas</span></p>
                 <p class="flex items-center gap-2"><span class="font-mono font-bold text-gray-400 w-6">9</span> Pareja <span class="text-gray-500 text-xs">2 cartas mismo valor</span></p>
                 <p class="flex items-center gap-2"><span class="font-mono font-bold text-gray-400 w-6">10</span> Carta Alta <span class="text-gray-500 text-xs">La carta más alta</span></p>
             </div>
@@ -99,7 +125,7 @@
                 <div>
                     <h4 class="font-semibold text-red-400 mb-1"><i class="fa-solid fa-fire mr-1"></i> 01. ELIMINACIÓN</h4>
                     <p class="text-gray-400 leading-relaxed">Se jugarán rondas normales de póker. El ganador de cada ronda quedará fuera de la siguiente y estará protegido de la eliminación. El último jugador restante recibirá una penalización de puntos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: ≥10 y ≤50 (intervalos de 5)</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: -10, -20, -30,-40 o -50</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-hat-wizard mr-1"></i> 02. PASCUA</h4>
@@ -109,7 +135,7 @@
                 <div>
                     <h4 class="font-semibold text-green-400 mb-1"><i class="fa-solid fa-clover mr-1"></i> 03. SUERTE</h4>
                     <p class="text-gray-400 leading-relaxed">Cada jugador lanzará un dado. Según el número obtenido, podrá robar esa cantidad de cartas del mazo. El dado podrá lanzarse un máximo de 2 veces. La mejor jugada obtendrá puntos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 15, 20, 25 o 30</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 20 o 30</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-coins mr-1"></i> 04. APUESTA</h4>
@@ -119,34 +145,34 @@
                 <div>
                     <h4 class="font-semibold text-gray-400 mb-1"><i class="fa-solid fa-theater-masks mr-1"></i> 05. IMPOSTOR</h4>
                     <p class="text-gray-400 leading-relaxed">El ganador roba puntos de los derrotados.</p>
-                    <p class="text-gray-400 leading-relaxed">Puntos = puntos base × (11 − RK).</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 5, 10 o 15</p>
+                    <p class="text-gray-400 leading-relaxed">Puntos = punto base × (11 − RK).</p>
+                    <p class="text-gray-500 text-xs mt-1">Punto base: 10 o 20</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-purple-400 mb-1"><i class="fa-solid fa-skull mr-1"></i> 06. EXTERMINIO</h4>
                     <p class="text-gray-400 leading-relaxed">Todos pierden puntos obligatoriamente.</p>
                     <p class="text-gray-400 leading-relaxed">Puntos perdidos = puntos base × RK.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: -10, -15 o -20</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: -10 o -20</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-biohazard mr-1"></i> 07. INFECCIÓN</h4>
                     <p class="text-gray-400 leading-relaxed">Rondas normales. Cada perdedor se lleva 1 virus. El ganador cura todos los virus que posea. En cuanto alguien junta 3 virus (muere), se acaba el juego. Los jugadores que sigan vivos obtienen los puntos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 30, 35 o 40</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 30 o 40</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-red-500 mb-1"><i class="fa-solid fa-droplet mr-1"></i> 08. MASACRE</h4>
                     <p class="text-gray-400 leading-relaxed">Rondas normales. Cada jugador empieza con 5 vidas. El ganador roba 1 vida a quien quiera. El peor RK de la ronda debe donar 1 vida al bote. Quien muere (0 vidas) se lleva puntos negativos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 45, 50 o 55</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: -30, -40 o -50</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-sky-400 mb-1"><i class="fa-solid fa-handshake mr-1"></i> 09. COMUNIDAD</h4>
-                    <p class="text-gray-400 leading-relaxed">3 cartas en mano + 2 cartas comunitarias en mesa. El que forme la jugada más alta obtiene ×3 puntos, la jugada más baja pierde ×2 puntos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 15, 20 o 25</p>
+                    <p class="text-gray-400 leading-relaxed">3 cartas en mano + 2 cartas comunitarias en mesa. El que forme la jugada más alta obtiene X3 puntos, la jugada más baja pierde X2 puntos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10, 20 o 30</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-orange-400 mb-1"><i class="fa-solid fa-scale-balanced mr-1"></i> 10. AVARICIA</h4>
-                    <p class="text-gray-400 leading-relaxed">Solo jugadas TRÍO o POKER. Si todos hacen TRÍO: reciben ×2 puntos. Si uno traiciona con POKER: recibe ×3 puntos. Pero si hay más de un traidor: pierden ×3 puntos. Si alguien hace otra jugada fuera de TRÍO o POKER: todos pierden ×4 puntos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 20, 25 o 30</p>
+                    <p class="text-gray-400 leading-relaxed">Solo jugadas TRÍO o POKER. Si todos hacen TRÍO: reciben X2 puntos. Si uno traiciona con POKER: recibe X3 puntos. Pero si hay más de un traidor: pierden X3 puntos. Si alguien hace otra jugada fuera de TRÍO o POKER: todos pierden X4 puntos automaticamente.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10,20 o 30</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-yin-yang mr-1"></i> 11. KARMA</h4>
@@ -155,8 +181,8 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-teal-400 mb-1"><i class="fa-solid fa-tornado mr-1"></i> 12. CAOS</h4>
-                    <p class="text-gray-400 leading-relaxed">Ronda normal. Si robas una carta y no terminas el juego, cuatro de tus cartas se intercambian en el sentido de rotación (tus 4 cartas pasan al siguiente jugador y recibes las del anterior). Si terminas el juego y ganas: doble de puntos. Si terminas y pierdes: triple de puntos negativos.</p>
-                    <p class="text-gray-500 text-xs mt-1">Puntos base: 20, 25 o 30</p>
+                    <p class="text-gray-400 leading-relaxed">Ronda normal. Si robas una carta, cuatro de tus cartas se intercambian en el sentido de rotación (tus 4 cartas pasan al siguiente jugador y recibes las del anterior). Si terminas el juego y ganas: doble de puntos. Si terminas y pierdes: triple de puntos negativos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 20 o 30</p>
                 </div>
             </div>
         </div>
@@ -170,12 +196,11 @@
             <div class="p-4 space-y-4">
                 <div class="border-b border-white/10 pb-4">
                     <h4 class="font-semibold text-sm text-amber-400 mb-3"><i class="fa-solid fa-sliders-h mr-2"></i>Animaciones</h4>
-                    <div><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteo principal (ms)</label><input type="number" id="configVelocidadSorteo" value="50" min="20" max="200" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
+                    <div><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteo principal (ms)</label><input type="number" id="configVelocidadSorteo" value="160" min="30" max="300" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
                     <div class="mt-2"><label class="block text-xs text-gray-400 mb-1.5">Giros sorteo principal</label><input type="number" id="configGirosSorteo" value="20" min="5" max="40" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
                     <div class="mt-2"><label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteos secundarios (ms)</label><input type="number" id="configVelocidadSecundario" value="40" min="15" max="150" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
                     <div class="mt-2"><label class="block text-xs text-gray-400 mb-1.5">Giros sorteos secundarios</label><input type="number" id="configGirosSecundario" value="15" min="5" max="30" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-amber-500/50"></div>
                 </div>
-
                 <div>
                     <h4 class="font-semibold text-sm text-purple-400 mb-3"><i class="fa-solid fa-ban mr-2"></i>Control de Repetición</h4>
                     <div>
@@ -184,13 +209,9 @@
                             <input type="range" id="configRepeticion" min="1" max="10" value="3" class="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer">
                             <span id="repeticionValor" class="font-mono font-bold text-lg text-purple-400 w-12 text-center">3</span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            <i class="fa-solid fa-info-circle mr-1"></i>
-                            Valor 1 = No repite hasta jugar todos | Valor 10 = Repite hasta 10 veces
-                        </p>
+                        <p class="text-xs text-gray-500 mt-2"><i class="fa-solid fa-info-circle mr-1"></i>Valor 1 = No repite hasta jugar todos | Valor 10 = Repite hasta 10 veces</p>
                     </div>
                 </div>
-
                 <button onclick="guardarConfig()" class="w-full h-11 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold text-sm hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar</button>
             </div>
         </div>
@@ -206,7 +227,7 @@
                         <h1 class="font-title font-bold text-2xl lg:text-4xl leading-tight">
                             <span class="bg-gradient-to-r from-red-400 via-amber-400 to-red-400 bg-clip-text text-transparent">MINIJUEGOS POKER</span>
                         </h1>
-                        <p class="text-gray-500 text-sm lg:text-base mt-1">¿Tendrás suerte hoy? 🍀</p>
+                        <p class="text-gray-500 text-sm lg:text-base mt-1">¿Tendrás suerte hoy? </p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <button onclick="openConfigModal()" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-gray-400/30 transition-all duration-200 group">
@@ -220,19 +241,41 @@
 
                 <div class="space-y-4 lg:space-y-6">
                     
+                    <!-- SORTEO PRINCIPAL CON CARTA GIRATORIA 3D -->
                     <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center"><i class="fa-solid fa-shuffle text-red-400"></i></div>
                             <h3 class="font-title font-semibold text-lg">Sorteo de Modo de Juego</h3>
                         </div>
-                        <div class="mb-6">
-                            <div id="sorteoResultado" class="bg-white/[0.02] border border-white/5 rounded-2xl p-10 text-center min-h-[180px] flex items-center justify-center">
-                                <span class="text-gray-600 text-xl font-mono">Gira para sortear...</span>
+                        
+                        <div class="mb-6 flex justify-center">
+                            <div class="scene w-64 h-80 lg:w-72 lg:h-96">
+                                <div id="cartaSorteo" class="card w-full h-full">
+                                    <div id="caraFrontal" class="card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-red-500/30">
+                                        <span class="text-gray-600 text-xl font-mono">Gira para sortear...</span>
+                                    </div>
+                                    
+                                    <div class="card-face card-back bg-gradient-to-br from-red-900/40 via-gray-900 to-amber-900/40 border-2 border-amber-500/30">
+                                        <div class="text-center p-6">
+                                            <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/30 mb-5 mx-auto">
+                                                <span class="font-mono font-bold text-4xl text-white">M</span>
+                                            </div>
+                                            <div class="font-title font-bold text-3xl tracking-tight">
+                                                My<span class="text-red-400">Rules</span>
+                                            </div>
+                                            <div class="w-12 h-0.5 bg-gradient-to-r from-red-400 to-amber-500 mx-auto mt-3"></div>
+                                            <p class="text-gray-500 text-xs mt-3">Minijuegos Poker</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        
+                        <div id="infoRepeticiones" class="text-center text-xs text-gray-500 mb-4 min-h-5"></div>
+                        
                         <div class="flex gap-3">
                             <button id="btnGirar" onclick="girarSorteo()" class="flex-1 h-14 bg-red-500 hover:bg-red-600 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fa-solid fa-rotate"></i> Girar
+                                <i class="fa-solid fa-rotate"></i> Girar Carta
                             </button>
                             <button id="btnAceptar" onclick="aceptarSorteo()" class="flex-1 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl font-semibold text-lg text-emerald-400 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-500/20" disabled>
                                 <i class="fa-solid fa-check"></i> Aceptar
@@ -251,9 +294,14 @@
                     </div>
 
                     <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center"><i class="fa-solid fa-chart-bar text-purple-400"></i></div>
-                            <h3 class="font-title font-semibold text-lg">Contador de Juegos</h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center"><i class="fa-solid fa-chart-bar text-purple-400"></i></div>
+                                <h3 class="font-title font-semibold text-lg">Contador de Juegos</h3>
+                            </div>
+                            <button onclick="reiniciarContadores()" class="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-semibold hover:bg-red-500/20 transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-left"></i> Reiniciar
+                            </button>
                         </div>
                         <div class="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
                             <p class="flex items-center justify-between"><span><i class="fa-solid fa-fire text-red-400 mr-2 text-xs"></i>ELIMINACIÓN</span><span id="countEliminacion" class="font-mono font-bold text-base text-red-400">0</span></p>
@@ -297,6 +345,41 @@
                     this.initialized = true;
                 } catch (e) {
                     console.warn('Web Audio API no disponible');
+                }
+            }
+
+            playCardShuffle(volume = 0.06) {
+                if (!this.initialized) this.init();
+                if (!this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(3000, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+                filter.Q.setValueAtTime(2, this.ctx.currentTime);
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400 + Math.random() * 200, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+                
+                osc.start(this.ctx.currentTime);
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playCardShuffleBurst(count = 3, volume = 0.05) {
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        this.playCardShuffle(volume);
+                    }, i * 30);
                 }
             }
 
@@ -386,9 +469,9 @@
 
         const audio = new AudioSystem();
 
-        // ==================== LÓGICA DEL JUEGO CON CONTROL DE REPETICIÓN ====================
+        // ==================== LÓGICA DEL JUEGO ====================
         let config = { 
-            velocidadSorteo: 50, 
+            velocidadSorteo: 160, 
             girosSorteo: 20, 
             velocidadSecundario: 40, 
             girosSecundario: 15,
@@ -410,6 +493,20 @@
             '<i class="fa-solid fa-scale-balanced text-orange-400 text-6xl"></i>',
             '<i class="fa-solid fa-yin-yang text-amber-400 text-6xl"></i>',
             '<i class="fa-solid fa-tornado text-teal-400 text-6xl"></i>'
+        ];
+        
+        const coloresBorde = [
+            'border-red-500/50', 'border-amber-500/50', 'border-green-500/50', 
+            'border-amber-500/50', 'border-gray-500/50', 'border-purple-500/50',
+            'border-emerald-500/50', 'border-red-500/50', 'border-sky-500/50',
+            'border-orange-500/50', 'border-amber-500/50', 'border-teal-500/50'
+        ];
+
+        const coloresSombra = [
+            'rgba(239, 68, 68, 0.3)', 'rgba(245, 158, 11, 0.3)', 'rgba(34, 197, 94, 0.3)',
+            'rgba(245, 158, 11, 0.3)', 'rgba(156, 163, 175, 0.3)', 'rgba(168, 85, 247, 0.3)',
+            'rgba(52, 211, 153, 0.3)', 'rgba(239, 68, 68, 0.3)', 'rgba(56, 189, 248, 0.3)',
+            'rgba(251, 146, 60, 0.3)', 'rgba(245, 158, 11, 0.3)', 'rgba(45, 212, 191, 0.3)'
         ];
         
         const countIds = ['countEliminacion', 'countPascua', 'countSuerte', 'countApuesta', 'countImpostor', 'countExterminio', 'countInfeccion', 'countMasacre', 'countComunidad', 'countAvaricia', 'countKarma', 'countCaos'];
@@ -463,48 +560,117 @@
             }
         }
 
+        function reiniciarContadores() {
+            countIds.forEach(id => {
+                document.getElementById(id).textContent = '0';
+            });
+            inicializarConteoRepeticiones();
+            historialJuegos = [];
+            juegoSeleccionado = null;
+            juegoAceptado = null;
+            ultimoJuegoAceptado = null;
+            puntosSuerteSorteados = null;
+            
+            document.getElementById('btnAceptar').disabled = true;
+            document.getElementById('infoRepeticiones').textContent = '';
+            document.getElementById('contenedor2Titulo').textContent = 'Detalle del Juego';
+            document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-600 text-sm font-mono">Acepta un sorteo para ver el detalle</span>';
+            
+            const caraFrontal = document.getElementById('caraFrontal');
+            caraFrontal.innerHTML = '<span class="text-gray-600 text-xl font-mono">Gira para sortear...</span>';
+            caraFrontal.className = 'card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-red-500/30';
+            caraFrontal.style.boxShadow = '';
+            
+            guardarEstado();
+            audio.playClick(0.08);
+        }
+
         function girarSorteo() {
             if (girando) return;
             audio.init();
             girando = true;
-            const btnGirar = document.getElementById('btnGirar'), btnAceptar = document.getElementById('btnAceptar'), resultado = document.getElementById('sorteoResultado');
-            btnGirar.disabled = true; btnAceptar.disabled = true;
+            const btnGirar = document.getElementById('btnGirar');
+            const btnAceptar = document.getElementById('btnAceptar');
+            const carta = document.getElementById('cartaSorteo');
+            const caraFrontal = document.getElementById('caraFrontal');
+            const infoRepeticiones = document.getElementById('infoRepeticiones');
+            
+            btnGirar.disabled = true;
+            btnAceptar.disabled = true;
             document.getElementById('contenedor2Titulo').textContent = 'Detalle del Juego';
-            document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-600 text-sm font-mono">Girando ruleta...</span>';
+            document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-600 text-sm font-mono">Girando carta...</span>';
+            infoRepeticiones.textContent = '';
             
             const juegosDisponibles = getJuegosDisponibles();
             
-            let contador = 0, maxGiros = config.girosSorteo, velocidad = config.velocidadSorteo;
+            let juegoFinal;
+            do {
+                juegoFinal = juegosDisponibles[Math.floor(Math.random() * juegosDisponibles.length)];
+            } while (juegoFinal === ultimoJuegoAceptado && juegosDisponibles.length > 1);
+            
+            const indexFinal = juegos.indexOf(juegoFinal);
+            juegoSeleccionado = juegoFinal;
+            
+            let anguloActual = 0;
+            let contador = 0;
+            const totalGiros = config.girosSorteo;
+            let intervalo = config.velocidadSorteo;
             
             function animarGiro() {
-                if (contador < maxGiros) {
-                    const index = contador % juegosDisponibles.length;
-                    const juegoActual = juegosDisponibles[index];
-                    const iconIndex = juegos.indexOf(juegoActual);
-                    resultado.innerHTML = `<div class="text-center"><div class="mb-4">${iconosHTML[iconIndex]}</div><span class="font-title font-bold text-2xl text-white">${juegoActual}</span></div>`;
-                    audio.playTick(0.06);
-                    contador++; velocidad += contador * 3;
-                    setTimeout(animarGiro, velocidad);
+                if (contador < totalGiros) {
+                    const randomIndex = Math.floor(Math.random() * juegosDisponibles.length);
+                    const juegoRandom = juegosDisponibles[randomIndex];
+                    const iconIndex = juegos.indexOf(juegoRandom);
+                    
+                    caraFrontal.innerHTML = `
+                        <div class="text-center">
+                            <div class="mb-3">${iconosHTML[iconIndex]}</div>
+                            <span class="font-title font-bold text-xl text-white">${juegoRandom}</span>
+                        </div>
+                    `;
+                    caraFrontal.className = `card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 ${coloresBorde[iconIndex]}`;
+                    
+                    anguloActual += 180;
+                    carta.style.transform = `rotateY(${anguloActual}deg)`;
+                    
+                    audio.playCardShuffle(0.05);
+                    
+                    contador++;
+                    intervalo = config.velocidadSorteo - (contador * 2);
+                    if (intervalo < 50) intervalo = 50;
+                    
+                    setTimeout(animarGiro, intervalo);
                 } else {
-                    let finalIndex;
-                    let juegoFinal;
+                    audio.playCardShuffleBurst(5, 0.06);
                     
-                    do {
-                        finalIndex = Math.floor(Math.random() * juegosDisponibles.length);
-                        juegoFinal = juegosDisponibles[finalIndex];
-                    } while (juegoFinal === ultimoJuegoAceptado && juegosDisponibles.length > 1);
+                    const vueltasCompletas = Math.ceil(anguloActual / 360) * 360;
+                    carta.style.transform = `rotateY(${vueltasCompletas}deg)`;
+                    carta.style.transition = 'transform 0.8s ease-out';
                     
-                    juegoSeleccionado = juegoFinal;
-                    const iconIndex = juegos.indexOf(juegoSeleccionado);
-                    const repeticionesRestantes = config.maxRepeticion - conteoRepeticiones[juegoSeleccionado];
-                    resultado.innerHTML = `<div class="text-center"><div class="mb-4">${iconosHTML[iconIndex]}</div><span class="font-title font-bold text-3xl bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">${juegoSeleccionado}</span><div class="text-xs text-gray-500 mt-3"><i class="fa-solid fa-chart-simple mr-1"></i> Puede aparecer ${repeticionesRestantes} veces más</div></div>`;
-                    resultado.classList.add('animate-bounce-slow'); 
+                    caraFrontal.innerHTML = `
+                        <div class="text-center">
+                            <div class="mb-3">${iconosHTML[indexFinal]}</div>
+                            <span class="font-title font-bold text-2xl bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">${juegoFinal}</span>
+                            <div class="text-green-400 text-xs mt-2">¡SELECCIONADO!</div>
+                        </div>
+                    `;
+                    caraFrontal.className = `card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 ${coloresBorde[indexFinal]}`;
+                    caraFrontal.style.boxShadow = `0 0 30px ${coloresSombra[indexFinal]}`;
+                    
+                    const repeticionesRestantes = config.maxRepeticion - conteoRepeticiones[juegoFinal];
+                    infoRepeticiones.innerHTML = `<i class="fa-solid fa-chart-simple mr-1"></i> Puede aparecer ${repeticionesRestantes} veces más`;
+                    
                     audio.playWin(0.12);
-                    setTimeout(() => resultado.classList.remove('animate-bounce-slow'), 500);
                     
-                    btnGirar.disabled = false; btnAceptar.disabled = false; girando = false;
+                    setTimeout(() => {
+                        carta.style.transition = 'transform 0.3s ease-out';
+                        btnGirar.disabled = false;
+                        btnAceptar.disabled = false;
+                        girando = false;
+                    }, 800);
                 }
             }
+            
             animarGiro();
         }
 
@@ -528,6 +694,7 @@
             
             juegoSeleccionado = null;
             document.getElementById('btnAceptar').disabled = true;
+            document.getElementById('infoRepeticiones').textContent = '';
             actualizarContenedor2(juegoAceptado);
         }
 
@@ -558,11 +725,10 @@
             const titulo = document.getElementById('contenedor2Titulo'), contenido = document.getElementById('contenedor2Contenido');
             titulo.textContent = 'Detalle: ' + modo;
             
-            // Ya no se muestra el mensaje de repeticiones aquí, solo el contenido del juego
             switch(modo) {
                 case 'ELIMINACIÓN': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Puntos a perder</p><div id="resultadoEliminacion" class="font-mono font-bold text-4xl text-red-400 mb-4">--</div><button onclick="girarEliminacion()" class="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 font-semibold hover:bg-red-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'PASCUA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear jugada objetivo</p><div id="resultadoPascua" class="font-mono font-bold text-xl text-amber-400 mb-4">--</div><button onclick="girarPascua()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
-                case 'SUERTE': if (!puntosSuerteSorteados || puntosSuerteSorteados.modo !== modo) { const pp = [10,15,20,25,30]; puntosSuerteSorteados = { modo, puntos: pp[Math.floor(Math.random()*pp.length)] }; } contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Lanzar dado</p><div class="flex items-center justify-center gap-4 mb-4"><div id="dadoContenedor" class="w-20 h-20 rounded-2xl bg-white/5 border-2 border-white/10 flex items-center justify-center transition-all duration-200"><span id="dadoResultado" class="font-mono font-bold text-5xl text-white">?</span></div></div><p class="text-sm text-green-400 mb-3">Puntos: <span id="puntosSuerte" class="font-mono font-bold">${puntosSuerteSorteados.puntos}</span></p><button onclick="girarDado()" class="px-6 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 font-semibold hover:bg-green-500/20 transition-colors"><i class="fa-solid fa-dice mr-2"></i>Lanzar dado</button></div>`; break;
+                case 'SUERTE': if (!puntosSuerteSorteados || puntosSuerteSorteados.modo !== modo) { const pp = [10,20,30]; puntosSuerteSorteados = { modo, puntos: pp[Math.floor(Math.random()*pp.length)] }; } contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Lanzar dado</p><div class="flex items-center justify-center gap-4 mb-4"><div id="dadoContenedor" class="w-20 h-20 rounded-2xl bg-white/5 border-2 border-white/10 flex items-center justify-center transition-all duration-200"><span id="dadoResultado" class="font-mono font-bold text-5xl text-white">?</span></div></div><p class="text-sm text-green-400 mb-3">Puntos: <span id="puntosSuerte" class="font-mono font-bold">${puntosSuerteSorteados.puntos}</span></p><button onclick="girarDado()" class="px-6 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 font-semibold hover:bg-green-500/20 transition-colors"><i class="fa-solid fa-dice mr-2"></i>Lanzar dado</button></div>`; break;
                 case 'APUESTA': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear multiplicador</p><div id="resultadoApuesta" class="font-mono font-bold text-4xl text-amber-400 mb-4">--</div><button onclick="girarApuesta()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'IMPOSTOR': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos base</p><div id="resultadoImpostor" class="font-mono font-bold text-4xl text-gray-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaImpostor" class="text-gray-400 font-bold">--</span> × (11 − <span class="text-amber-400 font-bold">RK</span>)</p><button onclick="girarImpostor()" class="px-6 py-2 bg-gray-500/10 border border-gray-500/20 rounded-xl text-gray-400 font-semibold hover:bg-gray-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
                 case 'EXTERMINIO': contenido.innerHTML = `<div class="text-center w-full"><p class="text-sm text-gray-400 mb-3">Sortear puntos a perder</p><div id="resultadoExterminio" class="font-mono font-bold text-4xl text-purple-400 mb-2">--</div><p class="text-xs text-gray-500 font-mono mb-3"><span id="formulaExterminio" class="text-purple-400 font-bold">--</span> × <span class="text-amber-400 font-bold">RK</span></p><button onclick="girarExterminio()" class="px-6 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 font-semibold hover:bg-purple-500/20 transition-colors"><i class="fa-solid fa-rotate mr-2"></i>Girar</button></div>`; break;
@@ -575,7 +741,7 @@
             }
         }
 
-        function girarEliminacion() { const v = []; for (let i=10;i<=50;i+=5) v.push('-'+i); animarResultado('resultadoEliminacion', v); }
+        function girarEliminacion() { const v = []; for (let i=10;i<=50;i+=10) v.push('-'+i); animarResultado('resultadoEliminacion', v); }
         function girarPascua() { animarResultado('resultadoPascua', ['FULL HOUSE (20pts)','POKER (30pts)','ESCALERA DE COLOR (40pts)','ESCALERA REAL (50pts)']); }
         
         function girarDado() { 
@@ -604,14 +770,14 @@
         }
         
         function girarApuesta() { animarResultado('resultadoApuesta', ['X1','X2','X3','X4','X5']); }
-        function girarImpostor() { const v=['5','10','15'], el=document.getElementById('resultadoImpostor'), fe=document.getElementById('formulaImpostor'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
-        function girarExterminio() { const v=['-10','-15','-20'], el=document.getElementById('resultadoExterminio'), fe=document.getElementById('formulaExterminio'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
-        function girarInfeccion() { animarResultado('resultadoInfeccion', ['30','35','40']); }
-        function girarMasacre() { animarResultado('resultadoMasacre', ['45','50','55']); }
-        function girarComunidad() { animarResultado('resultadoComunidad', ['15','20','25']); }
-        function girarAvaricia() { animarResultado('resultadoAvaricia', ['20','25','30']); }
+        function girarImpostor() { const v=['10','20'], el=document.getElementById('resultadoImpostor'), fe=document.getElementById('formulaImpostor'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
+        function girarExterminio() { const v=['-10','-20'], el=document.getElementById('resultadoExterminio'), fe=document.getElementById('formulaExterminio'); let c=0, mg=config.girosSecundario, vel=config.velocidadSecundario; function g(){ if(c<mg){ el.textContent=v[Math.floor(Math.random()*v.length)]; el.classList.remove('animate-bounce-slow'); audio.playTick(0.05); c++; vel+=c*4; setTimeout(g,vel); } else { const f=v[Math.floor(Math.random()*v.length)]; el.textContent=f; fe.textContent=f; el.classList.add('animate-bounce-slow'); audio.playClick(0.1); setTimeout(()=>el.classList.remove('animate-bounce-slow'),500); } } g(); }
+        function girarInfeccion() { animarResultado('resultadoInfeccion', ['30','40']); }
+        function girarMasacre() { animarResultado('resultadoMasacre', ['-30','-40','-50']); }
+        function girarComunidad() { animarResultado('resultadoComunidad', ['10','20','30']); }
+        function girarAvaricia() { animarResultado('resultadoAvaricia', ['10','20','30']); }
         function girarKarma() { animarResultado('resultadoKarma', ['10','20','30']); }
-        function girarCaos() { animarResultado('resultadoCaos', ['20','25','30']); }
+        function girarCaos() { animarResultado('resultadoCaos', ['20','30']); }
 
         function openConfigModal() { 
             document.getElementById('configVelocidadSorteo').value = config.velocidadSorteo; 
@@ -625,7 +791,7 @@
         }
         
         function guardarConfig() { 
-            config.velocidadSorteo = parseInt(document.getElementById('configVelocidadSorteo').value) || 50; 
+            config.velocidadSorteo = parseInt(document.getElementById('configVelocidadSorteo').value) || 160; 
             config.girosSorteo = parseInt(document.getElementById('configGirosSorteo').value) || 20; 
             config.velocidadSecundario = parseInt(document.getElementById('configVelocidadSecundario').value) || 40; 
             config.girosSecundario = parseInt(document.getElementById('configGirosSecundario').value) || 15; 
