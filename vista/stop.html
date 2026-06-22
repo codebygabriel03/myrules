@@ -390,14 +390,7 @@
                 
             </div>
         </div>
-        <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-gray-900/95 backdrop-blur-xl">
-            <div class="px-4 py-3 space-y-1">
-                <a href="ruleta.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-skull text-red-400"></i><span>Ruleta Rusa</span></a>
-                <a href="apuestas.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-coins text-amber-400"></i><span>Blackjack</span></a>
-                <a href="sorteador.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"><i class="fa-solid fa-shuffle text-purple-400"></i><span>Sorteador</span></a>
-                <a href="stop.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-red-500/10 border border-red-500/30"><i class="fa-solid fa-hand text-red-400"></i><span>Stop</span></a>
-            </div>
-        </div>
+        
     </header>
 
     <!-- Contenido principal -->
@@ -532,14 +525,7 @@
     </div>
 
     <script>
-        // ========== HEADER MOBILE MENU ==========
-        const menuToggle = document.getElementById('menuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        menuToggle.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        document.addEventListener('click', (e) => {
-            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) mobileMenu.classList.add('hidden');
-        });
-
+        
         // ========== SISTEMA DE SONIDOS ==========
         let audioCtx = null;
         let soundEnabled = true;
