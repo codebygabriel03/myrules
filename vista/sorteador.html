@@ -41,7 +41,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 80px;
+            height: 100px;
             overflow: hidden;
             position: relative;
             background: #1a1f2e;
@@ -50,11 +50,14 @@
         }
         
         .roller-text {
-            font-size: 2rem;
+            font-size: 1.3rem;
             font-weight: 800;
             transition: transform 0.05s;
             white-space: nowrap;
             letter-spacing: -0.5px;
+            text-align: center;
+            padding: 0 15px;
+            line-height: 1.3;
         }
         
         .highlight-line {
@@ -62,7 +65,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 80px;
+            height: 100px;
             background: linear-gradient(180deg, 
                 rgba(139,92,246,0.08) 0%, 
                 rgba(139,92,246,0.03) 100%);
@@ -72,32 +75,166 @@
             z-index: 1;
         }
         
-        .player-card {
-            background: rgba(255,255,255,0.03);
+        /* CARTAS VERTICALES - DISEÑO LIMPIO */
+        .card-container-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        
+        .player-card-new {
+            background: linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            transition: all 0.2s;
+            border-radius: 14px;
+            padding: 14px 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
         
-        .player-card:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: rgba(255,255,255,0.1);
+        /* Línea lateral sutil */
+        .player-card-new::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #8b5cf6;
+            border-radius: 0 2px 2px 0;
+            opacity: 0.4;
         }
         
-        .player-card.completed {
-            border-color: rgba(34,197,94,0.3);
-            background: rgba(34,197,94,0.05);
+        .player-card-new.just-assigned {
+            animation: cardReveal 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-color: rgba(139,92,246,0.4);
+            box-shadow: 0 0 30px rgba(139,92,246,0.2), inset 0 0 30px rgba(139,92,246,0.05);
+            background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(15,23,42,0.9) 100%);
+        }
+        
+        .player-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .player-name-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .player-icon {
+            font-size: 1.1rem;
+            color: #8b5cf6;
+            flex-shrink: 0;
+        }
+        
+        .player-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            letter-spacing: -0.2px;
+        }
+        
+        .player-counter {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #a78bfa;
+            background: rgba(139,92,246,0.1);
+            padding: 3px 10px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+        
+        .teams-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         
         .team-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            background: rgba(139,92,246,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: rgba(139,92,246,0.12);
             color: #c4b5fd;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.72rem;
             font-weight: 600;
-            margin: 2px;
+            transition: all 0.3s;
+            animation: badgePop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(139,92,246,0.15);
+        }
+        
+        .empty-teams {
+            font-size: 0.75rem;
+            color: #4b5563;
+            font-style: italic;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        
+        /* Animaciones */
+        @keyframes cardReveal {
+            0% {
+                transform: scale(0.97);
+                border-color: rgba(139,92,246,0.8);
+                box-shadow: 0 0 0 rgba(139,92,246,0);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 40px rgba(139,92,246,0.4);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 15px rgba(139,92,246,0.1);
+            }
+        }
+        
+        @keyframes badgePop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); }
+            50% { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
+        }
+        
+        .btn-sort {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .btn-sort:disabled {
+            animation: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-sort:not(:disabled):active {
+            transform: scale(0.96);
         }
         
         /* Modal centrado */
@@ -149,32 +286,6 @@
             }
         }
         
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); }
-            50% { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
-        }
-        
-        .btn-sort {
-            animation: pulse-glow 2s infinite;
-        }
-        
-        .btn-sort:disabled {
-            animation: none;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .btn-sort:not(:disabled):active {
-            transform: scale(0.96);
-        }
-        
-        .stat-box {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 12px;
-        }
-        
         /* Scrollbar personalizado */
         .custom-scroll::-webkit-scrollbar {
             width: 4px;
@@ -195,6 +306,29 @@
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.1) transparent;
         }
+        
+        /* Ajustes móvil */
+        @media (max-width: 640px) {
+            .roller-text {
+                font-size: 1.1rem;
+            }
+            .roller {
+                height: 85px;
+            }
+            .highlight-line {
+                height: 85px;
+            }
+            .player-card-new {
+                padding: 12px 14px;
+            }
+            .player-name {
+                font-size: 0.85rem;
+            }
+            .team-badge {
+                font-size: 0.68rem;
+                padding: 4px 8px;
+            }
+        }
     </style>
 </head>
 <body class="font-body">
@@ -214,13 +348,9 @@
                         My<span class="text-red-400">Rules</span>
                     </span>
                 </a>
-
-                
             </div>
         </div>
-
     </header>
-    <!-- ========== FIN HEADER ========== -->
 
     <!-- Contenido principal -->
     <div class="p-4">
@@ -236,20 +366,20 @@
             </div>
 
             <!-- Panel Principal - Dashboard -->
-            <div class="dashboard rounded-2xl p-4 space-y-4">
+            <div class="dashboard rounded-2xl p-4 sm:p-6 space-y-4">
                 
                 <!-- Stats rápidos -->
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-3 gap-2 sm:gap-3">
                     <div class="stat-box text-center">
-                        <div class="text-2xl font-bold text-blue-400" id="statPlayers">0</div>
+                        <div class="text-xl sm:text-2xl font-bold text-blue-400" id="statPlayers">0</div>
                         <div class="text-xs text-gray-400">Jugadores</div>
                     </div>
                     <div class="stat-box text-center">
-                        <div class="text-2xl font-bold text-green-400" id="statTeams">0</div>
+                        <div class="text-xl sm:text-2xl font-bold text-green-400" id="statTeams">0</div>
                         <div class="text-xs text-gray-400">Equipos</div>
                     </div>
                     <div class="stat-box text-center">
-                        <div class="text-2xl font-bold text-purple-400" id="statRemaining">0</div>
+                        <div class="text-xl sm:text-2xl font-bold text-purple-400" id="statRemaining">0</div>
                         <div class="text-xs text-gray-400">Pendientes</div>
                     </div>
                 </div>
@@ -269,7 +399,7 @@
                     </button>
                 </div>
 
-                <!-- Lista de Jugadores -->
+                <!-- TABLERO DE CARTAS VERTICAL -->
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">
@@ -281,8 +411,8 @@
                         </button>
                     </div>
                     
-                    <div id="listaPersonas" class="space-y-2 max-h-64 overflow-y-auto custom-scroll pr-1">
-                        <p class="text-sm text-gray-500 text-center py-6">No hay participantes</p>
+                    <div id="cardContainer" class="card-container-vertical custom-scroll">
+                        <p class="text-sm text-gray-500 text-center py-8">No hay participantes</p>
                     </div>
                 </div>
             </div>
@@ -380,9 +510,9 @@
             
             <div class="flex gap-2 mb-3 overflow-x-auto pb-1 custom-scroll">
                 <button onclick="filterModal('all', this)" class="tab-button bg-purple-600 text-white active">Todos</button>
-                <button onclick="filterModal('champions', this)" class="tab-button bg-gray-700 text-gray-300">🏆 Champions</button>
-                <button onclick="filterModal('mundial', this)" class="tab-button bg-gray-700 text-gray-300">🌍 Mundial</button>
-                <button onclick="filterModal('libertadores', this)" class="tab-button bg-gray-700 text-gray-300">🏅 Libertadores</button>
+                <button onclick="filterModal('champions', this)" class="tab-button bg-gray-700 text-gray-300"><i class="fas fa-trophy mr-1"></i>Champions</button>
+                <button onclick="filterModal('mundial', this)" class="tab-button bg-gray-700 text-gray-300"><i class="fas fa-globe-americas mr-1"></i>Mundial</button>
+                <button onclick="filterModal('libertadores', this)" class="tab-button bg-gray-700 text-gray-300"><i class="fas fa-star mr-1"></i>Libertadores</button>
             </div>
 
             <div id="gridModal" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scroll"></div>
@@ -404,7 +534,7 @@
     <div id="modalConfig" class="hidden modal-centered">
         <div class="modal-dialog p-4 custom-scroll" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-bold text-white">⚙️ Configuración</h3>
+                <h3 class="text-lg font-bold text-white"><i class="fas fa-cog mr-2 text-yellow-400"></i>Configuración</h3>
                 <button onclick="cerrarModalConfig()" class="text-gray-400 text-xl hover:text-white transition-colors">
                     <i class="fas fa-times-circle"></i>
                 </button>
@@ -434,7 +564,7 @@
                     <input type="checkbox" id="cfgNoRepeat" checked class="w-5 h-5 text-purple-600 bg-gray-800 border-gray-700 rounded">
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-300">Modo de sorteo</span>
+                    <span class="text-sm text-gray-300">Tipo de sorteo</span>
                     <select id="cfgSortMode" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
                         <option value="rounds">Por rondas</option>
                         <option value="full">Todo de una vez</option>
@@ -442,7 +572,7 @@
                 </div>
                 <p class="text-xs text-gray-500" id="modeDescription">
                     <i class="fas fa-info-circle mr-1"></i>
-                    Por rondas: sortea el 1er equipo de cada jugador, luego el 2do, etc.
+                    Por rondas: sortea equipo por equipo en cada ronda (presionas una vez por ronda).
                 </p>
                 <button onclick="resetearTodo()" 
                         class="w-full bg-red-600/20 text-red-400 py-2.5 rounded-lg text-sm font-medium border border-red-600/30 hover:bg-red-600/30 transition-colors">
@@ -458,9 +588,6 @@
     </div>
 
     <script>
-        // ========== HEADER MOBILE MENU ==========
-        
-
         // Datos
         const equiposDefault = {
             champions: ["Real Madrid","Barcelona","Manchester City","Bayern Múnich","PSG","Liverpool","Chelsea","Juventus","Inter de Milán","AC Milan","Borussia Dortmund","Atlético de Madrid","Arsenal","Napoli","Benfica","Porto","Ajax","RB Leipzig"],
@@ -473,6 +600,7 @@
         let asignaciones = [];
         let modalFilter = 'all';
         let sorteando = false;
+        let lastAssignedPerson = null;
         
         let configState = {
             maxEquipos: 2,
@@ -506,30 +634,54 @@
 
         function updateDashboard() {
             const config = getConfig();
-            const lp = document.getElementById('listaPersonas');
+            const container = document.getElementById('cardContainer');
             
             if (!personas.length) {
-                lp.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">No hay participantes</p>';
+                container.innerHTML = '<p class="text-sm text-gray-500 text-center py-8">No hay participantes</p>';
             } else {
-                lp.innerHTML = personas.map((p, i) => {
+                container.innerHTML = personas.map((p, i) => {
                     const asig = asignaciones.filter(a => a.persona === p);
                     asig.sort((a, b) => (a.ronda || 0) - (b.ronda || 0));
-                    const completed = asig.length >= config.maxEquipos;
+                    const isJustAssigned = lastAssignedPerson === p;
                     
-                    return `<div class="player-card p-3 flex items-center justify-between ${completed ? 'completed' : ''}">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-medium text-white truncate">${p}</span>
-                                ${completed ? '<i class="fas fa-check-circle text-green-400 text-xs flex-shrink-0"></i>' : ''}
+                    const playerIcons = ['fa-user', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-secret', 'fa-user-tie', 'fa-user-graduate'];
+                    const playerIcon = playerIcons[i % playerIcons.length];
+                    
+                    return `
+                    <div class="player-card-new ${isJustAssigned ? 'just-assigned' : ''}" 
+                         id="card-${i}"
+                         data-persona="${p}">
+                        
+                        <!-- Header -->
+                        <div class="player-header">
+                            <div class="player-name-section">
+                                <i class="fas ${playerIcon} player-icon"></i>
+                                <span class="player-name truncate">${p}</span>
                             </div>
-                            ${asig.length ? `<div class="mt-1 flex flex-wrap gap-1">${asig.map(a => `<span class="team-badge">${a.equipo}</span>`).join('')}</div>` : '<span class="text-xs text-gray-500">Sin equipos</span>'}
+                            <span class="player-counter">${asig.length}/${config.maxEquipos}</span>
                         </div>
-                        <div class="flex items-center gap-2 ml-2 flex-shrink-0">
-                            <span class="text-xs ${completed ? 'text-green-400' : 'text-gray-500'}">${asig.length}/${config.maxEquipos}</span>
-                            <button onclick="eliminarPersona(${i})" class="text-gray-600 hover:text-red-400 text-xs"><i class="fas fa-times"></i></button>
+                        
+                        <!-- Equipos -->
+                        <div class="teams-container">
+                            ${asig.length ? asig.map((a, idx) => 
+                                `<span class="team-badge" style="animation-delay: ${idx * 0.1}s">
+                                    <i class="fas fa-shield-alt text-xs opacity-70"></i>
+                                    ${a.equipo}
+                                </span>`
+                            ).join('') : 
+                            '<span class="empty-teams">Sin equipos asignados</span>'}
                         </div>
                     </div>`;
                 }).join('');
+                
+                // Quitar animación después de un tiempo
+                if (lastAssignedPerson) {
+                    setTimeout(() => {
+                        const animated = document.querySelector('.player-card-new.just-assigned');
+                        if (animated) animated.classList.remove('just-assigned');
+                        lastAssignedPerson = null;
+                    }, 2000);
+                }
             }
         }
 
@@ -545,9 +697,7 @@
                 container.innerHTML = personas.map((p, i) => `
                     <div class="flex items-center justify-between bg-gray-800/50 rounded-lg px-3 py-2.5 border border-gray-700/30">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center">
-                                <i class="fas fa-user text-purple-400 text-xs"></i>
-                            </div>
+                            <i class="fas fa-user text-purple-400 text-sm"></i>
                             <div>
                                 <span class="text-white text-sm">${p}</span>
                                 <span class="text-xs text-gray-500 ml-2">${asignaciones.filter(a => a.persona === p).length}/${config.maxEquipos}</span>
@@ -583,7 +733,7 @@
             
             if (!personas.length || !equipos.length) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-play mr-2"></i>Sortear Equipo';
+                btn.classList.remove('btn-sort');
                 return;
             }
             
@@ -606,7 +756,7 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Completado';
                 btn.classList.remove('btn-sort');
-            } else if (!disponibles.length) {
+            } else if (!disponibles.length && config.noRepeat) {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Sin equipos';
                 btn.classList.remove('btn-sort');
@@ -621,7 +771,25 @@
             const p = personas[i];
             personas.splice(i, 1);
             asignaciones = asignaciones.filter(a => a.persona !== p);
+            lastAssignedPerson = null;
             updateAll();
+        }
+
+        function obtenerPendientesAleatorios(config) {
+            const { maxEquipos } = config;
+            let pendientes = [];
+            
+            for (let p of personas) {
+                const count = asignaciones.filter(a => a.persona === p).length;
+                if (count < maxEquipos) {
+                    pendientes.push({
+                        persona: p,
+                        ronda: count + 1
+                    });
+                }
+            }
+            
+            return pendientes;
         }
 
         function sortear() {
@@ -633,36 +801,23 @@
             if (!personas.length) return;
             if (!equipos.length) return;
 
-            let persona = null;
-            let ronda = 1;
-            
-            if (sortMode === 'rounds') {
-                for (let r = 1; r <= maxEquipos; r++) {
-                    for (let p of personas) {
-                        const tieneRonda = asignaciones.some(a => a.persona === p && a.ronda === r);
-                        if (!tieneRonda) {
-                            persona = p;
-                            ronda = r;
-                            break;
-                        }
-                    }
-                    if (persona) break;
-                }
-            } else {
-                for (let p of personas) {
-                    const count = asignaciones.filter(a => a.persona === p).length;
-                    if (count < maxEquipos) {
-                        persona = p;
-                        ronda = count + 1;
-                        break;
-                    }
-                }
+            if (sortMode === 'full') {
+                sortearTodoDeUnaVez(config);
+                return;
             }
+
+            // Modo por rondas - Jugador y equipo aleatorios
+            const pendientes = obtenerPendientesAleatorios(config);
             
-            if (!persona) {
+            if (!pendientes.length) {
                 updateButtonState();
                 return;
             }
+
+            // Seleccionar jugador aleatorio entre los pendientes
+            const elegido = pendientes[Math.floor(Math.random() * pendientes.length)];
+            const persona = elegido.persona;
+            const ronda = elegido.ronda;
 
             let disponibles = [...equipos];
             if (noRepeat) {
@@ -677,34 +832,122 @@
             sorteando = true;
             const btn = document.getElementById('btnSortear');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sortear';
             btn.classList.remove('btn-sort');
 
             const roller = document.getElementById('rollerDisplay');
+            
+            // Ruleta muestra jugador y equipo aleatorios
             let idx = 0;
             const interval = setInterval(() => {
-                idx = (idx + 1) % disponibles.length;
-                roller.textContent = disponibles[idx];
+                const randomPlayer = pendientes[Math.floor(Math.random() * pendientes.length)].persona;
+                const randomTeam = disponibles[Math.floor(Math.random() * disponibles.length)];
+                roller.textContent = `${randomPlayer} → ${randomTeam}`;
                 roller.style.color = '#fff';
             }, speed);
 
             setTimeout(() => {
                 clearInterval(interval);
                 const ganador = disponibles[Math.floor(Math.random() * disponibles.length)];
-                roller.textContent = ganador;
+                roller.textContent = `${persona} → ${ganador}`;
                 roller.style.color = '#a78bfa';
                 
                 asignaciones.push({ persona, equipo: ganador, ronda });
+                lastAssignedPerson = persona;
                 
                 updateAll();
                 sorteando = false;
                 
                 setTimeout(() => {
                     roller.style.color = '#6b7280';
-                }, 1500);
+                    roller.textContent = 'Presiona sortear';
+                }, 2000);
                 
                 updateButtonState();
             }, 2000);
+        }
+
+        function sortearTodoDeUnaVez(config) {
+            const { maxEquipos, speed, noRepeat } = config;
+            
+            const totalNeeded = personas.length * maxEquipos;
+            let disponibles = [...equipos];
+            
+            if (noRepeat && disponibles.length < totalNeeded) {
+                alert(`No hay suficientes equipos. Necesitas ${totalNeeded} equipos únicos (${personas.length} jugadores × ${maxEquipos} equipos).`);
+                return;
+            }
+
+            sorteando = true;
+            const btn = document.getElementById('btnSortear');
+            btn.disabled = true;
+            btn.classList.remove('btn-sort');
+
+            const roller = document.getElementById('rollerDisplay');
+            
+            // Preparar todas las asignaciones en orden aleatorio
+            let nuevasAsignaciones = [];
+            let equiposDisponibles = [...equipos];
+            
+            // Crear array de todas las combinaciones jugador-ronda necesarias
+            let combinaciones = [];
+            for (let r = 1; r <= maxEquipos; r++) {
+                for (let p of personas) {
+                    combinaciones.push({ persona: p, ronda: r });
+                }
+            }
+            
+            // Barajar las combinaciones para que sea aleatorio
+            combinaciones.sort(() => Math.random() - 0.5);
+            
+            for (let comb of combinaciones) {
+                let equipo;
+                if (noRepeat) {
+                    const usados = nuevasAsignaciones.map(a => a.equipo);
+                    let pool = equiposDisponibles.filter(e => !usados.includes(e));
+                    
+                    if (pool.length === 0) {
+                        pool = [...equiposDisponibles];
+                    }
+                    
+                    equipo = pool[Math.floor(Math.random() * pool.length)];
+                } else {
+                    equipo = equiposDisponibles[Math.floor(Math.random() * equiposDisponibles.length)];
+                }
+                
+                nuevasAsignaciones.push({ 
+                    persona: comb.persona, 
+                    equipo, 
+                    ronda: comb.ronda 
+                });
+            }
+
+            // Efecto visual rápido en la ruleta
+            let idx = 0;
+            const interval = setInterval(() => {
+                const asig = nuevasAsignaciones[idx % nuevasAsignaciones.length];
+                roller.textContent = `${asig.persona} → ${asig.equipo}`;
+                roller.style.color = '#fff';
+                idx++;
+            }, 40);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                
+                asignaciones.push(...nuevasAsignaciones);
+                
+                roller.textContent = '¡Sorteo completado!';
+                roller.style.color = '#4ade80';
+                
+                updateAll();
+                sorteando = false;
+                
+                setTimeout(() => {
+                    roller.style.color = '#6b7280';
+                    roller.textContent = 'Presiona sortear';
+                }, 2000);
+                
+                updateButtonState();
+            }, 1500);
         }
 
         // Modal Participantes
@@ -733,6 +976,7 @@
             const p = personas[i];
             personas.splice(i, 1);
             asignaciones = asignaciones.filter(a => a.persona !== p);
+            lastAssignedPerson = null;
             updateModalPlayersList();
             updateAll();
         }
@@ -828,14 +1072,21 @@
             document.getElementById('cfgNoRepeat').checked = configState.noRepeat;
             document.getElementById('cfgSortMode').value = configState.sortMode;
             
-            const modeDesc = document.getElementById('modeDescription');
-            if (modeDesc) {
-                modeDesc.innerHTML = configState.sortMode === 'rounds' 
-                    ? '<i class="fas fa-info-circle mr-1"></i>Por rondas: sortea el 1er equipo de cada jugador, luego el 2do, etc.'
-                    : '<i class="fas fa-info-circle mr-1"></i>Todo de una vez: completa todos los equipos de un jugador antes de pasar al siguiente.';
-            }
+            updateModeDescription();
             
             document.getElementById('modalConfig').classList.remove('hidden');
+        }
+
+        function updateModeDescription() {
+            const modeDesc = document.getElementById('modeDescription');
+            const sortMode = document.getElementById('cfgSortMode').value;
+            if (modeDesc) {
+                if (sortMode === 'rounds') {
+                    modeDesc.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Por rondas: presiona una vez para sortear un jugador y equipo aleatorio por ronda.';
+                } else {
+                    modeDesc.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Todo de una vez: presiona una sola vez y se sortean todos los equipos para todos los jugadores automáticamente.';
+                }
+            }
         }
 
         function cerrarModalConfig() {
@@ -851,6 +1102,7 @@
         function resetearTodo() {
             if (asignaciones.length && confirm('¿Reiniciar todas las asignaciones?')) {
                 asignaciones = [];
+                lastAssignedPerson = null;
                 document.getElementById('rollerDisplay').textContent = 'Presiona sortear';
                 document.getElementById('rollerDisplay').style.color = '#6b7280';
                 updateAll();
@@ -860,12 +1112,7 @@
         // Event listeners
         document.addEventListener('change', function(e) {
             if (e.target.id === 'cfgSortMode') {
-                const desc = document.getElementById('modeDescription');
-                if (desc) {
-                    desc.innerHTML = e.target.value === 'rounds' 
-                        ? '<i class="fas fa-info-circle mr-1"></i>Por rondas: sortea el 1er equipo de cada jugador, luego el 2do, etc.'
-                        : '<i class="fas fa-info-circle mr-1"></i>Todo de una vez: completa todos los equipos de un jugador antes de pasar al siguiente.';
-                }
+                updateModeDescription();
             }
         });
 
