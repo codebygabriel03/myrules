@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Sorteador de Equipos — MyRules Suite</title>
+    <meta name="description" content="Sorteador aleatorio y justo de equipos para jugadores con soporte de logos e imágenes personalizadas, animación tipo ruleta y gestión multi-ronda.">
+    <meta name="theme-color" content="#090d16">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'canvas': '#090d16',
+                        'surface': '#111728',
+                        'surface-subtle': '#161f36',
+                        'border-subtle': 'rgba(255, 255, 255, 0.08)',
+                        'border-hover': 'rgba(255, 255, 255, 0.2)',
+                    },
+                    animation: {
+                        'glow-pulse': 'glowPulse 3s ease-in-out infinite alternate',
+                        'winner-reveal': 'winnerReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        glowPulse: {
+                            '0%': { opacity: '0.3', transform: 'scale(0.98)' },
+                            '100%': { opacity: '0.7', transform: 'scale(1.04)' },
+                        },
+                        winnerReveal: {
+                            '0%': { opacity: '0', transform: 'scale(0.85) translateY(12px)' },
+                            '60%': { opacity: '1', transform: 'scale(1.05) translateY(-4px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(17, 23, 40, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(22, 31, 54, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.25s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+
+        /* Focus rings for accessibility */
+        a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+            outline: 2px solid #c084fc;
+            outline-offset: 2px;
+        }
+
+        /* Safe padding for modern mobile devices */
+        .safe-bottom-padding {
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Pulsing Glow button */
+        .btn-sort-active {
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.45);
+            animation: pulse-btn 2s infinite ease-in-out;
+        }
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.7); transform: scale(1.01); }
+        }
+
+        /* Card reveal highlight */
+        .just-assigned {
+            border-color: rgba(168, 85, 247, 0.6) !important;
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.25);
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(22, 31, 54, 0.85) 100%) !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-canvas text-slate-100 min-h-screen font-body antialiased flex flex-col relative overflow-x-hidden">
+
+    <!-- Luces de fondo ambientales optimizadas -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="absolute -top-32 -left-32 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-purple-600/10 rounded-full blur-[140px] animate-glow-pulse"></div>
+        <div class="absolute top-1/2 -right-40 w-96 sm:w-[550px] h-96 sm:h-[550px] bg-indigo-600/10 rounded-full blur-[150px] animate-glow-pulse" style="animation-delay: 1.5s;"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-red-600/10 rounded-full blur-[140px] animate-glow-pulse" style="animation-delay: 0.8s;"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+    </div>
+
+    <!-- Header Principal MyRules -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-border-subtle">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <a href="../index.html" class="flex items-center gap-3 group focus:outline-none" aria-label="Volver al panel principal de MyRules">
+                        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-500 to-red-500 p-[1.5px] shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
+                            <div class="w-full h-full bg-canvas rounded-[10px] flex items-center justify-center">
+                                <span class="font-title font-extrabold text-lg bg-gradient-to-r from-purple-400 to-amber-300 bg-clip-text text-transparent group-hover:scale-110 transition-transform">
+                                    MR
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-title font-bold text-xl tracking-tight text-white">
+                                    My<span class="text-purple-400">Rules</span>
+                                </span>
+                                <span class="px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider rounded bg-purple-500/15 text-purple-300 border border-purple-500/20">
+                                    Sorteador
+                                </span>
+                            </div>
+                            <p class="hidden sm:block text-[11px] text-slate-400 font-mono -mt-0.5">Asignación aleatoria de equipos con imágenes</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Controles en Header -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Botón de sonido -->
+                    <button type="button" 
+                            id="soundToggleBtn" 
+                            class="p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-medium bg-surface hover:bg-surface-subtle text-slate-300 hover:text-white border border-border-subtle transition-all"
+                            title="Alternar efectos de sonido">
+                        <i class="fa-solid fa-volume-high text-purple-400 text-sm" id="soundIcon"></i>
+                        <span class="hidden sm:inline ml-1.5">Sonido</span>
+                    </button>
+
+                    <!-- Botón de Configuración -->
+                    <button type="button" 
+                            onclick="openModalConfig()" 
+                            class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-surface hover:bg-surface-subtle text-slate-200 border border-border-subtle hover:border-border-hover transition-all">
+                        <i class="fa-solid fa-gear text-amber-400 text-xs"></i>
+                        <span class="hidden sm:inline">Configuración</span>
+                    </button>
+
+                    <!-- Botón volver al Hub -->
+                    <a href="../index.html" 
+                       class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-border-subtle transition-all">
+                        <i class="fa-solid fa-house text-slate-400"></i>
+                        <span class="hidden md:inline">Hub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 relative z-10 px-4 sm:px-6 lg:px-8 py-6 sm:py-10 max-w-7xl mx-auto w-full safe-bottom-padding">
+        
+        <!-- Header de la herramienta -->
+        <div class="text-center max-w-2xl mx-auto mb-6 sm:mb-8 space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs font-mono text-purple-300">
+                <i class="fa-solid fa-dice-d20"></i>
+                <span>Sorteador Dinámico con Escudos & Logos</span>
+            </div>
+            <h1 class="font-title font-extrabold text-2xl sm:text-4xl text-white tracking-tight">
+                Sorteador de Equipos
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400">
+                Asigna equipos justos a cada participante. Visualiza al jugador y el escudo oficial al instante de cada sorteo.
+            </p>
+        </div>
+
+        <!-- Layout Responsivo de 2 Columnas en Pantallas Grandes -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Columna Izquierda: Escenario de Sorteo, Botón y Métricas (7 cols) -->
+            <div class="lg:col-span-7 space-y-5">
+                
+                <!-- Métricas Rápidas -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="glass-panel p-3 sm:p-4 rounded-2xl text-center border border-border-subtle">
+                        <div class="text-xl sm:text-2xl font-mono font-bold text-blue-400" id="statPlayers">0</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">Participantes</div>
+                    </div>
+                    <div class="glass-panel p-3 sm:p-4 rounded-2xl text-center border border-border-subtle">
+                        <div class="text-xl sm:text-2xl font-mono font-bold text-emerald-400" id="statTeams">0</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">Equipos Cargados</div>
+                    </div>
+                    <div class="glass-panel p-3 sm:p-4 rounded-2xl text-center border border-border-subtle">
+                        <div class="text-xl sm:text-2xl font-mono font-bold text-purple-400" id="statRemaining">0</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">Asignaciones Restantes</div>
+                    </div>
+                </div>
+
+                <!-- Escenario Principal de Sorteo (Stage de Ruleta con Imagen) -->
+                <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-border-subtle relative overflow-hidden text-center shadow-2xl">
+                    <div class="absolute -top-20 -right-20 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- ESTADO 1: EN ESPERA / REPOSO -->
+                    <div id="stageIdle" class="py-8 space-y-4 flex flex-col items-center justify-center min-h-[240px]">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-900/40 border border-purple-500/30 flex items-center justify-center text-3xl text-purple-400 shadow-inner">
+                            <i class="fa-solid fa-shield-halved animate-bounce" style="animation-duration: 2.5s;"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <h3 class="font-title font-bold text-lg sm:text-xl text-white">
+                                Listo para sortear
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-400 max-w-sm mx-auto">
+                                Presiona el botón para elegir un jugador y sortear su equipo con escudo oficial.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO 2: GIRANDO / ROLEANDO (Nombre del jugador arriba, imagen al centro, nombre abajo) -->
+                    <div id="stageSpinning" class="hidden py-4 flex-col items-center justify-center min-h-[240px] space-y-4">
+                        <!-- Nombre del Jugador Arriba -->
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-200 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider animate-pulse">
+                            <i class="fa-solid fa-user text-purple-400"></i>
+                            <span id="spinningPlayerName" class="text-white font-extrabold tracking-wide">...</span>
+                        </div>
+
+                        <!-- Imagen/Escudo del Equipo en el Centro (Solo el logo sin marco/cuadro) -->
+                        <div class="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center my-1">
+                            <div class="absolute inset-0 bg-purple-500/20 rounded-full blur-2xl animate-pulse pointer-events-none"></div>
+                            <img id="spinningTeamImg" 
+                                 src="" 
+                                 alt="Logo equipo" 
+                                 class="relative z-10 max-w-[120px] max-h-[120px] sm:max-w-[140px] sm:max-h-[140px] object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-transform duration-75">
+                            <div id="spinningTeamFallback" class="hidden relative z-10 text-4xl font-title font-extrabold text-purple-300">
+                                EQ
+                            </div>
+                        </div>
+
+                        <!-- Nombre del Equipo Abajo -->
+                        <div class="space-y-0.5">
+                            <div id="spinningTeamName" class="font-title font-extrabold text-xl sm:text-2xl text-white tracking-tight">
+                                ...
+                            </div>
+                            <span class="text-[11px] font-mono text-purple-300 tracking-wider uppercase">Girando bombo...</span>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO 3: GANADOR REVELADO -->
+                    <div id="stageWinner" class="hidden py-4 flex-col items-center justify-center min-h-[240px] space-y-4 animate-winner-reveal">
+                        <!-- Badge Jugador Ganador -->
+                        <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-sm sm:text-base font-bold uppercase tracking-wider shadow-lg shadow-emerald-500/10">
+                            <i class="fa-solid fa-user-check text-emerald-400 text-sm"></i>
+                            <strong id="winnerPlayerName" class="text-white font-extrabold tracking-wide">JUGADOR</strong>
+                        </div>
+
+                        <!-- Imagen del Equipo Ganador Destacada (Solo el logo flotante sin caja) -->
+                        <div class="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center my-1">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-purple-600/30 to-amber-500/30 rounded-full blur-3xl pointer-events-none"></div>
+                            <img id="winnerTeamImg" 
+                                 src="" 
+                                 alt="Equipo Ganador" 
+                                 class="relative z-10 max-w-[150px] max-h-[150px] sm:max-w-[180px] sm:max-h-[180px] object-contain filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.75)] animate-winner-reveal">
+                            <div id="winnerTeamFallback" class="hidden relative z-10 text-5xl font-title font-extrabold text-purple-300">
+                                EQ
+                            </div>
+                        </div>
+
+                        <!-- Nombre del Equipo Ganador Abajo -->
+                        <div class="space-y-1">
+                            <div id="winnerTeamName" class="font-title font-extrabold text-2xl sm:text-3xl bg-gradient-to-r from-purple-200 via-white to-amber-200 bg-clip-text text-transparent">
+                                NOMBRE EQUIPO
+                            </div>
+                            <div class="flex items-center justify-center gap-2 text-xs font-mono text-slate-400">
+                                <span id="winnerRoundTag" class="px-2 py-0.5 rounded bg-white/5 border border-white/10">Ronda 1/2</span>
+                                <span>¡Equipo asignado con éxito!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón Principal de Sorteo -->
+                    <div class="pt-6">
+                        <button type="button" 
+                                onclick="sortear()" 
+                                id="btnSortear"
+                                class="w-full py-4 px-6 rounded-2xl font-title font-bold text-lg sm:text-xl text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 border border-purple-400/30 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none shadow-lg">
+                            <i class="fa-solid fa-play mr-2"></i> Sortear Equipo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Secundaria -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" 
+                            onclick="openModalTeams()" 
+                            class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-surface hover:bg-surface-subtle text-slate-200 border border-border-subtle hover:border-emerald-500/40 transition-all">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                        <span>Gestionar Equipos</span>
+                    </button>
+                    <button type="button" 
+                            onclick="openModalPlayers()" 
+                            class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-surface hover:bg-surface-subtle text-slate-200 border border-border-subtle hover:border-purple-500/40 transition-all">
+                        <i class="fa-solid fa-user-plus text-purple-400"></i>
+                        <span>Participantes</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tablero de Participantes y Equipos Asignados (5 cols) -->
+            <div class="lg:col-span-5 space-y-4">
+                
+                <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-border-subtle space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-border-subtle">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-users text-purple-400"></i>
+                            <h2 class="font-title font-bold text-base sm:text-lg text-white">
+                                Participantes & Equipos
+                            </h2>
+                        </div>
+                        <button type="button" 
+                                onclick="openModalPlayers()" 
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-500/15 text-purple-300 border border-purple-500/25 hover:bg-purple-500/25 transition-colors">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Agregar</span>
+                        </button>
+                    </div>
+
+                    <!-- Contenedor de Tarjetas de Participantes -->
+                    <div id="cardContainer" class="space-y-3 max-h-[560px] overflow-y-auto custom-scroll pr-1">
+                        <p class="text-sm text-slate-500 text-center py-10 font-mono">
+                            No hay participantes configurados
+                        </p>
+                    </div>
+
+                    <!-- Botón para Copiar Resumen -->
+                    <div class="pt-2 border-t border-border-subtle flex items-center justify-between gap-2">
+                        <button type="button" 
+                                onclick="copiarResumen()" 
+                                id="btnCopiarResumen"
+                                class="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-slate-300 hover:text-white border border-border-subtle transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-copy text-xs"></i>
+                            <span>Copiar Asignaciones</span>
+                        </button>
+                        <button type="button" 
+                                onclick="resetearTodo()" 
+                                class="py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-medium text-red-300 border border-red-500/20 transition-all"
+                                title="Reiniciar asignaciones">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ==================== MODALES ==================== -->
+
+    <!-- Modal 1: Participantes -->
+    <div id="modalPlayers" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 space-y-4 border border-white/15 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <h3 class="font-title font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-purple-400"></i> Participantes
+                </h3>
+                <button type="button" onclick="cerrarModalPlayers()" class="p-1 text-slate-400 hover:text-white transition-colors" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Formulario para agregar participante -->
+            <div class="flex gap-2">
+                <input type="text" 
+                       id="modalInputPersona" 
+                       placeholder="Nombre del participante..." 
+                       class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-border-subtle rounded-xl text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none">
+                <button type="button" 
+                        onclick="agregarPersonaModal()" 
+                        class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm transition-colors">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- Lista de participantes -->
+            <div id="modalPlayersList" class="space-y-2 max-h-64 overflow-y-auto custom-scroll pr-1"></div>
+
+            <button type="button" 
+                    onclick="cerrarModalPlayers()" 
+                    class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors">
+                Listo
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal 2: Gestionar Equipos (Con Soporte de Imágenes y URLs) -->
+    <div id="modalTeams" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="glass-panel w-full max-w-lg rounded-3xl p-6 space-y-4 border border-white/15 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-title font-bold text-lg text-white flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i> Gestionar Equipos
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Agrega tus equipos con nombre y URL de imagen opcional.</p>
+                </div>
+                <button type="button" onclick="cerrarModalTeams()" class="p-1 text-slate-400 hover:text-white transition-colors" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Formulario para agregar equipo con Imagen/Logo -->
+            <div class="space-y-2.5 p-3.5 rounded-2xl bg-slate-900/90 border border-border-subtle">
+                <div class="flex gap-2">
+                    <input type="text" 
+                           id="modalInputEquipo" 
+                           placeholder="Nombre del equipo (ej. Real Madrid, Argentina...)" 
+                           class="flex-1 px-3.5 py-2.5 bg-slate-950 border border-border-subtle rounded-xl text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+                </div>
+                
+                <div class="flex gap-2 items-center">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="url" 
+                               id="modalInputEquipoImg" 
+                               placeholder="URL de la imagen/escudo (opcional)" 
+                               class="w-full pl-8 pr-3 py-2 bg-slate-950 border border-border-subtle rounded-xl text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                               oninput="previewTeamImageInput()">
+                    </div>
+                    <!-- Previsualizador miniatura -->
+                    <div class="w-9 h-9 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center overflow-hidden shrink-0" id="teamImgPreviewBox">
+                        <i class="fa-solid fa-shield text-slate-600 text-xs" id="teamImgPreviewIcon"></i>
+                        <img id="teamImgPreviewImg" class="hidden w-full h-full object-contain">
+                    </div>
+                    <button type="button" 
+                            onclick="agregarEquipoModal()" 
+                            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm whitespace-nowrap transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-xs"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botón para elegir de predeterminados -->
+            <button type="button" 
+                    onclick="abrirModalPredeterminados()" 
+                    class="w-full py-2.5 px-4 rounded-xl bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 font-medium text-xs sm:text-sm border border-indigo-500/30 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <span>Cargar listas predeterminadas con escudos (Champions, Mundial, Libertadores)</span>
+            </button>
+
+            <!-- Lista de equipos cargados -->
+            <div>
+                <div class="flex items-center justify-between text-xs text-slate-400 mb-2 font-mono">
+                    <span>Equipos actuales (<span id="modalTeamsCount">0</span>)</span>
+                    <button type="button" onclick="limpiarTodosEquipos()" class="text-red-400 hover:text-red-300">Borrar todos</button>
+                </div>
+                <div id="modalTeamsList" class="space-y-1.5 max-h-52 overflow-y-auto custom-scroll pr-1"></div>
+            </div>
+
+            <button type="button" 
+                    onclick="cerrarModalTeams()" 
+                    class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors">
+                Listo
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal 3: Equipos Predeterminados (Con logos precargados) -->
+    <div id="modalEquipos" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="glass-panel w-full max-w-xl rounded-3xl p-6 space-y-4 border border-white/15 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-title font-bold text-lg text-white">Seleccionar Equipos Predeterminados</h3>
+                    <p class="text-[11px] text-slate-400">Listas oficiales con escudos y banderas ya configuradas.</p>
+                </div>
+                <button type="button" onclick="cerrarModalPredeterminados()" class="p-1 text-slate-400 hover:text-white transition-colors" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Buscador dentro del modal -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" 
+                       id="searchModal" 
+                       placeholder="Buscar equipo o selección..." 
+                       class="w-full pl-8 pr-3 py-2 bg-slate-900 border border-border-subtle rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none" 
+                       oninput="renderModal()">
+            </div>
+
+            <!-- Pestañas de categorías predeterminadas -->
+            <div class="flex gap-2 overflow-x-auto pb-1 custom-scroll" id="presetTabsContainer">
+                <button type="button" onclick="filterModal('all', this)" class="tab-button px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 text-white active">Todos</button>
+                <button type="button" onclick="filterModal('champions', this)" class="tab-button px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:text-white border border-white/5">Champions</button>
+                <button type="button" onclick="filterModal('mundial', this)" class="tab-button px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:text-white border border-white/5">Mundial</button>
+                <button type="button" onclick="filterModal('libertadores', this)" class="tab-button px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:text-white border border-white/5">Libertadores</button>
+            </div>
+
+            <!-- Acciones rápidas -->
+            <div class="flex items-center justify-between text-xs text-slate-400">
+                <span id="presetCategoryCount">Selecciona los que quieras agregar:</span>
+                <div class="space-x-2">
+                    <button type="button" onclick="seleccionarTodosVisiblesPreset()" class="text-purple-400 hover:underline">Seleccionar todos</button>
+                    <span>•</span>
+                    <button type="button" onclick="deseleccionarTodosVisiblesPreset()" class="text-slate-400 hover:underline">Quitar</button>
+                </div>
+            </div>
+
+            <!-- Cuadrícula con scroll de equipos predeterminados -->
+            <div id="gridModal" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto custom-scroll pr-1"></div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" 
+                        onclick="cerrarModalPredeterminados()" 
+                        class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors">
+                    <i class="fa-solid fa-check mr-2"></i>Aplicar Selección
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Configuración -->
+    <div id="modalConfig" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 space-y-4 border border-white/15 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <h3 class="font-title font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-amber-400"></i> Configuración del Sorteo
+                </h3>
+                <button type="button" onclick="cerrarModalConfig()" class="p-1 text-slate-400 hover:text-white transition-colors" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm">
+                <!-- Equipos por persona -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border-subtle">
+                    <div>
+                        <span class="text-slate-200 font-medium block">Equipos por participante</span>
+                        <span class="text-[11px] text-slate-400">Cuántos equipos recibe cada jugador</span>
+                    </div>
+                    <select id="cfgTeamsPerPerson" class="bg-slate-800 border border-border-subtle rounded-lg px-3 py-1.5 text-white focus:outline-none">
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <!-- Velocidad de giro -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border-subtle">
+                    <div>
+                        <span class="text-slate-200 font-medium block">Velocidad de Ruleta</span>
+                        <span class="text-[11px] text-slate-400">Ritmo de cambio durante el giro</span>
+                    </div>
+                    <select id="cfgSpeed" class="bg-slate-800 border border-border-subtle rounded-lg px-3 py-1.5 text-white focus:outline-none">
+                        <option value="40">Rápida</option>
+                        <option value="70" selected>Normal</option>
+                        <option value="110">Dramática / Lenta</option>
+                    </select>
+                </div>
+
+                <!-- Sin repetir -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border-subtle">
+                    <div>
+                        <span class="text-slate-200 font-medium block">Sin repetir equipos</span>
+                        <span class="text-[11px] text-slate-400">Cada equipo se asigna una sola vez</span>
+                    </div>
+                    <input type="checkbox" id="cfgNoRepeat" checked class="w-5 h-5 accent-purple-600 rounded">
+                </div>
+
+                <!-- Modalidad de sorteo -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border-subtle">
+                    <div>
+                        <span class="text-slate-200 font-medium block">Modo de Sorteo</span>
+                        <span class="text-[11px] text-slate-400">Paso a paso o masivo</span>
+                    </div>
+                    <select id="cfgSortMode" class="bg-slate-800 border border-border-subtle rounded-lg px-3 py-1.5 text-white focus:outline-none">
+                        <option value="rounds">Por rondas (Recomendado)</option>
+                        <option value="full">Todo de una vez</option>
+                    </select>
+                </div>
+
+                <!-- Sonido -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border-subtle">
+                    <div>
+                        <span class="text-slate-200 font-medium block">Efectos Sonoros</span>
+                        <span class="text-[11px] text-slate-400">Sonido de ruleta y victoria sintetizados</span>
+                    </div>
+                    <input type="checkbox" id="cfgSoundEnabled" checked class="w-5 h-5 accent-purple-600 rounded">
+                </div>
+            </div>
+
+            <button type="button" 
+                    onclick="cerrarModalConfig()" 
+                    class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors">
+                Guardar Configuración
+            </button>
+        </div>
+    </div>
+
+    <!-- Script de Sonido, Datos y Lógica del Sorteador -->
+    <script>
+        // Audio Synthesizer (Web Audio API - 100% offline y sin latencia)
+        const SoundFX = (function() {
+            let audioCtx = null;
+            let soundEnabled = true;
+
+            function initAudio() {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) audioCtx = new AudioContext();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            return {
+                setEnabled(val) { soundEnabled = val; },
+                isEnabled() { return soundEnabled; },
+                tick() {
+                    if (!soundEnabled) return;
+                    try {
+                        initAudio();
+                        if (!audioCtx) return;
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(480 + Math.random() * 80, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.04);
+                    } catch (e) {}
+                },
+                fanfare() {
+                    if (!soundEnabled) return;
+                    try {
+                        initAudio();
+                        if (!audioCtx) return;
+                        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                        notes.forEach((freq, idx) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            const startTime = audioCtx.currentTime + idx * 0.08;
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, startTime);
+                            gain.gain.setValueAtTime(0.12, startTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(startTime);
+                            osc.stop(startTime + 0.35);
+                        });
+                    } catch (e) {}
+                }
+            };
+        })();
+
+        // Base de Datos de Equipos Predeterminados con Logos Oficiales
+        const equiposDefault = {
+            champions: [
+                { nombre: "Real Madrid", logo: "https://media.api-sports.io/football/teams/541.png" },
+                { nombre: "FC Barcelona", logo: "https://media.api-sports.io/football/teams/529.png" },
+                { nombre: "Manchester City", logo: "https://media.api-sports.io/football/teams/50.png" },
+                { nombre: "Bayern Múnich", logo: "https://media.api-sports.io/football/teams/157.png" },
+                { nombre: "Paris Saint-Germain", logo: "https://media.api-sports.io/football/teams/85.png" },
+                { nombre: "Liverpool", logo: "https://media.api-sports.io/football/teams/40.png" },
+                { nombre: "Arsenal", logo: "https://media.api-sports.io/football/teams/42.png" },
+                { nombre: "Chelsea", logo: "https://media.api-sports.io/football/teams/49.png" },
+                { nombre: "Inter de Milán", logo: "https://media.api-sports.io/football/teams/505.png" },
+                { nombre: "AC Milan", logo: "https://media.api-sports.io/football/teams/489.png" },
+                { nombre: "Juventus", logo: "https://media.api-sports.io/football/teams/496.png" },
+                { nombre: "Borussia Dortmund", logo: "https://media.api-sports.io/football/teams/165.png" },
+                { nombre: "Atlético de Madrid", logo: "https://media.api-sports.io/football/teams/530.png" },
+                { nombre: "Bayer Leverkusen", logo: "https://media.api-sports.io/football/teams/168.png" },
+                { nombre: "Benfica", logo: "https://media.api-sports.io/football/teams/211.png" },
+                { nombre: "Sporting CP", logo: "https://media.api-sports.io/football/teams/228.png" }
+            ],
+            mundial: [
+                { nombre: "Argentina", logo: "https://flagcdn.com/w160/ar.png" },
+                { nombre: "Brasil", logo: "https://flagcdn.com/w160/br.png" },
+                { nombre: "Francia", logo: "https://flagcdn.com/w160/fr.png" },
+                { nombre: "Alemania", logo: "https://flagcdn.com/w160/de.png" },
+                { nombre: "España", logo: "https://flagcdn.com/w160/es.png" },
+                { nombre: "Inglaterra", logo: "https://flagcdn.com/w160/gb-eng.png" },
+                { nombre: "Portugal", logo: "https://flagcdn.com/w160/pt.png" },
+                { nombre: "Países Bajos", logo: "https://flagcdn.com/w160/nl.png" },
+                { nombre: "Italia", logo: "https://flagcdn.com/w160/it.png" },
+                { nombre: "Uruguay", logo: "https://flagcdn.com/w160/uy.png" },
+                { nombre: "Croacia", logo: "https://flagcdn.com/w160/hr.png" },
+                { nombre: "Bélgica", logo: "https://flagcdn.com/w160/be.png" },
+                { nombre: "Colombia", logo: "https://flagcdn.com/w160/co.png" },
+                { nombre: "México", logo: "https://flagcdn.com/w160/mx.png" },
+                { nombre: "Japón", logo: "https://flagcdn.com/w160/jp.png" },
+                { nombre: "Marruecos", logo: "https://flagcdn.com/w160/ma.png" }
+            ],
+            libertadores: [
+                { nombre: "River Plate", logo: "https://media.api-sports.io/football/teams/435.png" },
+                { nombre: "Boca Juniors", logo: "https://media.api-sports.io/football/teams/451.png" },
+                { nombre: "Flamengo", logo: "https://media.api-sports.io/football/teams/127.png" },
+                { nombre: "Palmeiras", logo: "https://media.api-sports.io/football/teams/121.png" },
+                { nombre: "São Paulo", logo: "https://media.api-sports.io/football/teams/126.png" },
+                { nombre: "Santos", logo: "https://media.api-sports.io/football/teams/134.png" },
+                { nombre: "Peñarol", logo: "https://media.api-sports.io/football/teams/2311.png" },
+                { nombre: "Nacional", logo: "https://media.api-sports.io/football/teams/2314.png" },
+                { nombre: "Olimpia", logo: "https://media.api-sports.io/football/teams/2483.png" },
+                { nombre: "Cerro Porteño", logo: "https://media.api-sports.io/football/teams/2484.png" },
+                { nombre: "Racing Club", logo: "https://media.api-sports.io/football/teams/436.png" },
+                { nombre: "Independiente", logo: "https://media.api-sports.io/football/teams/453.png" },
+                { nombre: "Colo-Colo", logo: "https://media.api-sports.io/football/teams/2471.png" },
+                { nombre: "Liga de Quito", logo: "https://media.api-sports.io/football/teams/2478.png" }
+            ]
+        };
+
+        // Estado del sorteador
+        // Cada equipo es un objeto: { nombre: string, logo: string }
+        let equipos = [
+            { nombre: "Real Madrid", logo: "https://media.api-sports.io/football/teams/541.png" },
+            { nombre: "FC Barcelona", logo: "https://media.api-sports.io/football/teams/529.png" },
+            { nombre: "Manchester City", logo: "https://media.api-sports.io/football/teams/50.png" },
+            { nombre: "Bayern Múnich", logo: "https://media.api-sports.io/football/teams/157.png" },
+            { nombre: "Paris Saint-Germain", logo: "https://media.api-sports.io/football/teams/85.png" },
+            { nombre: "Liverpool", logo: "https://media.api-sports.io/football/teams/40.png" }
+        ];
+
+        let personas = [];
+        let asignaciones = []; // { persona: string, equipo: { nombre, logo }, ronda: number }
+        let sorteando = false;
+        let lastAssignedPerson = null;
+        let modalFilter = 'all';
+
+        let configState = {
+            maxEquipos: 2,
+            speed: 70,
+            noRepeat: true,
+            sortMode: 'rounds',
+            soundEnabled: true
+        };
+
+        function getConfig() {
+            return { ...configState };
+        }
+
+        // Helper para iniciales de equipo si no hay logo o falla carga
+        function getInitials(nombre) {
+            if (!nombre) return 'EQ';
+            const words = nombre.trim().split(/\s+/);
+            if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+            return (words[0][0] + words[1][0]).toUpperCase();
+        }
+
+        // Renderizado del logo de un equipo con fallback elegante
+        function renderTeamLogoImg(equipoObj, imgClass = "w-6 h-6 object-contain") {
+            const logo = equipoObj.logo || '';
+            const nombre = equipoObj.nombre || '';
+            const initials = getInitials(nombre);
+
+            if (logo) {
+                return `<img src="${logo}" 
+                             alt="${nombre}" 
+                             class="${imgClass} rounded shrink-0 filter drop-shadow" 
+                             onerror="this.onerror=null; this.outerHTML='<span class=\\'inline-flex items-center justify-center w-6 h-6 rounded bg-purple-500/20 text-purple-300 font-mono text-[10px] font-bold border border-purple-500/30 shrink-0\\'>${initials}</span>'">`;
+            } else {
+                return `<span class="inline-flex items-center justify-center w-6 h-6 rounded bg-purple-500/20 text-purple-300 font-mono text-[10px] font-bold border border-purple-500/30 shrink-0">${initials}</span>`;
+            }
+        }
+
+        // Preview en vivo al escribir una URL en el modal
+        function previewTeamImageInput() {
+            const input = document.getElementById('modalInputEquipoImg');
+            const previewImg = document.getElementById('teamImgPreviewImg');
+            const previewIcon = document.getElementById('teamImgPreviewIcon');
+            const url = input.value.trim();
+
+            if (url) {
+                previewImg.src = url;
+                previewImg.onload = () => {
+                    previewImg.classList.remove('hidden');
+                    previewIcon.classList.add('hidden');
+                };
+                previewImg.onerror = () => {
+                    previewImg.classList.add('hidden');
+                    previewIcon.classList.remove('hidden');
+                };
+            } else {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+                previewIcon.classList.remove('hidden');
+            }
+        }
+
+        // Actualización global de la interfaz
+        function updateAll() {
+            updateDashboard();
+            updateButtonState();
+            updateStats();
+            updateModalTeamsList();
+            updateModalPlayersList();
+        }
+
+        function updateStats() {
+            const config = getConfig();
+            const totalNeeded = personas.length * config.maxEquipos;
+            const assigned = asignaciones.length;
+            const remaining = Math.max(0, totalNeeded - assigned);
+
+            document.getElementById('statPlayers').textContent = personas.length;
+            document.getElementById('statTeams').textContent = equipos.length;
+            document.getElementById('statRemaining').textContent = remaining;
+        }
+
+        function updateDashboard() {
+            const config = getConfig();
+            const container = document.getElementById('cardContainer');
+
+            if (!personas.length) {
+                container.innerHTML = '<p class="text-sm text-slate-500 text-center py-8 font-mono">No hay participantes agregados</p>';
+                return;
+            }
+
+            const playerIcons = ['fa-user', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-secret', 'fa-user-tie', 'fa-user-graduate'];
+
+            container.innerHTML = personas.map((p, i) => {
+                const asig = asignaciones.filter(a => a.persona === p);
+                asig.sort((a, b) => (a.ronda || 0) - (b.ronda || 0));
+                const isJustAssigned = lastAssignedPerson === p;
+                const playerIcon = playerIcons[i % playerIcons.length];
+
+                return `
+                <div class="glass-card rounded-2xl p-4 transition-all duration-300 relative overflow-hidden ${isJustAssigned ? 'just-assigned' : ''}" 
+                     id="card-${i}"
+                     data-persona="${p}">
+                    
+                    <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-400 text-xs shrink-0">
+                                <i class="fa-solid ${playerIcon}"></i>
+                            </div>
+                            <span class="font-title font-bold text-sm sm:text-base text-white truncate">${p}</span>
+                        </div>
+                        <span class="font-mono text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                            ${asig.length}/${config.maxEquipos}
+                        </span>
+                    </div>
+
+                    <!-- Equipos Asignados con Imágenes -->
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        ${asig.length ? asig.map((a, idx) => `
+                            <div class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-purple-500/30 text-xs text-slate-200 shadow-sm animate-fadeIn">
+                                ${renderTeamLogoImg(a.equipo, "w-5 h-5 object-contain")}
+                                <span class="font-medium text-[11px] sm:text-xs">${a.equipo.nombre}</span>
+                                <span class="text-[9px] font-mono text-purple-400 bg-purple-500/10 px-1 rounded">R${a.ronda}</span>
+                            </div>
+                        `).join('') : `
+                            <span class="text-xs text-slate-500 italic py-1">Sin equipos asignados todavía</span>
+                        `}
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (lastAssignedPerson) {
+                setTimeout(() => {
+                    const animated = document.querySelector('.just-assigned');
+                    if (animated) animated.classList.remove('just-assigned');
+                    lastAssignedPerson = null;
+                }, 2200);
+            }
+        }
+
+        function updateModalPlayersList() {
+            const container = document.getElementById('modalPlayersList');
+            if (!container) return;
+            const config = getConfig();
+
+            if (!personas.length) {
+                container.innerHTML = '<p class="text-slate-500 text-xs text-center py-4 font-mono">Sin participantes</p>';
+                return;
+            }
+
+            container.innerHTML = personas.map((p, i) => `
+                <div class="flex items-center justify-between bg-slate-900/80 rounded-xl px-3 py-2.5 border border-border-subtle">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-user text-purple-400 text-xs"></i>
+                        <span class="text-white text-xs sm:text-sm font-medium">${p}</span>
+                        <span class="text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+                            ${asignaciones.filter(a => a.persona === p).length}/${config.maxEquipos}
+                        </span>
+                    </div>
+                    <button type="button" onclick="eliminarPersonaModal(${i})" class="text-slate-500 hover:text-red-400 transition-colors p-1" title="Eliminar">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateModalTeamsList() {
+            const container = document.getElementById('modalTeamsList');
+            const countSpan = document.getElementById('modalTeamsCount');
+            if (countSpan) countSpan.textContent = equipos.length;
+            if (!container) return;
+
+            if (!equipos.length) {
+                container.innerHTML = '<p class="text-slate-500 text-xs text-center py-4 font-mono">Sin equipos cargados</p>';
+                return;
+            }
+
+            container.innerHTML = equipos.map((eq, i) => `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-border-subtle text-xs">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        ${renderTeamLogoImg(eq, "w-6 h-6 object-contain")}
+                        <span class="font-medium text-slate-200 truncate">${eq.nombre}</span>
+                    </div>
+                    <button type="button" onclick="eliminarEquipoModal(${i})" class="text-slate-500 hover:text-red-400 p-1 transition-colors" title="Eliminar equipo">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateButtonState() {
+            const btn = document.getElementById('btnSortear');
+            const config = getConfig();
+
+            if (!personas.length || !equipos.length) {
+                btn.disabled = true;
+                btn.classList.remove('btn-sort-active');
+                btn.innerHTML = '<i class="fa-solid fa-ban mr-2"></i> Agrega jugadores y equipos';
+                return;
+            }
+
+            let hayPendientes = false;
+            for (let p of personas) {
+                const count = asignaciones.filter(a => a.persona === p).length;
+                if (count < config.maxEquipos) {
+                    hayPendientes = true;
+                    break;
+                }
+            }
+
+            let disponibles = [...equipos];
+            if (config.noRepeat) {
+                const usados = asignaciones.map(a => a.equipo.nombre);
+                disponibles = disponibles.filter(e => !usados.includes(e.nombre));
+            }
+
+            if (!hayPendientes) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i> ¡Sorteo Completado!';
+                btn.classList.remove('btn-sort-active');
+            } else if (!disponibles.length && config.noRepeat) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> No quedan equipos disponibles';
+                btn.classList.remove('btn-sort-active');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-play mr-2"></i> Sortear Equipo';
+                btn.classList.add('btn-sort-active');
+            }
+        }
+
+        function obtenerPendientesAleatorios(config) {
+            const { maxEquipos } = config;
+            let pendientes = [];
+
+            for (let p of personas) {
+                const count = asignaciones.filter(a => a.persona === p).length;
+                if (count < maxEquipos) {
+                    pendientes.push({
+                        persona: p,
+                        ronda: count + 1
+                    });
+                }
+            }
+            return pendientes;
+        }
+
+        // ==================== LÓGICA DE SORTEO ====================
+        function sortear() {
+            if (sorteando) return;
+            const config = getConfig();
+            const { speed, noRepeat, sortMode } = config;
+
+            if (!personas.length || !equipos.length) return;
+
+            if (sortMode === 'full') {
+                sortearTodoDeUnaVez(config);
+                return;
+            }
+
+            // Modo Por Rondas
+            const pendientes = obtenerPendientesAleatorios(config);
+            if (!pendientes.length) {
+                updateButtonState();
+                return;
+            }
+
+            // Seleccionar jugador aleatorio pendiente
+            const elegido = pendientes[Math.floor(Math.random() * pendientes.length)];
+            const persona = elegido.persona;
+            const ronda = elegido.ronda;
+
+            let disponibles = [...equipos];
+            if (noRepeat) {
+                const usados = asignaciones.map(a => a.equipo.nombre);
+                disponibles = disponibles.filter(e => !usados.includes(e.nombre));
+            }
+
+            if (!disponibles.length) {
+                updateButtonState();
+                return;
+            }
+
+            // Iniciar animación en el stage
+            sorteando = true;
+            const btn = document.getElementById('btnSortear');
+            btn.disabled = true;
+            btn.classList.remove('btn-sort-active');
+
+            const stageIdle = document.getElementById('stageIdle');
+            const stageSpinning = document.getElementById('stageSpinning');
+            const stageWinner = document.getElementById('stageWinner');
+
+            const spinningPlayerName = document.getElementById('spinningPlayerName');
+            const spinningTeamImg = document.getElementById('spinningTeamImg');
+            const spinningTeamFallback = document.getElementById('spinningTeamFallback');
+            const spinningTeamName = document.getElementById('spinningTeamName');
+
+            stageIdle.classList.add('hidden');
+            stageWinner.classList.add('hidden');
+            stageSpinning.classList.remove('hidden');
+            stageSpinning.classList.add('flex');
+
+            spinningPlayerName.textContent = persona;
+
+            // Animación de la ruleta girando a alta velocidad
+            let spinCount = 0;
+            const maxSpins = 24; // Cantidad de pasos de giro
+            const interval = setInterval(() => {
+                const randomTeam = disponibles[Math.floor(Math.random() * disponibles.length)];
+                
+                // Mostrar nombre del equipo abajo
+                spinningTeamName.textContent = randomTeam.nombre;
+
+                // Mostrar imagen del equipo en el centro
+                if (randomTeam.logo) {
+                    spinningTeamImg.src = randomTeam.logo;
+                    spinningTeamImg.classList.remove('hidden');
+                    spinningTeamFallback.classList.add('hidden');
+                } else {
+                    spinningTeamImg.classList.add('hidden');
+                    spinningTeamFallback.textContent = getInitials(randomTeam.nombre);
+                    spinningTeamFallback.classList.remove('hidden');
+                }
+
+                SoundFX.tick();
+                spinCount++;
+
+                if (spinCount >= maxSpins) {
+                    clearInterval(interval);
+
+                    // Elegir equipo ganador final
+                    const equipoGanador = disponibles[Math.floor(Math.random() * disponibles.length)];
+
+                    // Revelar ganador con fanfarria
+                    setTimeout(() => {
+                        revelarGanador(persona, equipoGanador, ronda);
+                    }, 150);
+                }
+            }, Math.max(35, speed));
+        }
+
+        function revelarGanador(persona, equipoGanador, ronda) {
+            const stageSpinning = document.getElementById('stageSpinning');
+            const stageWinner = document.getElementById('stageWinner');
+
+            const winnerPlayerName = document.getElementById('winnerPlayerName');
+            const winnerTeamImg = document.getElementById('winnerTeamImg');
+            const winnerTeamFallback = document.getElementById('winnerTeamFallback');
+            const winnerTeamName = document.getElementById('winnerTeamName');
+            const winnerRoundTag = document.getElementById('winnerRoundTag');
+
+            stageSpinning.classList.add('hidden');
+            stageSpinning.classList.remove('flex');
+
+            stageWinner.classList.remove('hidden');
+            stageWinner.classList.add('flex');
+
+            winnerPlayerName.textContent = persona;
+            winnerTeamName.textContent = equipoGanador.nombre;
+            winnerRoundTag.textContent = `Ronda ${ronda} de ${configState.maxEquipos}`;
+
+            if (equipoGanador.logo) {
+                winnerTeamImg.src = equipoGanador.logo;
+                winnerTeamImg.classList.remove('hidden');
+                winnerTeamFallback.classList.add('hidden');
+            } else {
+                winnerTeamImg.classList.add('hidden');
+                winnerTeamFallback.textContent = getInitials(equipoGanador.nombre);
+                winnerTeamFallback.classList.remove('hidden');
+            }
+
+            // Registrar asignación
+            asignaciones.push({ persona, equipo: equipoGanador, ronda });
+            lastAssignedPerson = persona;
+
+            // Sonido de fanfarria
+            SoundFX.fanfare();
+
+            updateAll();
+            sorteando = false;
+        }
+
+        // Modo Todo de Una Vez
+        function sortearTodoDeUnaVez(config) {
+            const { maxEquipos, speed, noRepeat } = config;
+            const totalNeeded = personas.length * maxEquipos;
+            let disponibles = [...equipos];
+
+            if (noRepeat && disponibles.length < totalNeeded) {
+                alert(`No hay suficientes equipos cargados. Necesitas al menos ${totalNeeded} equipos (${personas.length} jugadores × ${maxEquipos} equipos).`);
+                return;
+            }
+
+            sorteando = true;
+            const btn = document.getElementById('btnSortear');
+            btn.disabled = true;
+            btn.classList.remove('btn-sort-active');
+
+            const stageIdle = document.getElementById('stageIdle');
+            const stageSpinning = document.getElementById('stageSpinning');
+            const stageWinner = document.getElementById('stageWinner');
+
+            stageIdle.classList.add('hidden');
+            stageWinner.classList.add('hidden');
+            stageSpinning.classList.remove('hidden');
+            stageSpinning.classList.add('flex');
+
+            let nuevasAsignaciones = [];
+            let equiposDisponibles = [...equipos];
+
+            let combinaciones = [];
+            for (let r = 1; r <= maxEquipos; r++) {
+                for (let p of personas) {
+                    combinaciones.push({ persona: p, ronda: r });
+                }
+            }
+            combinaciones.sort(() => Math.random() - 0.5);
+
+            for (let comb of combinaciones) {
+                let eq;
+                if (noRepeat) {
+                    const usados = nuevasAsignaciones.map(a => a.equipo.nombre);
+                    let pool = equiposDisponibles.filter(e => !usados.includes(e.nombre));
+                    if (!pool.length) pool = [...equiposDisponibles];
+                    eq = pool[Math.floor(Math.random() * pool.length)];
+                } else {
+                    eq = equiposDisponibles[Math.floor(Math.random() * equiposDisponibles.length)];
+                }
+                nuevasAsignaciones.push({ persona: comb.persona, equipo: eq, ronda: comb.ronda });
+            }
+
+            let idx = 0;
+            const interval = setInterval(() => {
+                const current = nuevasAsignaciones[idx % nuevasAsignaciones.length];
+                document.getElementById('spinningPlayerName').textContent = current.persona;
+                document.getElementById('spinningTeamName').textContent = current.equipo.nombre;
+                const spinImg = document.getElementById('spinningTeamImg');
+                if (current.equipo.logo) {
+                    spinImg.src = current.equipo.logo;
+                    spinImg.classList.remove('hidden');
+                }
+                SoundFX.tick();
+                idx++;
+            }, 50);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                asignaciones.push(...nuevasAsignaciones);
+                SoundFX.fanfare();
+
+                stageSpinning.classList.add('hidden');
+                stageSpinning.classList.remove('flex');
+
+                stageWinner.classList.remove('hidden');
+                stageWinner.classList.add('flex');
+
+                document.getElementById('winnerPlayerName').textContent = "TODOS LOS JUGADORES";
+                document.getElementById('winnerTeamName').textContent = "¡Sorteo Masivo Finalizado!";
+                document.getElementById('winnerRoundTag').textContent = `${nuevasAsignaciones.length} Equipos Asignados`;
+                document.getElementById('winnerTeamImg').classList.add('hidden');
+                document.getElementById('winnerTeamFallback').textContent = "OK";
+                document.getElementById('winnerTeamFallback').classList.remove('hidden');
+
+                updateAll();
+                sorteando = false;
+            }, 1800);
+        }
+
+        // ==================== MODALES Y GESTIÓN ====================
+        // Modal Participantes
+        function openModalPlayers() {
+            updateModalPlayersList();
+            document.getElementById('modalPlayers').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modalInputPersona')?.focus(), 50);
+        }
+
+        function cerrarModalPlayers() {
+            document.getElementById('modalPlayers').classList.add('hidden');
+            updateAll();
+        }
+
+        function agregarPersonaModal() {
+            const input = document.getElementById('modalInputPersona');
+            const nombre = input.value.trim();
+            if (nombre && !personas.includes(nombre)) {
+                personas.push(nombre);
+                input.value = '';
+                updateModalPlayersList();
+                updateAll();
+            }
+        }
+
+        function eliminarPersonaModal(i) {
+            const p = personas[i];
+            personas.splice(i, 1);
+            asignaciones = asignaciones.filter(a => a.persona !== p);
+            lastAssignedPerson = null;
+            updateModalPlayersList();
+            updateAll();
+        }
+
+        // Modal Equipos
+        function openModalTeams() {
+            updateModalTeamsList();
+            document.getElementById('modalTeams').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modalInputEquipo')?.focus(), 50);
+        }
+
+        function cerrarModalTeams() {
+            document.getElementById('modalTeams').classList.add('hidden');
+            updateAll();
+        }
+
+        function agregarEquipoModal() {
+            const inputNombre = document.getElementById('modalInputEquipo');
+            const inputImg = document.getElementById('modalInputEquipoImg');
+            const nombre = inputNombre.value.trim();
+            const logo = inputImg.value.trim();
+
+            if (nombre) {
+                // Verificar si ya existe por nombre
+                const exists = equipos.some(e => e.nombre.toLowerCase() === nombre.toLowerCase());
+                if (!exists) {
+                    equipos.push({ nombre, logo });
+                    inputNombre.value = '';
+                    inputImg.value = '';
+                    previewTeamImageInput();
+                    updateModalTeamsList();
+                    updateAll();
+                } else {
+                    alert('Ese equipo ya se encuentra en la lista.');
+                }
+            }
+        }
+
+        function eliminarEquipoModal(i) {
+            equipos.splice(i, 1);
+            updateModalTeamsList();
+            updateAll();
+            if (typeof renderModal === 'function') renderModal();
+        }
+
+        function limpiarTodosEquipos() {
+            if (equipos.length && confirm('¿Estás seguro de vaciar toda la lista de equipos?')) {
+                equipos = [];
+                updateModalTeamsList();
+                updateAll();
+            }
+        }
+
+        // Modal Predeterminados
+        function abrirModalPredeterminados() {
+            document.getElementById('modalEquipos').classList.remove('hidden');
+            renderModal();
+        }
+
+        function cerrarModalPredeterminados() {
+            document.getElementById('modalEquipos').classList.add('hidden');
+            updateModalTeamsList();
+            updateAll();
+        }
+
+        function filterModal(cat, btn) {
+            modalFilter = cat;
+            document.querySelectorAll('#presetTabsContainer .tab-button').forEach(b => {
+                b.className = 'tab-button px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:text-white border border-white/5';
+            });
+            btn.className = 'tab-button px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 text-white active';
+            renderModal();
+        }
+
+        function getVisiblePresets() {
+            const search = document.getElementById('searchModal')?.value.toLowerCase().trim() || '';
+            let lista = [];
+            if (modalFilter === 'all') {
+                Object.values(equiposDefault).forEach(arr => lista.push(...arr));
+            } else {
+                lista = equiposDefault[modalFilter] || [];
+            }
+            if (search) lista = lista.filter(e => e.nombre.toLowerCase().includes(search));
+            return lista;
+        }
+
+        function renderModal() {
+            const lista = getVisiblePresets();
+            const grid = document.getElementById('gridModal');
+
+            grid.innerHTML = lista.map(eq => {
+                const sel = equipos.some(e => e.nombre.toLowerCase() === eq.nombre.toLowerCase());
+                return `
+                <button type="button" 
+                        onclick="togglePresetTeam('${eq.nombre.replace(/'/g, "\\'")}', '${(eq.logo || '').replace(/'/g, "\\'")}')" 
+                        class="p-2.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between gap-2 ${
+                            sel ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 font-semibold shadow-sm' 
+                                : 'border-border-subtle bg-slate-900/80 text-slate-300 hover:border-purple-500/50 hover:bg-slate-900'
+                        }">
+                    <div class="flex items-center gap-2 min-w-0">
+                        ${renderTeamLogoImg(eq, "w-6 h-6 object-contain")}
+                        <span class="truncate">${eq.nombre}</span>
+                    </div>
+                    <span class="shrink-0 text-xs font-bold ${sel ? 'text-emerald-400' : 'text-slate-600'}">
+                        ${sel ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-plus text-[10px]"></i>'}
+                    </span>
+                </button>`;
+            }).join('');
+        }
+
+        function togglePresetTeam(nombre, logo) {
+            const idx = equipos.findIndex(e => e.nombre.toLowerCase() === nombre.toLowerCase());
+            if (idx > -1) {
+                equipos.splice(idx, 1);
+            } else {
+                equipos.push({ nombre, logo });
+            }
+            renderModal();
+            updateModalTeamsList();
+            updateAll();
+        }
+
+        function seleccionarTodosVisiblesPreset() {
+            const lista = getVisiblePresets();
+            lista.forEach(item => {
+                if (!equipos.some(e => e.nombre.toLowerCase() === item.nombre.toLowerCase())) {
+                    equipos.push({ ...item });
+                }
+            });
+            renderModal();
+            updateModalTeamsList();
+            updateAll();
+        }
+
+        function deseleccionarTodosVisiblesPreset() {
+            const lista = getVisiblePresets();
+            const namesToRemove = lista.map(l => l.nombre.toLowerCase());
+            equipos = equipos.filter(e => !namesToRemove.includes(e.nombre.toLowerCase()));
+            renderModal();
+            updateModalTeamsList();
+            updateAll();
+        }
+
+        // Modal Configuración
+        function openModalConfig() {
+            document.getElementById('cfgTeamsPerPerson').value = configState.maxEquipos;
+            document.getElementById('cfgSpeed').value = configState.speed;
+            document.getElementById('cfgNoRepeat').checked = configState.noRepeat;
+            document.getElementById('cfgSortMode').value = configState.sortMode;
+            document.getElementById('cfgSoundEnabled').checked = SoundFX.isEnabled();
+            document.getElementById('modalConfig').classList.remove('hidden');
+        }
+
+        function cerrarModalConfig() {
+            configState.maxEquipos = parseInt(document.getElementById('cfgTeamsPerPerson').value);
+            configState.speed = parseInt(document.getElementById('cfgSpeed').value);
+            configState.noRepeat = document.getElementById('cfgNoRepeat').checked;
+            configState.sortMode = document.getElementById('cfgSortMode').value;
+            const soundOn = document.getElementById('cfgSoundEnabled').checked;
+            SoundFX.setEnabled(soundOn);
+            updateSoundIcon();
+
+            document.getElementById('modalConfig').classList.add('hidden');
+            updateAll();
+        }
+
+        function resetearTodo() {
+            if (asignaciones.length && confirm('¿Deseas reiniciar todas las asignaciones actuales?')) {
+                asignaciones = [];
+                lastAssignedPerson = null;
+                const stageIdle = document.getElementById('stageIdle');
+                const stageSpinning = document.getElementById('stageSpinning');
+                const stageWinner = document.getElementById('stageWinner');
+
+                stageSpinning.classList.add('hidden');
+                stageSpinning.classList.remove('flex');
+                stageWinner.classList.add('hidden');
+                stageWinner.classList.remove('flex');
+
+                stageIdle.classList.remove('hidden');
+                stageIdle.classList.add('flex');
+
+                updateAll();
+            }
+        }
+
+        // Copiar Resumen al Portapapeles
+        function copiarResumen() {
+            if (!asignaciones.length) {
+                alert('Aún no hay equipos asignados para copiar.');
+                return;
+            }
+            let texto = "🎲 ASIGNACIONES DE EQUIPOS - MYRULES 🎲\n\n";
+            personas.forEach(p => {
+                const misEquipos = asignaciones.filter(a => a.persona === p).map(a => a.equipo.nombre);
+                texto += `👤 ${p}: ${misEquipos.length ? misEquipos.join(' & ') : 'Sin asignar'}\n`;
+            });
+
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = document.getElementById('btnCopiarResumen');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> ¡Copiado!';
+                setTimeout(() => btn.innerHTML = orig, 2000);
+            }).catch(() => {
+                alert('No se pudo copiar automáticamente al portapapeles.');
+            });
+        }
+
+        // Control de sonido
+        function updateSoundIcon() {
+            const icon = document.getElementById('soundIcon');
+            if (SoundFX.isEnabled()) {
+                icon.className = 'fa-solid fa-volume-high text-purple-400 text-sm';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-500 text-sm';
+            }
+        }
+
+        document.getElementById('soundToggleBtn').addEventListener('click', () => {
+            SoundFX.setEnabled(!SoundFX.isEnabled());
+            updateSoundIcon();
+        });
+
+        // Atajos de teclado (Enter para inputs, Escape para modales)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const active = document.activeElement?.id;
+                if (active === 'modalInputPersona') agregarPersonaModal();
+                if (active === 'modalInputEquipo' || active === 'modalInputEquipoImg') agregarEquipoModal();
+            } else if (e.key === 'Escape') {
+                cerrarModalPlayers();
+                cerrarModalTeams();
+                cerrarModalPredeterminados();
+                cerrarModalConfig();
+            }
+        });
+
+        // Inicializar
+        updateSoundIcon();
+        updateAll();
+    </script>
+</body>
+</html>

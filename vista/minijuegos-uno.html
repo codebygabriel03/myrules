@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRules - Minijuegos UNO</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'bg-dark': '#0b0f19',
+                        'bg-card': '#131a2b',
+                        'uno-red': '#ef4444',
+                        'uno-blue': '#3b82f6',
+                        'uno-green': '#22c55e',
+                        'uno-yellow': '#eab308',
+                    },
+                    keyframes: {
+                        'bounce-slow': {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.05)' },
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.8' },
+                        }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce-slow 0.5s ease-in-out',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        .scene {
+            perspective: 800px;
+        }
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        .uno-oval {
+            transform: rotate(-25deg);
+        }
+    </style>
+</head>
+<body class="bg-bg-dark min-h-screen font-body text-white antialiased">
+
+    <!-- Fondos decorativos con colores temáticos de UNO -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[450px] h-[450px] bg-red-500/5 rounded-full blur-[120px]"></div>
+        <div class="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-green-500/5 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] bg-yellow-500/5 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <!-- Header -->
+        <header class="border-b border-white/5 backdrop-blur-xl bg-bg-dark/70 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 lg:h-20">
+                    <a href="../index.html" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 via-amber-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                            <span class="font-mono font-bold text-lg text-white">M</span>
+                        </div>
+                        <span class="font-title font-bold text-xl lg:text-2xl tracking-tight">My<span class="text-red-400">Rules</span></span>
+                    </a>
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Online
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Overlay de Modales -->
+        <div id="modalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden" onclick="closeAllModals()"></div>
+
+        <!-- Modal de Valores Oficiales de Cartas UNO -->
+        <div id="rankingModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-sm bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between p-4 border-b border-white/5">
+                <h3 class="font-title font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-list-ol text-amber-400"></i> Valores de Cartas UNO
+                </h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-2 text-sm">
+                <p class="flex items-center justify-between py-1 border-b border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-hashtag text-blue-400 text-xs"></i> Cartas 0 a 9</span>
+                    <span class="font-mono font-bold text-blue-400">Valor nominal (0-9)</span>
+                </p>
+                <p class="flex items-center justify-between py-1 border-b border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-square-plus text-green-400 text-xs"></i> Roba 2 (+2)</span>
+                    <span class="font-mono font-bold text-green-400">20 pts</span>
+                </p>
+                <p class="flex items-center justify-between py-1 border-b border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-arrow-rotate-left text-amber-400 text-xs"></i> Reversa</span>
+                    <span class="font-mono font-bold text-amber-400">20 pts</span>
+                </p>
+                <p class="flex items-center justify-between py-1 border-b border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-ban text-red-400 text-xs"></i> Salto (Bloqueo)</span>
+                    <span class="font-mono font-bold text-red-400">20 pts</span>
+                </p>
+                <p class="flex items-center justify-between py-1 border-b border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-palette text-purple-400 text-xs"></i> Comodín Cambio Color</span>
+                    <span class="font-mono font-bold text-purple-400">50 pts</span>
+                </p>
+                <p class="flex items-center justify-between py-1">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-yellow-400 text-xs"></i> Comodín Roba 4 (+4)</span>
+                    <span class="font-mono font-bold text-yellow-400">50 pts</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Modal Info: Modos de Juego UNO -->
+        <div id="infoModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-lg max-h-[80vh] overflow-y-auto bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="sticky top-0 bg-bg-card border-b border-white/5 p-4 rounded-t-2xl flex items-center justify-between z-10">
+                <h3 class="font-title font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-blue-400"></i> Modos de Juego UNO
+                </h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-4 text-sm">
+                <div>
+                    <h4 class="font-semibold text-red-500 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-skull-crossbones"></i> 01. ELIMINACIÓN
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">Se jugarán rondas normales de UNO. El ganador de cada ronda quedará fuera de la siguiente y estará protegido de la eliminación. El último jugador restante recibirá una penalización de puntos.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: -30, -40, -50 o -60</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-indigo-400 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-user-secret"></i> 02. IMPOSTOR
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">Rondas normales de UNO. Cada reversa cambia de dirección y roba puntos base del siguiente jugador, también cada jugador bloqueado deberá donar puntos base al bote.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 10 o 20</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-amber-400 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-champagne-glasses"></i> 03. FEST
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">Una única ronda de UNO con reglas especiales. El 0 suma una carta al último jugador en poner la mano sobre la carta, el 7 es silencio hasta volver a tirar otro 7 (el jugador que hable durante el silencio roba una carta) y se pueden tirar cartas de igual valor al mismo tiempo. El único ganador recibirá puntos base.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 40, 50 o 60</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-emerald-400 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-biohazard"></i> 04. INFECCIÓN
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">En cada ronda los perdedores obtienen un virus. El ganador podrá curar dos de los virus que posea. El juego termina cuando alguien es infectado con 5 virus y muere. Los jugadores sobrevivientes obtienen puntos base.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 30 o 40</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-rose-500 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-heart-crack"></i> 05. MASACRE
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">Cada jugador empieza con dos vidas. El ganador podrá robar 1 de vida a cualquier otro jugador de su elección y sale del juego. El juego termina cuando un jugador obtenga 5 vidas, los jugadores muertos pierden puntos base.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: -30, -40 o -50</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-purple-400 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-yin-yang"></i> 06. KARMA
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">Una única ronda de UNO. Un jugador sorteado recibirá 1 de Karma. El jugador puede pasar su karma a otro al cambiar el color del juego actual. Si un jugador gana con karma pendiente obtiene puntos base, en cambio si pierde se le quitarán puntos base.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 40 o 50</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-orange-400 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-shuffle"></i> 07. CAOS
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">Cada cero intercambia cartas según el sentido de rotación. El ganador obtendrá puntos base.</p>
+                    <p class="text-gray-500 text-xs mt-1">Puntos base: 20, 30 o 40</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Configuración -->
+        <div id="configModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden w-[90vw] max-w-md max-h-[85vh] overflow-y-auto bg-bg-card border border-white/10 rounded-2xl shadow-2xl">
+            <div class="sticky top-0 bg-bg-card border-b border-white/5 p-4 rounded-t-2xl flex items-center justify-between z-10">
+                <h3 class="font-title font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-gray-400"></i> Configuración
+                </h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-4">
+                <div class="border-b border-white/10 pb-4">
+                    <h4 class="font-semibold text-sm text-red-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> Animaciones
+                    </h4>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteo principal (ms)</label>
+                        <input type="number" id="configVelocidadSorteo" value="160" min="30" max="300" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-red-500/50">
+                    </div>
+                    <div class="mt-2">
+                        <label class="block text-xs text-gray-400 mb-1.5">Giros sorteo principal</label>
+                        <input type="number" id="configGirosSorteo" value="20" min="5" max="40" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-red-500/50">
+                    </div>
+                    <div class="mt-2">
+                        <label class="block text-xs text-gray-400 mb-1.5">Velocidad sorteos secundarios (ms)</label>
+                        <input type="number" id="configVelocidadSecundario" value="40" min="15" max="150" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-red-500/50">
+                    </div>
+                    <div class="mt-2">
+                        <label class="block text-xs text-gray-400 mb-1.5">Giros sorteos secundarios</label>
+                        <input type="number" id="configGirosSecundario" value="15" min="5" max="30" class="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm font-mono focus:outline-none focus:border-red-500/50">
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-ban"></i> Control de Repetición
+                    </h4>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5">Veces que puede repetirse cada juego</label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="configRepeticion" min="1" max="10" value="3" class="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                            <span id="repeticionValor" class="font-mono font-bold text-lg text-yellow-400 w-12 text-center">3</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2"><i class="fa-solid fa-info-circle mr-1"></i>Valor 1 = No repite hasta jugar todos | Valor 10 = Repite hasta 10 veces</p>
+                    </div>
+                </div>
+                <button onclick="guardarConfig()" class="w-full h-11 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 font-semibold text-sm hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 px-4 py-8 lg:py-12">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Encabezado de Página -->
+                <div class="mb-8 flex items-center justify-between">
+                    <button onclick="openRankingModal()" title="Valores de cartas UNO" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-yellow-500/30 transition-all duration-200 group flex-shrink-0">
+                        <i class="fa-solid fa-list-ol text-yellow-400 text-lg group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <div class="text-center px-2">
+                        <h1 class="font-title font-bold text-2xl lg:text-4xl leading-tight">
+                            <span class="bg-gradient-to-r from-red-500 via-yellow-400 via-green-400 to-blue-500 bg-clip-text text-transparent">
+                                MINIJUEGOS UNO
+                            </span>
+                        </h1>
+                        <p class="text-gray-500 text-sm lg:text-base mt-1">¡Gira la carta, cambia el rumbo y desafía la suerte!</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="openConfigModal()" title="Configuración" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-gray-400/30 transition-all duration-200 group">
+                            <i class="fa-solid fa-gear text-gray-400 text-lg group-hover:scale-110 transition-transform"></i>
+                        </button>
+                        <button onclick="openInfoModal()" title="Información de modos" class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-blue-500/30 transition-all duration-200 group">
+                            <i class="fa-solid fa-circle-info text-blue-400 text-lg group-hover:scale-110 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-4 lg:space-y-6">
+                    
+                    <!-- SORTEO PRINCIPAL CON CARTA GIRATORIA 3D ESTILO UNO -->
+                    <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-shuffle text-red-400"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg">Sorteo de Modo de Juego</h3>
+                        </div>
+                        
+                        <div class="mb-6 flex justify-center">
+                            <div class="scene w-64 h-80 lg:w-72 lg:h-96">
+                                <div id="cartaSorteo" class="card w-full h-full">
+                                    <!-- Cara Frontal (Resultado) -->
+                                    <div id="caraFrontal" class="card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-red-500/30">
+                                        <div class="text-center p-4">
+                                            <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3 text-gray-500">
+                                                <i class="fa-solid fa-clone text-3xl"></i>
+                                            </div>
+                                            <span class="text-gray-500 text-lg font-mono">Gira para sortear...</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cara Trasera (Diseño Estilo UNO MyRules) -->
+                                    <div class="card-face card-back bg-gradient-to-br from-red-600 via-gray-900 to-yellow-600 border-2 border-yellow-400/40">
+                                        <div class="text-center p-6 w-full h-full flex flex-col items-center justify-center relative overflow-hidden">
+                                            <!-- Óvalo central tipo carta UNO -->
+                                            <div class="absolute w-56 h-32 bg-black/60 rounded-[50%] border-4 border-yellow-400/80 uno-oval flex items-center justify-center shadow-2xl">
+                                                <div class="text-center -rotate-12">
+                                                    <span class="font-title font-black text-4xl italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-red-400 to-yellow-300">
+                                                        UNO
+                                                    </span>
+                                                    <div class="text-[10px] font-mono tracking-widest text-white/70 uppercase">MyRules</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Mini esquinas decorativas -->
+                                            <div class="absolute top-3 left-3 text-xs font-mono font-bold text-red-400">1</div>
+                                            <div class="absolute bottom-3 right-3 text-xs font-mono font-bold text-yellow-400 rotate-180">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="infoRepeticiones" class="text-center text-xs text-gray-500 mb-4 min-h-5"></div>
+                        
+                        <div class="flex gap-3">
+                            <button id="btnGirar" onclick="girarSorteo()" class="flex-1 h-14 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-rotate"></i> Girar Carta
+                            </button>
+                            <button id="btnAceptar" onclick="aceptarSorteo()" class="flex-1 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl font-semibold text-lg text-emerald-400 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-500/20" disabled>
+                                <i class="fa-solid fa-check"></i> Aceptar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CONTENEDOR 2: DETALLE DEL MODO SORTEADO -->
+                    <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-layer-group text-amber-400"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-lg" id="contenedor2Titulo">Detalle del Juego</h3>
+                        </div>
+                        <div id="contenedor2Contenido" class="bg-white/[0.02] border border-white/5 rounded-xl p-6 flex items-center justify-center min-h-[140px]">
+                            <span class="text-gray-600 text-sm font-mono">Acepta un sorteo para ver el detalle interactivo</span>
+                        </div>
+                    </div>
+
+                    <!-- CONTADOR DE JUEGOS Y ESTADÍSTICAS -->
+                    <div class="bg-bg-card border border-white/5 rounded-2xl p-6 lg:p-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                    <i class="fa-solid fa-chart-bar text-purple-400"></i>
+                                </div>
+                                <h3 class="font-title font-semibold text-lg">Contador de Juegos</h3>
+                            </div>
+                            <button onclick="reiniciarContadores()" class="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-semibold hover:bg-red-500/20 transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-left"></i> Reiniciar
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-skull-crossbones text-red-500 text-xs"></i>
+                                    <span class="truncate">ELIMINACIÓN</span>
+                                </span>
+                                <span id="countEliminacion" class="font-mono font-bold text-lg text-red-500 ml-2">0</span>
+                            </div>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-user-secret text-indigo-400 text-xs"></i>
+                                    <span class="truncate">IMPOSTOR</span>
+                                </span>
+                                <span id="countImpostor" class="font-mono font-bold text-lg text-indigo-400 ml-2">0</span>
+                            </div>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-champagne-glasses text-amber-400 text-xs"></i>
+                                    <span class="truncate">FEST</span>
+                                </span>
+                                <span id="countFest" class="font-mono font-bold text-lg text-amber-400 ml-2">0</span>
+                            </div>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-biohazard text-emerald-400 text-xs"></i>
+                                    <span class="truncate">INFECCIÓN</span>
+                                </span>
+                                <span id="countInfeccion" class="font-mono font-bold text-lg text-emerald-400 ml-2">0</span>
+                            </div>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-heart-crack text-rose-500 text-xs"></i>
+                                    <span class="truncate">MASACRE</span>
+                                </span>
+                                <span id="countMasacre" class="font-mono font-bold text-lg text-rose-500 ml-2">0</span>
+                            </div>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-yin-yang text-purple-400 text-xs"></i>
+                                    <span class="truncate">KARMA</span>
+                                </span>
+                                <span id="countKarma" class="font-mono font-bold text-lg text-purple-400 ml-2">0</span>
+                            </div>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-between sm:col-span-2 lg:col-span-2">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-shuffle text-orange-400 text-xs"></i>
+                                    <span class="truncate">CAOS</span>
+                                </span>
+                                <span id="countCaos" class="font-mono font-bold text-lg text-orange-400 ml-2">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-5 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-xs">
+                <p class="font-mono">MyRules &copy; 2024 — Minijuegos UNO</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
+    <script>
+        // ==================== SISTEMA DE AUDIO (WEB AUDIO API) ====================
+        class AudioSystem {
+            constructor() {
+                this.ctx = null;
+                this.initialized = false;
+            }
+
+            init() {
+                if (this.initialized) return;
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.initialized = true;
+                } catch (e) {
+                    console.warn('Web Audio API no disponible');
+                }
+            }
+
+            playCardShuffle(volume = 0.06) {
+                if (!this.initialized) this.init();
+                if (!this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(3200, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime + 0.08);
+                filter.Q.setValueAtTime(2, this.ctx.currentTime);
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(450 + Math.random() * 200, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+                
+                osc.start(this.ctx.currentTime);
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playCardShuffleBurst(count = 3, volume = 0.05) {
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        this.playCardShuffle(volume);
+                    }, i * 30);
+                }
+            }
+
+            playTick(volume = 0.08) {
+                if (!this.initialized) this.init();
+                if (!this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(900 + Math.random() * 300, this.ctx.currentTime);
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                
+                osc.start(this.ctx.currentTime);
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            playWin(volume = 0.15) {
+                if (!this.initialized) this.init();
+                if (!this.ctx) return;
+                
+                const notes = [587.33, 739.99, 880.00, 1174.66];
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.1);
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(volume, this.ctx.currentTime + i * 0.1 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.1 + 0.22);
+                    
+                    osc.start(this.ctx.currentTime + i * 0.1);
+                    osc.stop(this.ctx.currentTime + i * 0.1 + 0.22);
+                });
+            }
+
+            playClick(volume = 0.1) {
+                if (!this.initialized) this.init();
+                if (!this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(650, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                
+                osc.start(this.ctx.currentTime);
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+        }
+
+        const audio = new AudioSystem();
+
+        // ==================== CONFIGURACIÓN Y ESTADO ====================
+        let config = { 
+            velocidadSorteo: 160, 
+            girosSorteo: 20, 
+            velocidadSecundario: 40, 
+            girosSecundario: 15,
+            maxRepeticion: 3
+        };
+
+        const juegos = [
+            'ELIMINACIÓN',
+            'IMPOSTOR',
+            'FEST',
+            'INFECCIÓN',
+            'MASACRE',
+            'KARMA',
+            'CAOS'
+        ];
+
+        const iconosHTML = [
+            '<i class="fa-solid fa-skull-crossbones text-red-500 text-6xl"></i>',
+            '<i class="fa-solid fa-user-secret text-indigo-400 text-6xl"></i>',
+            '<i class="fa-solid fa-champagne-glasses text-amber-400 text-6xl"></i>',
+            '<i class="fa-solid fa-biohazard text-emerald-400 text-6xl"></i>',
+            '<i class="fa-solid fa-heart-crack text-rose-500 text-6xl"></i>',
+            '<i class="fa-solid fa-yin-yang text-purple-400 text-6xl"></i>',
+            '<i class="fa-solid fa-shuffle text-orange-400 text-6xl"></i>'
+        ];
+
+        const coloresBorde = [
+            'border-red-500/50',
+            'border-indigo-500/50',
+            'border-amber-500/50',
+            'border-emerald-500/50',
+            'border-rose-500/50',
+            'border-purple-500/50',
+            'border-orange-500/50'
+        ];
+
+        const coloresSombra = [
+            'rgba(239, 68, 68, 0.35)',
+            'rgba(99, 102, 241, 0.35)',
+            'rgba(245, 158, 11, 0.35)',
+            'rgba(16, 185, 129, 0.35)',
+            'rgba(244, 63, 94, 0.35)',
+            'rgba(168, 85, 247, 0.35)',
+            'rgba(251, 146, 60, 0.35)'
+        ];
+
+        const countIds = [
+            'countEliminacion',
+            'countImpostor',
+            'countFest',
+            'countInfeccion',
+            'countMasacre',
+            'countKarma',
+            'countCaos'
+        ];
+
+        let juegoSeleccionado = null;
+        let juegoAceptado = null;
+        let ultimoJuegoAceptado = null;
+        let girando = false;
+
+        let historialJuegos = [];
+        let conteoRepeticiones = {};
+
+        function inicializarConteoRepeticiones() {
+            juegos.forEach(juego => { conteoRepeticiones[juego] = 0; });
+        }
+        inicializarConteoRepeticiones();
+
+        function getJuegosDisponibles() {
+            const disponibles = juegos.filter(juego => conteoRepeticiones[juego] < config.maxRepeticion);
+            if (disponibles.length === 0) {
+                juegos.forEach(juego => { conteoRepeticiones[juego] = 0; });
+                return [...juegos];
+            }
+            return disponibles;
+        }
+
+        function guardarEstado() {
+            const estado = {
+                historialJuegos: historialJuegos,
+                conteoRepeticiones: conteoRepeticiones,
+                contadores: {}
+            };
+            countIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) estado.contadores[id] = el.textContent;
+            });
+            localStorage.setItem('myRulesUnoGameState', JSON.stringify(estado));
+        }
+
+        function cargarEstado() {
+            const guardado = localStorage.getItem('myRulesUnoGameState');
+            if (guardado) {
+                try {
+                    const estado = JSON.parse(guardado);
+                    if (estado.historialJuegos) historialJuegos = estado.historialJuegos;
+                    if (estado.conteoRepeticiones) conteoRepeticiones = estado.conteoRepeticiones;
+                    if (estado.contadores) {
+                        countIds.forEach(id => {
+                            if (estado.contadores[id]) {
+                                const el = document.getElementById(id);
+                                if (el) el.textContent = estado.contadores[id];
+                            }
+                        });
+                    }
+                } catch(e) { console.error("Error cargando estado UNO:", e); }
+            }
+        }
+
+        function reiniciarContadores() {
+            countIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '0';
+            });
+            inicializarConteoRepeticiones();
+            historialJuegos = [];
+            juegoSeleccionado = null;
+            juegoAceptado = null;
+            ultimoJuegoAceptado = null;
+            
+            document.getElementById('btnAceptar').disabled = true;
+            document.getElementById('infoRepeticiones').textContent = '';
+            document.getElementById('contenedor2Titulo').textContent = 'Detalle del Juego';
+            document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-600 text-sm font-mono">Acepta un sorteo para ver el detalle interactivo</span>';
+            
+            const caraFrontal = document.getElementById('caraFrontal');
+            caraFrontal.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3 text-gray-500">
+                        <i class="fa-solid fa-clone text-3xl"></i>
+                    </div>
+                    <span class="text-gray-500 text-lg font-mono">Gira para sortear...</span>
+                </div>
+            `;
+            caraFrontal.className = 'card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-red-500/30';
+            caraFrontal.style.boxShadow = '';
+            
+            guardarEstado();
+            audio.playClick(0.08);
+        }
+
+        // ==================== SORTEO PRINCIPAL (CARTA 3D) ====================
+        function girarSorteo() {
+            if (girando) return;
+            audio.init();
+            girando = true;
+            const btnGirar = document.getElementById('btnGirar');
+            const btnAceptar = document.getElementById('btnAceptar');
+            const carta = document.getElementById('cartaSorteo');
+            const caraFrontal = document.getElementById('caraFrontal');
+            const infoRepeticiones = document.getElementById('infoRepeticiones');
+            
+            btnGirar.disabled = true;
+            btnAceptar.disabled = true;
+            document.getElementById('contenedor2Titulo').textContent = 'Detalle del Juego';
+            document.getElementById('contenedor2Contenido').innerHTML = '<span class="text-gray-500 text-sm font-mono animate-pulse">Girando carta...</span>';
+            infoRepeticiones.textContent = '';
+            
+            const juegosDisponibles = getJuegosDisponibles();
+            
+            let juegoFinal;
+            do {
+                juegoFinal = juegosDisponibles[Math.floor(Math.random() * juegosDisponibles.length)];
+            } while (juegoFinal === ultimoJuegoAceptado && juegosDisponibles.length > 1);
+            
+            const indexFinal = juegos.indexOf(juegoFinal);
+            juegoSeleccionado = juegoFinal;
+            
+            let anguloActual = 0;
+            let contador = 0;
+            const totalGiros = config.girosSorteo;
+            let intervalo = config.velocidadSorteo;
+            
+            function animarGiro() {
+                if (contador < totalGiros) {
+                    const randomIndex = Math.floor(Math.random() * juegosDisponibles.length);
+                    const juegoRandom = juegosDisponibles[randomIndex];
+                    const iconIndex = juegos.indexOf(juegoRandom);
+                    
+                    caraFrontal.innerHTML = `
+                        <div class="text-center p-4">
+                            <div class="mb-3">${iconosHTML[iconIndex]}</div>
+                            <span class="font-title font-bold text-xl text-white tracking-wide">${juegoRandom}</span>
+                        </div>
+                    `;
+                    caraFrontal.className = `card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 ${coloresBorde[iconIndex]}`;
+                    
+                    anguloActual += 180;
+                    carta.style.transform = `rotateY(${anguloActual}deg)`;
+                    
+                    audio.playCardShuffle(0.05);
+                    
+                    contador++;
+                    intervalo = config.velocidadSorteo - (contador * 2);
+                    if (intervalo < 50) intervalo = 50;
+                    
+                    setTimeout(animarGiro, intervalo);
+                } else {
+                    audio.playCardShuffleBurst(5, 0.06);
+                    
+                    const vueltasCompletas = Math.ceil(anguloActual / 360) * 360;
+                    carta.style.transform = `rotateY(${vueltasCompletas}deg)`;
+                    carta.style.transition = 'transform 0.8s ease-out';
+                    
+                    caraFrontal.innerHTML = `
+                        <div class="text-center p-4">
+                            <div class="mb-3">${iconosHTML[indexFinal]}</div>
+                            <span class="font-title font-bold text-2xl bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 bg-clip-text text-transparent">${juegoFinal}</span>
+                            <div class="text-emerald-400 font-mono text-xs font-bold mt-2 tracking-wider">¡MODO SELECCIONADO!</div>
+                        </div>
+                    `;
+                    caraFrontal.className = `card-face bg-gradient-to-br from-gray-800 to-gray-900 border-2 ${coloresBorde[indexFinal]}`;
+                    caraFrontal.style.boxShadow = `0 0 35px ${coloresSombra[indexFinal]}`;
+                    
+                    const repeticionesRestantes = config.maxRepeticion - conteoRepeticiones[juegoFinal];
+                    infoRepeticiones.innerHTML = `<i class="fa-solid fa-chart-simple mr-1 text-amber-400"></i> Puede aparecer <b>${repeticionesRestantes}</b> veces más`;
+                    
+                    audio.playWin(0.12);
+                    
+                    setTimeout(() => {
+                        carta.style.transition = 'transform 0.3s ease-out';
+                        btnGirar.disabled = false;
+                        btnAceptar.disabled = false;
+                        girando = false;
+                    }, 800);
+                }
+            }
+            
+            animarGiro();
+        }
+
+        function aceptarSorteo() {
+            if (!juegoSeleccionado || girando) return;
+            audio.playClick(0.08);
+            const index = juegos.indexOf(juegoSeleccionado);
+            if (index !== -1) { 
+                const el = document.getElementById(countIds[index]); 
+                if (el) {
+                    el.textContent = parseInt(el.textContent) + 1; 
+                    el.classList.add('scale-125', 'text-yellow-400'); 
+                    setTimeout(() => el.classList.remove('scale-125', 'text-yellow-400'), 250); 
+                }
+            }
+            juegoAceptado = juegoSeleccionado; 
+            ultimoJuegoAceptado = juegoSeleccionado; 
+            
+            conteoRepeticiones[juegoSeleccionado]++;
+            historialJuegos.unshift(juegoSeleccionado);
+            if (historialJuegos.length > 10) historialJuegos.pop();
+            guardarEstado();
+            
+            juegoSeleccionado = null;
+            document.getElementById('btnAceptar').disabled = true;
+            document.getElementById('infoRepeticiones').textContent = '';
+            actualizarContenedor2(juegoAceptado);
+        }
+
+        // ==================== ANIMADOR GENÉRICO PARA SORTEOS SECUNDARIOS ====================
+        function animarResultado(elementId, valores, callback) {
+            audio.init();
+            const elemento = document.getElementById(elementId); 
+            if (!elemento) return;
+            let contador = 0, maxGiros = config.girosSecundario, velocidad = config.velocidadSecundario;
+            
+            function girar() {
+                if (contador < maxGiros) { 
+                    elemento.textContent = valores[Math.floor(Math.random() * valores.length)]; 
+                    elemento.classList.remove('animate-bounce-slow'); 
+                    audio.playTick(0.05);
+                    contador++; 
+                    velocidad += contador * 3; 
+                    setTimeout(girar, velocidad); 
+                } else { 
+                    const final = valores[Math.floor(Math.random() * valores.length)]; 
+                    elemento.textContent = final; 
+                    elemento.classList.add('animate-bounce-slow'); 
+                    audio.playClick(0.1);
+                    setTimeout(() => elemento.classList.remove('animate-bounce-slow'), 500); 
+                    if (callback) callback(final); 
+                }
+            }
+            girar();
+        }
+
+        // ==================== DETALLE DEL MODO (CONTENEDOR 2) ====================
+        function actualizarContenedor2(modo) {
+            const titulo = document.getElementById('contenedor2Titulo');
+            const contenido = document.getElementById('contenedor2Contenido');
+            titulo.textContent = 'Detalle: ' + modo;
+            
+            switch(modo) {
+                case 'ELIMINACIÓN':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-md">
+                            <p class="text-sm text-gray-400 mb-2">Penalización para el último jugador restante</p>
+                            <div id="resultadoEliminacion" class="font-mono font-bold text-4xl text-red-500 mb-2">--</div>
+                            <p class="text-xs text-gray-500 font-mono mb-4">El ganador de cada ronda queda fuera y a salvo. El último en pie recibe la penalización.</p>
+                            <button onclick="girarEliminacion()" class="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 font-semibold hover:bg-red-500/20 transition-colors flex items-center gap-2 mx-auto">
+                                <i class="fa-solid fa-skull-crossbones"></i> Sortear Penalización
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'IMPOSTOR':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-md">
+                            <p class="text-sm text-gray-400 mb-2">Puntos base en juego (Robo por Reversa / Aporte por Bloqueo)</p>
+                            <div id="resultadoImpostor" class="font-mono font-bold text-4xl text-indigo-400 mb-2">--</div>
+                            <div class="flex items-center justify-center gap-2 mb-4">
+                                <span class="text-xs text-gray-500">Sentido de rotación:</span>
+                                <span id="sentidoImpostor" class="font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/5 text-indigo-300">Horario ↻</span>
+                            </div>
+                            <div class="flex justify-center gap-2">
+                                <button onclick="girarImpostor()" class="px-6 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 font-semibold hover:bg-indigo-500/20 transition-colors flex items-center gap-2">
+                                    <i class="fa-solid fa-rotate"></i> Sortear Puntos Base
+                                </button>
+                                <button onclick="cambiarSentidoImpostor()" class="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-gray-300 font-semibold hover:bg-white/10 transition-colors text-xs flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Alternar Sentido
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'FEST':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-lg">
+                            <p class="text-sm text-gray-400 mb-2">Puntos base para el único ganador</p>
+                            <div id="resultadoFest" class="font-mono font-bold text-4xl text-amber-400 mb-3">--</div>
+                            <div class="grid grid-cols-3 gap-2 mb-4 text-left">
+                                <div class="p-2.5 bg-white/[0.03] border border-white/5 rounded-xl">
+                                    <div class="font-bold text-amber-300 text-xs flex items-center gap-1.5 mb-1">
+                                        <i class="fa-solid fa-hand text-amber-400"></i> Carta 0
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 leading-tight">Mano a la carta. El último roba 1 carta.</p>
+                                </div>
+                                <div class="p-2.5 bg-white/[0.03] border border-white/5 rounded-xl">
+                                    <div class="font-bold text-amber-300 text-xs flex items-center gap-1.5 mb-1">
+                                        <i class="fa-solid fa-volume-xmark text-amber-400"></i> Carta 7
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 leading-tight">Silencio hasta otro 7. Quien hable roba 1 carta.</p>
+                                </div>
+                                <div class="p-2.5 bg-white/[0.03] border border-white/5 rounded-xl">
+                                    <div class="font-bold text-amber-300 text-xs flex items-center gap-1.5 mb-1">
+                                        <i class="fa-solid fa-clone text-amber-400"></i> Dobles
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 leading-tight">Tirar cartas de igual valor simultáneamente.</p>
+                                </div>
+                            </div>
+                            <button onclick="girarFest()" class="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors flex items-center gap-2 mx-auto">
+                                <i class="fa-solid fa-rotate"></i> Sortear Puntos Ganador
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'INFECCIÓN':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-md">
+                            <p class="text-sm text-gray-400 mb-2">Puntos base para los sobrevivientes</p>
+                            <div id="resultadoInfeccion" class="font-mono font-bold text-4xl text-emerald-400 mb-2">--</div>
+                            <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-4 text-xs text-gray-300 flex justify-around items-center">
+                                <span>🦠 Perdedores: <b>+1 virus</b></span>
+                                <span>💉 Ganador: <b>Cura 2</b></span>
+                                <span class="text-red-400 font-semibold">💀 5 virus = Muerte</span>
+                            </div>
+                            <button onclick="girarInfeccion()" class="px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-colors flex items-center gap-2 mx-auto">
+                                <i class="fa-solid fa-rotate"></i> Sortear Puntos Sobrevivientes
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'MASACRE':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-md">
+                            <p class="text-sm text-gray-400 mb-2">Penalización para los jugadores muertos</p>
+                            <div id="resultadoMasacre" class="font-mono font-bold text-4xl text-rose-500 mb-2">--</div>
+                            <div class="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl mb-4 text-xs text-gray-300 flex justify-around items-center">
+                                <span>❤️❤️ Inicio: <b>2 vidas</b></span>
+                                <span>⚔️ Ganador: <b>Roba 1 vida</b></span>
+                                <span class="text-yellow-400 font-semibold">👑 5 vidas = Fin</span>
+                            </div>
+                            <button onclick="girarMasacre()" class="px-6 py-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 font-semibold hover:bg-rose-500/20 transition-colors flex items-center gap-2 mx-auto">
+                                <i class="fa-solid fa-rotate"></i> Sortear Penalización
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'KARMA':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-md">
+                            <p class="text-sm text-gray-400 mb-2">Puntos Karma en juego</p>
+                            <div id="resultadoKarma" class="font-mono font-bold text-4xl text-purple-400 mb-2">--</div>
+                            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl mb-4 text-xs space-y-1 text-center">
+                                <p class="text-purple-300 font-medium">Un jugador sorteado recibe <b>1 de Karma</b>.</p>
+                                <p class="text-gray-400">Pasa el karma a otro cambiando el color actual del juego.</p>
+                                <div class="flex justify-around pt-1 text-[11px] font-mono">
+                                    <span class="text-emerald-400">Gana con Karma: <b>+Puntos</b></span>
+                                    <span class="text-red-400">Pierde con Karma: <b>-Puntos</b></span>
+                                </div>
+                            </div>
+                            <button onclick="girarKarma()" class="px-6 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 font-semibold hover:bg-purple-500/20 transition-colors flex items-center gap-2 mx-auto">
+                                <i class="fa-solid fa-rotate"></i> Sortear Puntos Karma
+                            </button>
+                        </div>
+                    `;
+                    break;
+
+                case 'CAOS':
+                    contenido.innerHTML = `
+                        <div class="text-center w-full max-w-md">
+                            <p class="text-sm text-gray-400 mb-2">Puntos base para el ganador</p>
+                            <div id="resultadoCaos" class="font-mono font-bold text-4xl text-orange-400 mb-2">--</div>
+                            <div class="flex items-center justify-center gap-2 mb-3">
+                                <span class="text-xs text-gray-500">Sentido de intercambio (carta 0):</span>
+                                <span id="sentidoCaos" class="font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/5 text-orange-300">Horario ↻</span>
+                            </div>
+                            <p class="text-xs text-gray-500 font-mono mb-4">Cada carta 0 intercambia todas las cartas según el sentido de rotación.</p>
+                            <div class="flex justify-center gap-2">
+                                <button onclick="girarCaos()" class="px-6 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 font-semibold hover:bg-orange-500/20 transition-colors flex items-center gap-2">
+                                    <i class="fa-solid fa-rotate"></i> Sortear Puntos Ganador
+                                </button>
+                                <button onclick="cambiarSentidoCaos()" class="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-gray-300 font-semibold hover:bg-white/10 transition-colors text-xs flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Alternar Sentido
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // ==================== FUNCIONES INDIVIDUALES DE SORTEO ====================
+        function girarEliminacion() {
+            const v = ['-30 pts', '-40 pts', '-50 pts', '-60 pts'];
+            animarResultado('resultadoEliminacion', v);
+        }
+
+        function girarImpostor() {
+            const v = ['10 pts', '20 pts'];
+            animarResultado('resultadoImpostor', v);
+        }
+
+        function cambiarSentidoImpostor() {
+            audio.init();
+            audio.playClick(0.08);
+            const el = document.getElementById('sentidoImpostor');
+            if (el) {
+                if (el.textContent.includes('Horario')) {
+                    el.textContent = 'Antihorario ↺';
+                    el.className = 'font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/5 text-indigo-400';
+                } else {
+                    el.textContent = 'Horario ↻';
+                    el.className = 'font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/5 text-indigo-300';
+                }
+            }
+        }
+
+        function girarFest() {
+            const v = ['40 pts', '50 pts', '60 pts'];
+            animarResultado('resultadoFest', v);
+        }
+
+        function girarInfeccion() {
+            const v = ['30 pts', '40 pts'];
+            animarResultado('resultadoInfeccion', v);
+        }
+
+        function girarMasacre() {
+            const v = ['-30 pts', '-40 pts', '-50 pts'];
+            animarResultado('resultadoMasacre', v);
+        }
+
+        function girarKarma() {
+            const v = ['40 pts', '50 pts'];
+            animarResultado('resultadoKarma', v);
+        }
+
+        function girarCaos() {
+            const v = ['20 pts', '30 pts', '40 pts'];
+            animarResultado('resultadoCaos', v);
+        }
+
+        function cambiarSentidoCaos() {
+            audio.init();
+            audio.playClick(0.08);
+            const el = document.getElementById('sentidoCaos');
+            if (el) {
+                if (el.textContent.includes('Horario')) {
+                    el.textContent = 'Antihorario ↺';
+                    el.className = 'font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/5 text-amber-400';
+                } else {
+                    el.textContent = 'Horario ↻';
+                    el.className = 'font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/5 text-orange-300';
+                }
+            }
+        }
+
+        // ==================== MODALES ====================
+        function openRankingModal() { 
+            document.getElementById('rankingModal').classList.remove('hidden'); 
+            document.getElementById('modalOverlay').classList.remove('hidden'); 
+        }
+
+        function openInfoModal() { 
+            document.getElementById('infoModal').classList.remove('hidden'); 
+            document.getElementById('modalOverlay').classList.remove('hidden'); 
+        }
+
+        function openConfigModal() { 
+            document.getElementById('configVelocidadSorteo').value = config.velocidadSorteo; 
+            document.getElementById('configGirosSorteo').value = config.girosSorteo; 
+            document.getElementById('configVelocidadSecundario').value = config.velocidadSecundario; 
+            document.getElementById('configGirosSecundario').value = config.girosSecundario; 
+            document.getElementById('configRepeticion').value = config.maxRepeticion;
+            document.getElementById('repeticionValor').textContent = config.maxRepeticion;
+            document.getElementById('configModal').classList.remove('hidden'); 
+            document.getElementById('modalOverlay').classList.remove('hidden'); 
+        }
+        
+        function guardarConfig() { 
+            config.velocidadSorteo = parseInt(document.getElementById('configVelocidadSorteo').value) || 160; 
+            config.girosSorteo = parseInt(document.getElementById('configGirosSorteo').value) || 20; 
+            config.velocidadSecundario = parseInt(document.getElementById('configVelocidadSecundario').value) || 40; 
+            config.girosSecundario = parseInt(document.getElementById('configGirosSecundario').value) || 15; 
+            const nuevaRepeticion = parseInt(document.getElementById('configRepeticion').value);
+            if (nuevaRepeticion !== config.maxRepeticion) {
+                config.maxRepeticion = nuevaRepeticion;
+                inicializarConteoRepeticiones();
+                historialJuegos = [];
+                guardarEstado();
+            }
+            closeAllModals(); 
+        }
+
+        function closeAllModals() { 
+            document.getElementById('rankingModal').classList.add('hidden'); 
+            document.getElementById('infoModal').classList.add('hidden'); 
+            document.getElementById('configModal').classList.add('hidden'); 
+            document.getElementById('modalOverlay').classList.add('hidden'); 
+        }
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('configRepeticion');
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    document.getElementById('repeticionValor').textContent = e.target.value;
+                });
+            }
+            cargarEstado();
+        });
+    </script>
+</body>
+</html>

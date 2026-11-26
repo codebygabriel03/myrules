@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Equipos - MyRules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+        }
+        
+        .dashboard {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .roller {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            overflow: hidden;
+            position: relative;
+            background: #1a1f2e;
+            border-radius: 16px;
+            border: 2px solid rgba(255,255,255,0.08);
+        }
+        
+        .roller-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            transition: transform 0.05s;
+            white-space: nowrap;
+            letter-spacing: -0.5px;
+            text-align: center;
+            padding: 0 15px;
+            line-height: 1.3;
+        }
+        
+        .highlight-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, 
+                rgba(139,92,246,0.08) 0%, 
+                rgba(139,92,246,0.03) 100%);
+            border-top: 3px solid #8b5cf6;
+            border-bottom: 3px solid #8b5cf6;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* CARTAS VERTICALES - DISEÑO LIMPIO */
+        .card-container-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        
+        .player-card-new {
+            background: linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 14px 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Línea lateral sutil */
+        .player-card-new::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #8b5cf6;
+            border-radius: 0 2px 2px 0;
+            opacity: 0.4;
+        }
+        
+        .player-card-new.just-assigned {
+            animation: cardReveal 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-color: rgba(139,92,246,0.4);
+            box-shadow: 0 0 30px rgba(139,92,246,0.2), inset 0 0 30px rgba(139,92,246,0.05);
+            background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(15,23,42,0.9) 100%);
+        }
+        
+        .player-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .player-name-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .player-icon {
+            font-size: 1.1rem;
+            color: #8b5cf6;
+            flex-shrink: 0;
+        }
+        
+        .player-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            letter-spacing: -0.2px;
+        }
+        
+        .player-counter {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #a78bfa;
+            background: rgba(139,92,246,0.1);
+            padding: 3px 10px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+        
+        .teams-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .team-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: rgba(139,92,246,0.12);
+            color: #c4b5fd;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            animation: badgePop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(139,92,246,0.15);
+        }
+        
+        .empty-teams {
+            font-size: 0.75rem;
+            color: #4b5563;
+            font-style: italic;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        
+        /* Animaciones */
+        @keyframes cardReveal {
+            0% {
+                transform: scale(0.97);
+                border-color: rgba(139,92,246,0.8);
+                box-shadow: 0 0 0 rgba(139,92,246,0);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 40px rgba(139,92,246,0.4);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 15px rgba(139,92,246,0.1);
+            }
+        }
+        
+        @keyframes badgePop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); }
+            50% { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
+        }
+        
+        .btn-sort {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .btn-sort:disabled {
+            animation: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-sort:not(:disabled):active {
+            transform: scale(0.96);
+        }
+        
+        /* Modal centrado */
+        .modal-centered {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-dialog {
+            background: #1e293b;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        
+        .tab-button {
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .tab-button.active {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        /* Scrollbar personalizado */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .custom-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+        
+        /* Ajustes móvil */
+        @media (max-width: 640px) {
+            .roller-text {
+                font-size: 1.1rem;
+            }
+            .roller {
+                height: 85px;
+            }
+            .highlight-line {
+                height: 85px;
+            }
+            .player-card-new {
+                padding: 12px 14px;
+            }
+            .player-name {
+                font-size: 0.85rem;
+            }
+            .team-badge {
+                font-size: 0.68rem;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+<body class="font-body">
+
+    <!-- ========== HEADER MYRULES ========== -->
+    <header class="border-b border-white/5 backdrop-blur-xl bg-gray-900/70 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14 lg:h-16">
+                
+                <!-- Logo -->
+                <a href="../index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-9 h-9 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center 
+                                shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
+                        <span class="font-mono font-bold text-base text-white">M</span>
+                    </div>
+                    <span class="font-title font-bold text-lg lg:text-xl tracking-tight text-white" style="color: white;">
+                        My<span class="text-red-400">Rules</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="p-4">
+        <div class="max-w-md mx-auto space-y-4">
+            
+            <!-- Header Dashboard -->
+            <div class="text-center mb-2 pt-2">
+                <h1 class="text-2xl font-bold text-white flex items-center justify-center gap-2">
+                    <i class="fas fa-futbol text-yellow-400"></i>
+                    Sorteador
+                </h1>
+                <p class="text-gray-400 text-xs mt-1">Asigna equipos aleatoriamente</p>
+            </div>
+
+            <!-- Panel Principal - Dashboard -->
+            <div class="dashboard rounded-2xl p-4 sm:p-6 space-y-4">
+                
+                <!-- Stats rápidos -->
+                <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div class="stat-box text-center">
+                        <div class="text-xl sm:text-2xl font-bold text-blue-400" id="statPlayers">0</div>
+                        <div class="text-xs text-gray-400">Jugadores</div>
+                    </div>
+                    <div class="stat-box text-center">
+                        <div class="text-xl sm:text-2xl font-bold text-green-400" id="statTeams">0</div>
+                        <div class="text-xs text-gray-400">Equipos</div>
+                    </div>
+                    <div class="stat-box text-center">
+                        <div class="text-xl sm:text-2xl font-bold text-purple-400" id="statRemaining">0</div>
+                        <div class="text-xs text-gray-400">Pendientes</div>
+                    </div>
+                </div>
+
+                <!-- Slot Machine -->
+                <div class="bg-gray-900/50 rounded-2xl p-4 border border-gray-700/30">
+                    <div class="roller">
+                        <div class="highlight-line"></div>
+                        <div class="roller-text text-gray-500" id="rollerDisplay">
+                            Presiona sortear
+                        </div>
+                    </div>
+                    
+                    <button onclick="sortear()" id="btnSortear"
+                            class="btn-sort w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-play mr-2"></i>Sortear Equipo
+                    </button>
+                </div>
+
+                <!-- TABLERO DE CARTAS VERTICAL -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">
+                            <i class="fas fa-users mr-2"></i>Participantes
+                        </h3>
+                        <button onclick="openModalPlayers()" 
+                                class="w-7 h-7 bg-purple-600/20 text-purple-400 rounded-full flex items-center justify-center text-xs border border-purple-600/30 hover:bg-purple-600/30 transition-colors">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="cardContainer" class="card-container-vertical custom-scroll">
+                        <p class="text-sm text-gray-500 text-center py-8">No hay participantes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex gap-2">
+                <button onclick="openModalTeams()" 
+                        class="flex-1 bg-gray-800 text-gray-300 py-3 rounded-xl text-sm font-medium border border-gray-700/50 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-shield-alt mr-2 text-green-400"></i>Equipos
+                </button>
+                <button onclick="openModalConfig()" 
+                        class="flex-1 bg-gray-800 text-gray-300 py-3 rounded-xl text-sm font-medium border border-gray-700/50 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-cog mr-2 text-yellow-400"></i>Config
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Centrado para Participantes -->
+    <div id="modalPlayers" class="hidden modal-centered">
+        <div class="modal-dialog p-4 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-white">Gestionar Participantes</h3>
+                <button onclick="cerrarModalPlayers()" class="text-gray-400 text-xl hover:text-white transition-colors">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+            
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="modalInputPersona" placeholder="Nombre del participante" 
+                       class="flex-1 px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none">
+                <button onclick="agregarPersonaModal()" 
+                        class="bg-purple-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-purple-700 transition-colors"><i class="fas fa-plus"></i></button>
+            </div>
+            
+            <div id="modalPlayersList" class="space-y-2 max-h-64 overflow-y-auto custom-scroll">
+                <!-- Se llena dinámicamente -->
+            </div>
+            
+            <button onclick="cerrarModalPlayers()" 
+                    class="w-full mt-4 bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors">
+                <i class="fas fa-check mr-2"></i>Listo
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Centrado para Gestionar Equipos -->
+    <div id="modalTeams" class="hidden modal-centered">
+        <div class="modal-dialog p-4 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-white">Gestionar Equipos</h3>
+                <button onclick="cerrarModalTeams()" class="text-gray-400 text-xl hover:text-white transition-colors">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+            
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="modalInputEquipo" placeholder="Nombre del equipo" 
+                       class="flex-1 px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-green-500 outline-none">
+                <button onclick="agregarEquipoModal()" 
+                        class="bg-purple-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-purple-700 transition-colors"><i class="fas fa-plus"></i></button>
+            </div>
+            
+            <button onclick="abrirModalPredeterminados()" 
+                    class="w-full bg-indigo-600/20 text-indigo-400 py-2.5 rounded-lg text-sm font-medium border border-indigo-600/30 mb-4 hover:bg-indigo-600/30 transition-colors">
+                <i class="fas fa-list mr-2"></i>Elegir de equipos predeterminados
+            </button>
+            
+            <div class="flex flex-wrap gap-1 max-h-48 overflow-y-auto custom-scroll mb-4">
+                <span id="modalTeamsList" class="w-full">
+                    <!-- Se llena dinámicamente -->
+                </span>
+            </div>
+            
+            <button onclick="cerrarModalTeams()" 
+                    class="w-full bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors">
+                <i class="fas fa-check mr-2"></i>Listo
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Centrado para Equipos Predeterminados -->
+    <div id="modalEquipos" class="hidden modal-centered">
+        <div class="modal-dialog p-4 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-white">Seleccionar Equipos</h3>
+                <button onclick="cerrarModalPredeterminados()" class="text-gray-400 text-xl hover:text-white transition-colors">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+            
+            <input type="text" id="searchModal" placeholder="Buscar equipo..." 
+                   class="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 mb-3 focus:ring-2 focus:ring-purple-500 outline-none" 
+                   oninput="renderModal()">
+            
+            <div class="flex gap-2 mb-3 overflow-x-auto pb-1 custom-scroll">
+                <button onclick="filterModal('all', this)" class="tab-button bg-purple-600 text-white active">Todos</button>
+                <button onclick="filterModal('champions', this)" class="tab-button bg-gray-700 text-gray-300"><i class="fas fa-trophy mr-1"></i>Champions</button>
+                <button onclick="filterModal('mundial', this)" class="tab-button bg-gray-700 text-gray-300"><i class="fas fa-globe-americas mr-1"></i>Mundial</button>
+                <button onclick="filterModal('libertadores', this)" class="tab-button bg-gray-700 text-gray-300"><i class="fas fa-star mr-1"></i>Libertadores</button>
+            </div>
+
+            <div id="gridModal" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scroll"></div>
+            
+            <div class="flex gap-2 mt-4">
+                <button onclick="cerrarModalPredeterminados()" 
+                        class="flex-1 bg-gray-700 text-white py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="cerrarModalPredeterminados()" 
+                        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors">
+                    <i class="fas fa-check mr-2"></i>Listo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Centrado para Configuración -->
+    <div id="modalConfig" class="hidden modal-centered">
+        <div class="modal-dialog p-4 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-white"><i class="fas fa-cog mr-2 text-yellow-400"></i>Configuración</h3>
+                <button onclick="cerrarModalConfig()" class="text-gray-400 text-xl hover:text-white transition-colors">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">Equipos por persona</span>
+                    <select id="cfgTeamsPerPerson" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">Velocidad</span>
+                    <select id="cfgSpeed" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                        <option value="40">Rápida</option>
+                        <option value="70" selected>Normal</option>
+                        <option value="120">Lenta</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">Sin repetir equipos</span>
+                    <input type="checkbox" id="cfgNoRepeat" checked class="w-5 h-5 text-purple-600 bg-gray-800 border-gray-700 rounded">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">Tipo de sorteo</span>
+                    <select id="cfgSortMode" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                        <option value="rounds">Por rondas</option>
+                        <option value="full">Todo de una vez</option>
+                    </select>
+                </div>
+                <p class="text-xs text-gray-500" id="modeDescription">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Por rondas: sortea equipo por equipo en cada ronda (presionas una vez por ronda).
+                </p>
+                <button onclick="resetearTodo()" 
+                        class="w-full bg-red-600/20 text-red-400 py-2.5 rounded-lg text-sm font-medium border border-red-600/30 hover:bg-red-600/30 transition-colors">
+                    <i class="fas fa-redo-alt mr-2"></i>Reiniciar asignaciones
+                </button>
+            </div>
+            
+            <button onclick="cerrarModalConfig()" 
+                    class="w-full mt-4 bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors">
+                <i class="fas fa-check mr-2"></i>Guardar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Datos
+        const equiposDefault = {
+            champions: ["Real Madrid","Barcelona","Manchester City","Bayern Múnich","PSG","Liverpool","Chelsea","Juventus","Inter de Milán","AC Milan","Borussia Dortmund","Atlético de Madrid","Arsenal","Napoli","Benfica","Porto","Ajax","RB Leipzig"],
+            mundial: ["Argentina","Brasil","Francia","Alemania","España","Inglaterra","Países Bajos","Portugal","Bélgica","Croacia","Uruguay","México","Japón","Senegal","Marruecos","Colombia","Chile","Ecuador"],
+            libertadores: ["Flamengo","Palmeiras","River Plate","Boca Juniors","Santos","São Paulo","Peñarol","Nacional","Independiente","Racing Club","Olimpia","Cerro Porteño","Colo-Colo","Atlético Nacional","Barcelona SC","Liga de Quito"]
+        };
+
+        let equipos = [];
+        let personas = [];
+        let asignaciones = [];
+        let modalFilter = 'all';
+        let sorteando = false;
+        let lastAssignedPerson = null;
+        
+        let configState = {
+            maxEquipos: 2,
+            speed: 70,
+            noRepeat: true,
+            sortMode: 'rounds'
+        };
+
+        function getConfig() {
+            return { ...configState };
+        }
+
+        function updateAll() {
+            updateDashboard();
+            updateButtonState();
+            updateStats();
+            updateModalTeamsList();
+            updateModalPlayersList();
+        }
+
+        function updateStats() {
+            const config = getConfig();
+            const totalNeeded = personas.length * config.maxEquipos;
+            const assigned = asignaciones.length;
+            const remaining = Math.max(0, totalNeeded - assigned);
+            
+            document.getElementById('statPlayers').textContent = personas.length;
+            document.getElementById('statTeams').textContent = equipos.length;
+            document.getElementById('statRemaining').textContent = remaining;
+        }
+
+        function updateDashboard() {
+            const config = getConfig();
+            const container = document.getElementById('cardContainer');
+            
+            if (!personas.length) {
+                container.innerHTML = '<p class="text-sm text-gray-500 text-center py-8">No hay participantes</p>';
+            } else {
+                container.innerHTML = personas.map((p, i) => {
+                    const asig = asignaciones.filter(a => a.persona === p);
+                    asig.sort((a, b) => (a.ronda || 0) - (b.ronda || 0));
+                    const isJustAssigned = lastAssignedPerson === p;
+                    
+                    const playerIcons = ['fa-user', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-secret', 'fa-user-tie', 'fa-user-graduate'];
+                    const playerIcon = playerIcons[i % playerIcons.length];
+                    
+                    return `
+                    <div class="player-card-new ${isJustAssigned ? 'just-assigned' : ''}" 
+                         id="card-${i}"
+                         data-persona="${p}">
+                        
+                        <!-- Header -->
+                        <div class="player-header">
+                            <div class="player-name-section">
+                                <i class="fas ${playerIcon} player-icon"></i>
+                                <span class="player-name truncate">${p}</span>
+                            </div>
+                            <span class="player-counter">${asig.length}/${config.maxEquipos}</span>
+                        </div>
+                        
+                        <!-- Equipos -->
+                        <div class="teams-container">
+                            ${asig.length ? asig.map((a, idx) => 
+                                `<span class="team-badge" style="animation-delay: ${idx * 0.1}s">
+                                    <i class="fas fa-shield-alt text-xs opacity-70"></i>
+                                    ${a.equipo}
+                                </span>`
+                            ).join('') : 
+                            '<span class="empty-teams">Sin equipos asignados</span>'}
+                        </div>
+                    </div>`;
+                }).join('');
+                
+                // Quitar animación después de un tiempo
+                if (lastAssignedPerson) {
+                    setTimeout(() => {
+                        const animated = document.querySelector('.player-card-new.just-assigned');
+                        if (animated) animated.classList.remove('just-assigned');
+                        lastAssignedPerson = null;
+                    }, 2000);
+                }
+            }
+        }
+
+        function updateModalPlayersList() {
+            const container = document.getElementById('modalPlayersList');
+            if (!container) return;
+            
+            const config = getConfig();
+            
+            if (!personas.length) {
+                container.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Sin participantes</p>';
+            } else {
+                container.innerHTML = personas.map((p, i) => `
+                    <div class="flex items-center justify-between bg-gray-800/50 rounded-lg px-3 py-2.5 border border-gray-700/30">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-user text-purple-400 text-sm"></i>
+                            <div>
+                                <span class="text-white text-sm">${p}</span>
+                                <span class="text-xs text-gray-500 ml-2">${asignaciones.filter(a => a.persona === p).length}/${config.maxEquipos}</span>
+                            </div>
+                        </div>
+                        <button onclick="eliminarPersonaModal(${i})" class="text-gray-600 hover:text-red-400 transition-colors p-1">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateModalTeamsList() {
+            const container = document.getElementById('modalTeamsList');
+            if (!container) return;
+            
+            if (!equipos.length) {
+                container.innerHTML = '<p class="text-gray-500 text-sm w-full text-center py-4">Sin equipos</p>';
+            } else {
+                container.innerHTML = equipos.map((e, i) => `
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800 text-gray-300 rounded-full text-xs border border-gray-700/50 m-1">
+                        ${e}
+                        <i class="fas fa-times cursor-pointer hover:text-red-400 transition-colors" onclick="eliminarEquipoModal(${i})"></i>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function updateButtonState() {
+            const btn = document.getElementById('btnSortear');
+            const config = getConfig();
+            
+            if (!personas.length || !equipos.length) {
+                btn.disabled = true;
+                btn.classList.remove('btn-sort');
+                return;
+            }
+            
+            let hayPendientes = false;
+            for (let p of personas) {
+                const count = asignaciones.filter(a => a.persona === p).length;
+                if (count < config.maxEquipos) {
+                    hayPendientes = true;
+                    break;
+                }
+            }
+            
+            let disponibles = [...equipos];
+            if (config.noRepeat) {
+                const usados = asignaciones.map(a => a.equipo);
+                disponibles = disponibles.filter(e => !usados.includes(e));
+            }
+            
+            if (!hayPendientes) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Completado';
+                btn.classList.remove('btn-sort');
+            } else if (!disponibles.length && config.noRepeat) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Sin equipos';
+                btn.classList.remove('btn-sort');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play mr-2"></i>Sortear Equipo';
+                btn.classList.add('btn-sort');
+            }
+        }
+
+        function eliminarPersona(i) {
+            const p = personas[i];
+            personas.splice(i, 1);
+            asignaciones = asignaciones.filter(a => a.persona !== p);
+            lastAssignedPerson = null;
+            updateAll();
+        }
+
+        function obtenerPendientesAleatorios(config) {
+            const { maxEquipos } = config;
+            let pendientes = [];
+            
+            for (let p of personas) {
+                const count = asignaciones.filter(a => a.persona === p).length;
+                if (count < maxEquipos) {
+                    pendientes.push({
+                        persona: p,
+                        ronda: count + 1
+                    });
+                }
+            }
+            
+            return pendientes;
+        }
+
+        function sortear() {
+            if (sorteando) return;
+            
+            const config = getConfig();
+            const { maxEquipos, speed, noRepeat, sortMode } = config;
+
+            if (!personas.length) return;
+            if (!equipos.length) return;
+
+            if (sortMode === 'full') {
+                sortearTodoDeUnaVez(config);
+                return;
+            }
+
+            // Modo por rondas - Jugador y equipo aleatorios
+            const pendientes = obtenerPendientesAleatorios(config);
+            
+            if (!pendientes.length) {
+                updateButtonState();
+                return;
+            }
+
+            // Seleccionar jugador aleatorio entre los pendientes
+            const elegido = pendientes[Math.floor(Math.random() * pendientes.length)];
+            const persona = elegido.persona;
+            const ronda = elegido.ronda;
+
+            let disponibles = [...equipos];
+            if (noRepeat) {
+                const usados = asignaciones.map(a => a.equipo);
+                disponibles = disponibles.filter(e => !usados.includes(e));
+            }
+            if (!disponibles.length) {
+                updateButtonState();
+                return;
+            }
+
+            sorteando = true;
+            const btn = document.getElementById('btnSortear');
+            btn.disabled = true;
+            btn.classList.remove('btn-sort');
+
+            const roller = document.getElementById('rollerDisplay');
+            
+            // Ruleta muestra jugador y equipo aleatorios
+            let idx = 0;
+            const interval = setInterval(() => {
+                const randomPlayer = pendientes[Math.floor(Math.random() * pendientes.length)].persona;
+                const randomTeam = disponibles[Math.floor(Math.random() * disponibles.length)];
+                roller.textContent = `${randomPlayer} → ${randomTeam}`;
+                roller.style.color = '#fff';
+            }, speed);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                const ganador = disponibles[Math.floor(Math.random() * disponibles.length)];
+                roller.textContent = `${persona} → ${ganador}`;
+                roller.style.color = '#a78bfa';
+                
+                asignaciones.push({ persona, equipo: ganador, ronda });
+                lastAssignedPerson = persona;
+                
+                updateAll();
+                sorteando = false;
+                
+                setTimeout(() => {
+                    roller.style.color = '#6b7280';
+                    roller.textContent = 'Presiona sortear';
+                }, 2000);
+                
+                updateButtonState();
+            }, 2000);
+        }
+
+        function sortearTodoDeUnaVez(config) {
+            const { maxEquipos, speed, noRepeat } = config;
+            
+            const totalNeeded = personas.length * maxEquipos;
+            let disponibles = [...equipos];
+            
+            if (noRepeat && disponibles.length < totalNeeded) {
+                alert(`No hay suficientes equipos. Necesitas ${totalNeeded} equipos únicos (${personas.length} jugadores × ${maxEquipos} equipos).`);
+                return;
+            }
+
+            sorteando = true;
+            const btn = document.getElementById('btnSortear');
+            btn.disabled = true;
+            btn.classList.remove('btn-sort');
+
+            const roller = document.getElementById('rollerDisplay');
+            
+            // Preparar todas las asignaciones en orden aleatorio
+            let nuevasAsignaciones = [];
+            let equiposDisponibles = [...equipos];
+            
+            // Crear array de todas las combinaciones jugador-ronda necesarias
+            let combinaciones = [];
+            for (let r = 1; r <= maxEquipos; r++) {
+                for (let p of personas) {
+                    combinaciones.push({ persona: p, ronda: r });
+                }
+            }
+            
+            // Barajar las combinaciones para que sea aleatorio
+            combinaciones.sort(() => Math.random() - 0.5);
+            
+            for (let comb of combinaciones) {
+                let equipo;
+                if (noRepeat) {
+                    const usados = nuevasAsignaciones.map(a => a.equipo);
+                    let pool = equiposDisponibles.filter(e => !usados.includes(e));
+                    
+                    if (pool.length === 0) {
+                        pool = [...equiposDisponibles];
+                    }
+                    
+                    equipo = pool[Math.floor(Math.random() * pool.length)];
+                } else {
+                    equipo = equiposDisponibles[Math.floor(Math.random() * equiposDisponibles.length)];
+                }
+                
+                nuevasAsignaciones.push({ 
+                    persona: comb.persona, 
+                    equipo, 
+                    ronda: comb.ronda 
+                });
+            }
+
+            // Efecto visual rápido en la ruleta
+            let idx = 0;
+            const interval = setInterval(() => {
+                const asig = nuevasAsignaciones[idx % nuevasAsignaciones.length];
+                roller.textContent = `${asig.persona} → ${asig.equipo}`;
+                roller.style.color = '#fff';
+                idx++;
+            }, 40);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                
+                asignaciones.push(...nuevasAsignaciones);
+                
+                roller.textContent = '¡Sorteo completado!';
+                roller.style.color = '#4ade80';
+                
+                updateAll();
+                sorteando = false;
+                
+                setTimeout(() => {
+                    roller.style.color = '#6b7280';
+                    roller.textContent = 'Presiona sortear';
+                }, 2000);
+                
+                updateButtonState();
+            }, 1500);
+        }
+
+        // Modal Participantes
+        function openModalPlayers() {
+            updateModalPlayersList();
+            document.getElementById('modalPlayers').classList.remove('hidden');
+        }
+
+        function cerrarModalPlayers() {
+            document.getElementById('modalPlayers').classList.add('hidden');
+            updateAll();
+        }
+
+        function agregarPersonaModal() {
+            const input = document.getElementById('modalInputPersona');
+            const nombre = input.value.trim();
+            if (nombre && !personas.includes(nombre)) {
+                personas.push(nombre);
+                input.value = '';
+                updateModalPlayersList();
+                updateAll();
+            }
+        }
+
+        function eliminarPersonaModal(i) {
+            const p = personas[i];
+            personas.splice(i, 1);
+            asignaciones = asignaciones.filter(a => a.persona !== p);
+            lastAssignedPerson = null;
+            updateModalPlayersList();
+            updateAll();
+        }
+
+        // Modal Equipos
+        function openModalTeams() {
+            updateModalTeamsList();
+            document.getElementById('modalTeams').classList.remove('hidden');
+        }
+
+        function cerrarModalTeams() {
+            document.getElementById('modalTeams').classList.add('hidden');
+            updateAll();
+        }
+
+        function agregarEquipoModal() {
+            const input = document.getElementById('modalInputEquipo');
+            const nombre = input.value.trim();
+            if (nombre && !equipos.includes(nombre)) {
+                equipos.push(nombre);
+                input.value = '';
+                updateModalTeamsList();
+                updateAll();
+                if (typeof renderModal === 'function') renderModal();
+            }
+        }
+
+        function eliminarEquipoModal(i) {
+            equipos.splice(i, 1);
+            updateModalTeamsList();
+            updateAll();
+            if (typeof renderModal === 'function') renderModal();
+        }
+
+        function abrirModalPredeterminados() {
+            abrirModal();
+        }
+
+        // Modal Equipos Predeterminados
+        function abrirModal() { 
+            document.getElementById('modalEquipos').classList.remove('hidden'); 
+            renderModal(); 
+        }
+        
+        function cerrarModalPredeterminados() { 
+            document.getElementById('modalEquipos').classList.add('hidden'); 
+            updateModalTeamsList();
+            updateAll();
+        }
+        
+        function filterModal(cat, btn) {
+            modalFilter = cat;
+            document.querySelectorAll('#modalEquipos .tab-button').forEach(b => {
+                b.className = 'tab-button bg-gray-700 text-gray-300';
+            });
+            btn.className = 'tab-button bg-purple-600 text-white active';
+            renderModal();
+        }
+
+        function renderModal() {
+            const search = document.getElementById('searchModal')?.value.toLowerCase() || '';
+            let lista = [];
+            if (modalFilter === 'all') {
+                Object.values(equiposDefault).forEach(arr => lista.push(...arr));
+            } else {
+                lista = equiposDefault[modalFilter] || [];
+            }
+            if (search) lista = lista.filter(e => e.toLowerCase().includes(search));
+
+            const grid = document.getElementById('gridModal');
+            grid.innerHTML = lista.map(e => {
+                const sel = equipos.includes(e);
+                return `<button onclick="toggleEq('${e.replace(/'/g, "\\'")}')" 
+                    class="p-2.5 rounded-lg border text-left text-sm transition-colors ${
+                        sel ? 'border-green-500 bg-green-500/10 text-green-400 font-medium' : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                    }">
+                    ${e} ${sel ? '<span class="float-right">✓</span>' : ''}
+                </button>`;
+            }).join('');
+        }
+
+        function toggleEq(nombre) {
+            const idx = equipos.indexOf(nombre);
+            idx > -1 ? equipos.splice(idx, 1) : equipos.push(nombre);
+            renderModal();
+            updateModalTeamsList();
+        }
+
+        // Modal Configuración
+        function openModalConfig() {
+            document.getElementById('cfgTeamsPerPerson').value = configState.maxEquipos;
+            document.getElementById('cfgSpeed').value = configState.speed;
+            document.getElementById('cfgNoRepeat').checked = configState.noRepeat;
+            document.getElementById('cfgSortMode').value = configState.sortMode;
+            
+            updateModeDescription();
+            
+            document.getElementById('modalConfig').classList.remove('hidden');
+        }
+
+        function updateModeDescription() {
+            const modeDesc = document.getElementById('modeDescription');
+            const sortMode = document.getElementById('cfgSortMode').value;
+            if (modeDesc) {
+                if (sortMode === 'rounds') {
+                    modeDesc.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Por rondas: presiona una vez para sortear un jugador y equipo aleatorio por ronda.';
+                } else {
+                    modeDesc.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Todo de una vez: presiona una sola vez y se sortean todos los equipos para todos los jugadores automáticamente.';
+                }
+            }
+        }
+
+        function cerrarModalConfig() {
+            configState.maxEquipos = parseInt(document.getElementById('cfgTeamsPerPerson').value);
+            configState.speed = parseInt(document.getElementById('cfgSpeed').value);
+            configState.noRepeat = document.getElementById('cfgNoRepeat').checked;
+            configState.sortMode = document.getElementById('cfgSortMode').value;
+            
+            document.getElementById('modalConfig').classList.add('hidden');
+            updateAll();
+        }
+
+        function resetearTodo() {
+            if (asignaciones.length && confirm('¿Reiniciar todas las asignaciones?')) {
+                asignaciones = [];
+                lastAssignedPerson = null;
+                document.getElementById('rollerDisplay').textContent = 'Presiona sortear';
+                document.getElementById('rollerDisplay').style.color = '#6b7280';
+                updateAll();
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'cfgSortMode') {
+                updateModeDescription();
+            }
+        });
+
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const activeId = document.activeElement?.id;
+                if (activeId === 'modalInputPersona') agregarPersonaModal();
+                if (activeId === 'modalInputEquipo') agregarEquipoModal();
+            }
+        });
+
+        // Cerrar modales al hacer clic fuera
+        document.querySelectorAll('.modal-centered').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    updateAll();
+                }
+            });
+        });
+
+        // Inicializar
+        updateAll();
+    </script>
+</body>
+</html>

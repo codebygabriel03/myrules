@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stop con Letras - MyRules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+        }
+        
+        .dashboard {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        /* Contenedor del botón circular con temporizador */
+        .pass-button-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto;
+        }
+        
+        .timer-ring {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .timer-ring.hidden-timer {
+            opacity: 0;
+        }
+        
+        .timer-ring svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .timer-ring .bg-circle {
+            fill: none;
+            stroke: rgba(255,255,255,0.06);
+            stroke-width: 8;
+        }
+        
+        .timer-ring .progress-circle {
+            fill: none;
+            stroke: #22c55e;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear, stroke 0.3s;
+            filter: drop-shadow(0 0 10px rgba(34,197,94,0.6));
+        }
+        
+        .timer-ring .progress-circle.warning {
+            stroke: #f59e0b;
+            filter: drop-shadow(0 0 10px rgba(245,158,11,0.6));
+        }
+        
+        .timer-ring .progress-circle.danger {
+            stroke: #ef4444;
+            filter: drop-shadow(0 0 15px rgba(239,68,68,0.8));
+            stroke-width: 10;
+        }
+        
+        /* Botón de pasar centrado */
+        .pass-button {
+            position: absolute;
+            inset: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 40px rgba(139,92,246,0.4);
+            z-index: 2;
+        }
+        
+        .pass-button:active {
+            transform: scale(0.93);
+            box-shadow: 0 5px 20px rgba(139,92,246,0.3);
+        }
+        
+        .pass-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .pass-button .pass-text {
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .pass-button .pass-icon {
+            font-size: 1.8rem;
+            margin-bottom: 2px;
+        }
+        
+        .timer-display {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            background: #1e293b;
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            z-index: 3;
+            transition: color 0.3s, border-color 0.3s, opacity 0.3s;
+        }
+        
+        .timer-display.hidden-display {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .timer-display.danger-display {
+            color: #ef4444;
+            border-color: rgba(239,68,68,0.5);
+            animation: pulse-display 0.5s infinite;
+        }
+        
+        @keyframes pulse-display {
+            0%, 100% { border-color: rgba(239,68,68,0.3); }
+            50% { border-color: rgba(239,68,68,0.8); }
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.03));
+            border: 2px solid rgba(139,92,246,0.25);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card.playing {
+            animation: pulse-border-purple 1.5s infinite;
+            border-color: rgba(139,92,246,0.55);
+        }
+        
+        .game-card.rolling {
+            animation: rapid-pulse-purple 0.08s infinite;
+            border-color: rgba(139,92,246,0.8);
+            background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(139,92,246,0.08));
+        }
+        
+        @keyframes pulse-border-purple {
+            0%, 100% { border-color: rgba(139,92,246,0.3); box-shadow: 0 0 20px rgba(139,92,246,0.08); }
+            50% { border-color: rgba(139,92,246,0.7); box-shadow: 0 0 40px rgba(139,92,246,0.2); }
+        }
+        
+        @keyframes rapid-pulse-purple {
+            0%, 100% { border-color: rgba(139,92,246,0.6); box-shadow: 0 0 30px rgba(139,92,246,0.3); }
+            50% { border-color: rgba(139,92,246,1); box-shadow: 0 0 60px rgba(139,92,246,0.6); }
+        }
+        
+        .game-text {
+            transition: all 0.15s;
+        }
+        
+        .game-text.rolling-text {
+            animation: blur-text 0.08s infinite;
+        }
+        
+        @keyframes blur-text {
+            0%, 100% { filter: blur(0px); transform: scale(1); }
+            50% { filter: blur(2px); transform: scale(1.02); }
+        }
+        
+        .game-text.reveal {
+            animation: reveal-text 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes reveal-text {
+            0% { filter: blur(8px); transform: scale(1.15); opacity: 0; }
+            60% { filter: blur(0px); transform: scale(0.95); opacity: 1; }
+            100% { filter: blur(0px); transform: scale(1); opacity: 1; }
+        }
+        
+        .letter-display {
+            font-size: 5rem;
+            line-height: 1;
+            font-weight: 900;
+        }
+        
+        .category-name {
+            font-size: 1.5rem;
+            line-height: 1.3;
+            font-weight: 800;
+        }
+        
+        .modal-centered {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-dialog {
+            background: #1a2332;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        }
+        
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .btn-play-again {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border-radius: 18px;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 35px rgba(139,92,246,0.3);
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-play-again:active {
+            transform: scale(0.95);
+        }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        .custom-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+        }
+        
+        .timer-danger {
+            animation: shake 0.4s infinite;
+        }
+        
+        .timer-hidden-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .timer-hidden-message.show { display: block; }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #334155;
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #8b5cf6; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        
+        .icon-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: #94a3b8;
+            font-size: 1.2rem;
+        }
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.06);
+            color: white;
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .result-message {
+            animation: result-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes result-pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-loser {
+            animation: loser-shake 0.6s ease, result-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes loser-shake {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-8px); }
+            20% { transform: translateX(8px); }
+            30% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            50% { transform: translateX(-4px); }
+            60% { transform: translateX(4px); }
+            70% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); }
+            90% { transform: translateX(-1px); }
+        }
+        
+        .divider {
+            width: 2px;
+            background: rgba(139,92,246,0.3);
+            align-self: stretch;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="font-body">
+
+    <!-- ========== HEADER MYRULES ========== -->
+    <header class="border-b border-white/5 backdrop-blur-xl bg-gray-900/70 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14 lg:h-16">
+                <a href="../index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-9 h-9 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-shadow duration-300">
+                        <span class="font-mono font-bold text-base text-white">M</span>
+                    </div>
+                    <span class="font-title font-bold text-lg lg:text-xl tracking-tight text-white">My<span class="text-purple-400">Rules</span></span>
+                </a>
+                
+               
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="p-4 pb-28">
+        <div class="max-w-md mx-auto space-y-4">
+            <div class="text-center mb-1 pt-2">
+                <h1 class="text-2xl font-bold text-white flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-font text-purple-400"></i>Stop con Letras
+                </h1>
+                <p class="text-gray-500 text-xs mt-1">¡Letra + Categoría! Pasa el dispositivo y no te quedes sin tiempo</p>
+            </div>
+
+            <div class="dashboard rounded-2xl p-4 space-y-4">
+                <!-- Letra y Categoría JUNTAS en un solo cuadro -->
+                <div id="gameCard" class="game-card">
+                    <div class="text-center mb-3">
+                        <span class="text-xs text-gray-500 uppercase tracking-widest font-medium">Letra y Categoría</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Letra a la izquierda -->
+                        <div class="flex-1 text-center">
+                            <div id="currentLetter" class="text-white letter-display game-text">-</div>
+                        </div>
+                        
+                        <!-- Categoría a la derecha -->
+                        <div class="flex-1 text-center">
+                            <div id="currentCategory" class="text-white category-name game-text">---</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón Circular con Temporizador -->
+                <div class="pass-button-container" id="timerContainer">
+                    <div class="timer-ring" id="timerRing">
+                        <svg viewBox="0 0 220 220">
+                            <circle class="bg-circle" cx="110" cy="110" r="102"/>
+                            <circle id="progressCircle" class="progress-circle" cx="110" cy="110" r="102" stroke-dasharray="640.88" stroke-dashoffset="0"/>
+                        </svg>
+                    </div>
+                    <button id="passButton" onclick="handlePass()" class="pass-button" disabled>
+                        <i class="fa-solid fa-play pass-icon"></i>
+                        <span class="pass-text">Iniciar</span>
+                    </button>
+                    <div class="timer-display" id="timerDisplay">10</div>
+                </div>
+                
+                <div class="timer-hidden-message" id="timerHiddenMessage">
+                    <i class="fa-solid fa-eye-slash text-2xl mb-2 block opacity-40"></i>
+                    <p class="font-medium">Temporizador oculto</p>
+                    <p class="text-xs mt-1 opacity-60">Confía en tu instinto</p>
+                </div>
+
+                <!-- Resultado / Estado -->
+                <div id="resultInfo" class="text-center py-1">
+                    <p id="resultMessage" class="text-sm font-medium text-gray-400">Presiona el botón para empezar</p>
+                </div>
+
+                <!-- Botón de Jugar de Nuevo (aparece al perder) -->
+                <button id="btnPlayAgain" onclick="startNewRound()" class="btn-play-again hidden">
+                    <i class="fa-solid fa-rotate-right mr-2"></i>Jugar de nuevo
+                </button>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex gap-2 justify-center">
+                <button onclick="openModalCategories()" class="icon-btn" title="Categorías">
+                    <i class="fa-solid fa-layer-group text-yellow-400"></i>
+                </button>
+                <button onclick="openModalLetters()" class="icon-btn" title="Letras">
+                    <i class="fa-solid fa-font text-purple-400"></i>
+                </button>
+                <button onclick="openModalConfig()" class="icon-btn" title="Configuración">
+                    <i class="fa-solid fa-sliders text-blue-400"></i>
+                </button>
+                <button onclick="resetGame()" class="icon-btn" title="Reiniciar">
+                    <i class="fa-solid fa-rotate-right text-green-400"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Categorías -->
+    <div id="modalCategories" class="hidden modal-centered">
+        <div class="modal-dialog p-5 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-layer-group text-yellow-400"></i>Categorías</h3>
+                <button onclick="closeModalCategories()" class="text-gray-500 hover:text-white text-xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="inputCategory" placeholder="Nueva categoría" class="flex-1 px-4 py-3 bg-gray-800/80 border border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 outline-none transition-all">
+                <button onclick="addCategory()" class="bg-yellow-600 text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-yellow-500 transition-colors" title="Agregar categoría">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <div class="mb-3">
+                <p class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wider">Categorías activas</p>
+                <div id="categoriesList" class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto custom-scroll"></div>
+            </div>
+            <button onclick="closeModalCategories()" class="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-500 transition-colors"><i class="fa-solid fa-check mr-2"></i>Listo</button>
+        </div>
+    </div>
+
+    <!-- Modal Letras -->
+    <div id="modalLetters" class="hidden modal-centered">
+        <div class="modal-dialog p-5 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-font text-purple-400"></i>Letras</h3>
+                <button onclick="closeModalLetters()" class="text-gray-500 hover:text-white text-xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="mb-4">
+                <p class="text-xs text-gray-500 mb-3 font-medium uppercase tracking-wider">Selecciona las letras disponibles</p>
+                <div class="flex gap-2 mb-3">
+                    <button onclick="selectAllLetters()" class="flex-1 bg-gray-700/80 text-gray-300 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition-colors">
+                        <i class="fa-solid fa-check-double mr-1"></i>Seleccionar todas
+                    </button>
+                    <button onclick="deselectAllLetters()" class="flex-1 bg-gray-700/80 text-gray-300 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition-colors">
+                        <i class="fa-solid fa-xmark mr-1"></i>Deseleccionar todas
+                    </button>
+                </div>
+                <div id="lettersGrid" class="grid grid-cols-6 gap-2 max-h-64 overflow-y-auto custom-scroll"></div>
+            </div>
+            <button onclick="closeModalLetters()" class="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-500 transition-colors"><i class="fa-solid fa-check mr-2"></i>Listo</button>
+        </div>
+    </div>
+
+    <!-- Modal Configuración -->
+    <div id="modalConfig" class="hidden modal-centered">
+        <div class="modal-dialog p-5 custom-scroll" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-blue-400"></i>Configuración</h3>
+                <button onclick="closeModalConfig()" class="text-gray-500 hover:text-white text-xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="text-sm text-gray-300 block mb-2 font-medium">Tiempo por turno</label>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="changeTimerConfig(-1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">−</button>
+                        <div class="flex-1 bg-gray-800/80 rounded-xl flex items-center justify-center py-2">
+                            <span id="configTimerValue" class="text-3xl font-bold text-white font-mono">10</span><span class="text-sm text-gray-500 ml-1">seg</span>
+                        </div>
+                        <button onclick="changeTimerConfig(1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">+</button>
+                    </div>
+                    <div class="flex justify-between mt-1 px-1"><span class="text-xs text-gray-600">5s</span><span class="text-xs text-gray-600">30s</span></div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-300 block mb-2 font-medium">Segundos críticos (alarma)</label>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="changeCriticalConfig(-1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">−</button>
+                        <div class="flex-1 bg-gray-800/80 rounded-xl flex items-center justify-center py-2">
+                            <span id="configCriticalValue" class="text-3xl font-bold text-white font-mono">3</span><span class="text-sm text-gray-500 ml-1">seg</span>
+                        </div>
+                        <button onclick="changeCriticalConfig(1)" class="w-11 h-11 bg-gray-700/80 rounded-xl text-white font-bold hover:bg-gray-600 transition-colors text-lg">+</button>
+                    </div>
+                    <div class="flex justify-between mt-1 px-1"><span class="text-xs text-gray-600">1s</span><span class="text-xs text-gray-600">10s</span></div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div><span class="text-sm text-gray-300 font-medium">Ocultar temporizador</span><p class="text-xs text-gray-500">Modo difícil</p></div>
+                    <label class="switch"><input type="checkbox" id="configHideTimer" onchange="toggleHideTimerConfig()"><span class="slider"></span></label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div><span class="text-sm text-gray-300 font-medium">Efectos de sonido</span><p class="text-xs text-gray-500">Tic-tac y alertas</p></div>
+                    <label class="switch"><input type="checkbox" id="configSound" checked onchange="toggleSoundConfig()"><span class="slider"></span></label>
+                </div>
+            </div>
+            <button onclick="closeModalConfig()" class="w-full mt-5 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-500 transition-colors"><i class="fa-solid fa-check mr-2"></i>Guardar</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== HEADER MOBILE MENU ==========
+        
+
+        // ========== SISTEMA DE SONIDOS ==========
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playTick() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.04);
+            } catch(e) {}
+        }
+
+        function playTickLow() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+                osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.08);
+            } catch(e) {}
+        }
+
+        function playAlarm() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain); gain.connect(audioCtx.destination);
+                        osc.type = 'square'; osc.frequency.setValueAtTime(700, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+                        osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.18);
+                    }, i * 220);
+                }
+            } catch(e) {}
+        }
+
+        function playTimeUpSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const notes = [800, 600, 400, 200, 100];
+                notes.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain); gain.connect(audioCtx.destination);
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        osc.frequency.linearRampToValueAtTime(freq * 0.5, audioCtx.currentTime + 0.3);
+                        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+                        osc.start(audioCtx.currentTime);
+                        osc.stop(audioCtx.currentTime + 0.35);
+                    }, i * 180);
+                });
+                
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(50, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.8);
+                }, 900);
+            } catch(e) {}
+        }
+
+        function playRollSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 1.5);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 1.5);
+            } catch(e) {}
+        }
+
+        function playRevealSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                setTimeout(() => { const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.setValueAtTime(600,audioCtx.currentTime); g.gain.setValueAtTime(0.2,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.3); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.3); }, 0);
+                setTimeout(() => { const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.setValueAtTime(900,audioCtx.currentTime); g.gain.setValueAtTime(0.2,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.4); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime+0.4); }, 200);
+            } catch(e) {}
+        }
+
+        function playPassSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        // ========== LETRAS DEL ALFABETO ==========
+        const DEFAULT_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        // ========== CATEGORÍAS CON ICONOS ==========
+        const DEFAULT_CATEGORIES = [
+            'Nombre',
+            'Apellido',
+            'Objeto',
+            'Color',
+            'Flora',
+            'Mundo',
+            'Animales',
+            'TV',
+            'Marcas',
+            'Profesiones',
+            'Instrumentos',
+            'Famosos',
+            'Videojuegos',
+            'Personajes'
+        ];
+
+        const CATEGORY_ICONS = {
+            'Nombre': 'fa-user',
+            'Apellido': 'fa-users',
+            'Objeto': 'fa-cube',
+            'Color': 'fa-palette',
+            'Flora': 'fa-seedling',
+            'Mundo': 'fa-earth-americas',
+            'Animales': 'fa-paw',
+            'TV': 'fa-tv',
+            'Marcas': 'fa-copyright',
+            'Profesiones': 'fa-briefcase',
+            'Instrumentos': 'fa-guitar',
+            'Famosos': 'fa-star',
+            'Videojuegos': 'fa-gamepad',
+            'Personajes': 'fa-masks-theater'
+        };
+
+        function getCategoryIcon(category) {
+            return CATEGORY_ICONS[category] || 'fa-tag';
+        }
+
+        // ========== ESTADO DEL JUEGO ==========
+        let gameState = {
+            letters: [...DEFAULT_LETTERS],
+            categories: [...DEFAULT_CATEGORIES],
+            currentLetter: null,
+            currentCategory: null,
+            isPlaying: false,
+            isGameOver: false,
+            timer: 10,
+            criticalSeconds: 3,
+            timeLeft: 10,
+            timerInterval: null,
+            hideTimer: false,
+            warningPlayed: false,
+        };
+
+        let configTemp = {
+            timer: 10,
+            criticalSeconds: 3,
+            hideTimer: false,
+            sound: true,
+        };
+
+        // ========== FUNCIONES DEL JUEGO ==========
+        
+        function sortearLetra() {
+            if (!gameState.letters.length) return null;
+            const randomIndex = Math.floor(Math.random() * gameState.letters.length);
+            return gameState.letters[randomIndex];
+        }
+
+        function sortearCategoria() {
+            if (!gameState.categories.length) return null;
+            const randomIndex = Math.floor(Math.random() * gameState.categories.length);
+            return gameState.categories[randomIndex];
+        }
+
+        function animateDoubleRoll(callback) {
+            const gameCard = document.getElementById('gameCard');
+            const letterText = document.getElementById('currentLetter');
+            const categoryText = document.getElementById('currentCategory');
+            
+            gameCard.classList.add('rolling');
+            letterText.classList.add('rolling-text');
+            categoryText.classList.add('rolling-text');
+            
+            initAudio();
+            playRollSound();
+            
+            let iterations = 0;
+            const maxIterations = 15;
+            const interval = setInterval(() => {
+                // Animar letra
+                const randomLetter = gameState.letters[Math.floor(Math.random() * gameState.letters.length)];
+                letterText.textContent = randomLetter;
+                
+                // Animar categoría
+                const randomCat = gameState.categories[Math.floor(Math.random() * gameState.categories.length)];
+                const icon = getCategoryIcon(randomCat);
+                categoryText.innerHTML = `<i class="fa-solid ${icon} mr-1 text-purple-400/70"></i><span>${randomCat}</span>`;
+                
+                iterations++;
+                
+                if (iterations >= maxIterations) {
+                    clearInterval(interval);
+                    gameCard.classList.remove('rolling');
+                    letterText.classList.remove('rolling-text');
+                    categoryText.classList.remove('rolling-text');
+                    
+                    letterText.classList.add('reveal');
+                    categoryText.classList.add('reveal');
+                    playRevealSound();
+                    
+                    setTimeout(() => {
+                        letterText.classList.remove('reveal');
+                        categoryText.classList.remove('reveal');
+                    }, 600);
+                    
+                    if (callback) callback();
+                }
+            }, 100);
+        }
+
+        function startNewRound() {
+            const letter = sortearLetra();
+            const category = sortearCategoria();
+            
+            if (!letter || !category) return;
+            
+            initAudio();
+            
+            gameState.currentLetter = letter;
+            gameState.currentCategory = category;
+            gameState.isPlaying = false;
+            gameState.isGameOver = false;
+            gameState.timeLeft = gameState.timer;
+            gameState.warningPlayed = false;
+            
+            document.getElementById('resultMessage').textContent = 'Sorteando...';
+            document.getElementById('resultMessage').className = 'text-sm font-medium text-gray-400';
+            
+            document.getElementById('btnPlayAgain').classList.add('hidden');
+            
+            const passButton = document.getElementById('passButton');
+            passButton.disabled = true;
+            
+            const timerRing = document.getElementById('timerRing');
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerRing.classList.remove('hidden-timer');
+            timerDisplay.classList.remove('hidden-display');
+            
+            updateTimerDisplay();
+            updateGameDisplay();
+            updateTimerVisibility();
+            
+            animateDoubleRoll(() => {
+                gameState.isPlaying = true;
+                gameState.timeLeft = gameState.timer;
+                gameState.warningPlayed = false;
+                
+                updateGameDisplay();
+                updateTimerDisplay();
+                updateTimerVisibility();
+                
+                passButton.innerHTML = '<i class="fa-solid fa-shuffle pass-icon"></i><span class="pass-text">Sortear</span>';
+                passButton.disabled = false;
+                
+                document.getElementById('gameCard').classList.add('playing');
+                document.getElementById('resultMessage').textContent = '¡Di una palabra y sortea de nuevo!';
+                document.getElementById('resultMessage').className = 'text-sm font-medium text-gray-400';
+                
+                startTimer();
+            });
+        }
+
+        function handlePass() {
+            if (!gameState.isPlaying && !gameState.isGameOver) {
+                startNewRound();
+                return;
+            }
+            
+            if (gameState.isPlaying && !gameState.isGameOver) {
+                stopTimer();
+                playPassSound();
+                
+                // Sortear nueva letra y categoría
+                const letter = sortearLetra();
+                const category = sortearCategoria();
+                
+                if (letter && category) {
+                    gameState.currentLetter = letter;
+                    gameState.currentCategory = category;
+                }
+                
+                gameState.timeLeft = gameState.timer;
+                gameState.warningPlayed = false;
+                updateGameDisplay();
+                updateTimerDisplay();
+                updateProgressCircle();
+                
+                document.getElementById('resultMessage').textContent = '¡Nueva combinación! Siguiente persona...';
+                document.getElementById('resultMessage').className = 'text-sm font-medium text-green-400';
+                
+                setTimeout(() => {
+                    if (gameState.isPlaying) {
+                        document.getElementById('resultMessage').textContent = '¡Di una palabra y sortea de nuevo!';
+                        document.getElementById('resultMessage').className = 'text-sm font-medium text-gray-400';
+                    }
+                }, 600);
+                
+                startTimer();
+            }
+        }
+
+        function timeUp() {
+            stopTimer();
+            gameState.isPlaying = false;
+            gameState.isGameOver = true;
+            document.getElementById('gameCard').classList.remove('playing');
+            
+            playTimeUpSound();
+            
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.innerHTML = '<i class="fa-solid fa-circle-xmark mr-2 text-red-400"></i>¡Se acabó el tiempo! Alguien perdió';
+            resultMessage.className = 'text-sm font-bold text-red-400 result-message result-loser';
+            
+            const passButton = document.getElementById('passButton');
+            passButton.disabled = true;
+            
+            document.getElementById('btnPlayAgain').classList.remove('hidden');
+            
+            updateTimerDisplay();
+            updateProgressCircle();
+        }
+
+        function startTimer() {
+            stopTimer();
+            let lastSecond = Math.ceil(gameState.timeLeft);
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft -= 0.1;
+                const currentSecond = Math.ceil(gameState.timeLeft);
+                
+                if (currentSecond !== lastSecond && gameState.timeLeft > 0) {
+                    lastSecond = currentSecond;
+                    if (gameState.timeLeft <= gameState.criticalSeconds) {
+                        playTickLow();
+                    } else {
+                        playTick();
+                    }
+                }
+                
+                if (gameState.timeLeft <= 0) {
+                    gameState.timeLeft = 0;
+                    updateTimerDisplay();
+                    updateProgressCircle();
+                    timeUp();
+                } else {
+                    updateTimerDisplay();
+                    updateProgressCircle();
+                    
+                    if (gameState.timeLeft <= gameState.criticalSeconds && !gameState.warningPlayed) {
+                        gameState.warningPlayed = true;
+                        playAlarm();
+                    }
+                }
+            }, 100);
+        }
+
+        function stopTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timerDisplay');
+            const time = Math.ceil(gameState.timeLeft);
+            display.textContent = time;
+            display.classList.remove('danger-display');
+            
+            if (gameState.timeLeft <= gameState.criticalSeconds && gameState.isPlaying) {
+                display.classList.add('danger-display');
+            }
+        }
+
+        function updateProgressCircle() {
+            const circle = document.getElementById('progressCircle');
+            const circumference = 640.88;
+            const progress = gameState.timeLeft / gameState.timer;
+            const offset = circumference * (1 - progress);
+            circle.style.strokeDashoffset = offset;
+            circle.classList.remove('warning', 'danger');
+            
+            if (gameState.timeLeft <= gameState.criticalSeconds) {
+                circle.style.stroke = '#ef4444';
+                circle.classList.add('danger');
+            } else if (gameState.timeLeft <= gameState.criticalSeconds + 2) {
+                circle.style.stroke = '#f59e0b';
+                circle.classList.add('warning');
+            } else {
+                circle.style.stroke = '#8b5cf6';
+            }
+        }
+
+        function updateTimerVisibility() {
+            const timerRing = document.getElementById('timerRing');
+            const message = document.getElementById('timerHiddenMessage');
+            const timerDisplay = document.getElementById('timerDisplay');
+            
+            if (gameState.hideTimer && gameState.isPlaying) {
+                timerRing.classList.add('hidden-timer');
+                timerDisplay.classList.add('hidden-display');
+                message.classList.add('show');
+            } else {
+                timerRing.classList.remove('hidden-timer');
+                timerDisplay.classList.remove('hidden-display');
+                message.classList.remove('show');
+            }
+        }
+
+        function updateGameDisplay() {
+            // Actualizar letra
+            const letterDisplay = document.getElementById('currentLetter');
+            if (gameState.currentLetter) {
+                letterDisplay.textContent = gameState.currentLetter;
+            } else {
+                letterDisplay.textContent = '---';
+            }
+            
+            // Actualizar categoría
+            const cat = gameState.currentCategory;
+            const catDisplay = document.getElementById('currentCategory');
+            if (cat) {
+                const icon = getCategoryIcon(cat);
+                catDisplay.innerHTML = `<i class="fa-solid ${icon} mr-1 text-purple-400/70"></i><span>${cat}</span>`;
+            } else {
+                catDisplay.innerHTML = '---';
+            }
+        }
+
+        function resetGame() {
+            stopTimer();
+            gameState.isPlaying = false;
+            gameState.isGameOver = false;
+            gameState.currentLetter = null;
+            gameState.currentCategory = null;
+            gameState.timeLeft = gameState.timer;
+            gameState.warningPlayed = false;
+            
+            document.getElementById('currentLetter').textContent = '---';
+            document.getElementById('currentCategory').innerHTML = '---';
+            document.getElementById('resultMessage').textContent = 'Presiona el botón para empezar';
+            document.getElementById('resultMessage').className = 'text-sm font-medium text-gray-400';
+            document.getElementById('gameCard').classList.remove('playing');
+            document.getElementById('btnPlayAgain').classList.add('hidden');
+            
+            const passButton = document.getElementById('passButton');
+            passButton.disabled = false;
+            passButton.innerHTML = '<i class="fa-solid fa-play pass-icon"></i><span class="pass-text">Iniciar</span>';
+            
+            document.getElementById('timerRing').classList.remove('hidden-timer');
+            document.getElementById('timerDisplay').classList.remove('hidden-display');
+            
+            const circle = document.getElementById('progressCircle');
+            circle.style.strokeDashoffset = '0';
+            circle.style.stroke = '#8b5cf6';
+            circle.classList.remove('warning', 'danger');
+            
+            const display = document.getElementById('timerDisplay');
+            display.textContent = gameState.timer;
+            display.classList.remove('danger-display');
+            
+            updateTimerVisibility();
+            updateUI();
+        }
+
+        function updateUI() {
+            updateCategoriesList();
+            updateLettersGrid();
+            updateTimerVisibility();
+            
+            const passButton = document.getElementById('passButton');
+            if (gameState.isGameOver) {
+                passButton.disabled = true;
+            } else if (!gameState.isPlaying) {
+                passButton.innerHTML = '<i class="fa-solid fa-play pass-icon"></i><span class="pass-text">Iniciar</span>';
+                passButton.disabled = false;
+            } else {
+                passButton.innerHTML = '<i class="fa-solid fa-shuffle pass-icon"></i><span class="pass-text">Sortear</span>';
+            }
+        }
+
+        // ========== CONFIGURACIÓN ==========
+        function openModalConfig() {
+            configTemp.timer = gameState.timer;
+            configTemp.criticalSeconds = gameState.criticalSeconds;
+            configTemp.hideTimer = gameState.hideTimer;
+            configTemp.sound = soundEnabled;
+            
+            document.getElementById('configTimerValue').textContent = configTemp.timer;
+            document.getElementById('configCriticalValue').textContent = configTemp.criticalSeconds;
+            document.getElementById('configHideTimer').checked = configTemp.hideTimer;
+            document.getElementById('configSound').checked = configTemp.sound;
+            document.getElementById('modalConfig').classList.remove('hidden');
+        }
+
+        function closeModalConfig() {
+            gameState.timer = configTemp.timer;
+            gameState.criticalSeconds = configTemp.criticalSeconds;
+            gameState.hideTimer = configTemp.hideTimer;
+            soundEnabled = configTemp.sound;
+            
+            if (!gameState.isPlaying) {
+                gameState.timeLeft = gameState.timer;
+                document.getElementById('timerDisplay').textContent = gameState.timer;
+            }
+            document.getElementById('modalConfig').classList.add('hidden');
+            if (soundEnabled) initAudio();
+            updateUI();
+        }
+
+        function changeTimerConfig(delta) {
+            configTemp.timer = Math.max(5, Math.min(30, configTemp.timer + delta));
+            document.getElementById('configTimerValue').textContent = configTemp.timer;
+        }
+
+        function changeCriticalConfig(delta) {
+            configTemp.criticalSeconds = Math.max(1, Math.min(10, configTemp.criticalSeconds + delta));
+            document.getElementById('configCriticalValue').textContent = configTemp.criticalSeconds;
+        }
+
+        function toggleHideTimerConfig() { configTemp.hideTimer = document.getElementById('configHideTimer').checked; }
+        function toggleSoundConfig() {
+            configTemp.sound = document.getElementById('configSound').checked;
+            if (configTemp.sound) initAudio();
+        }
+
+        // ========== MODALES ==========
+        function openModalCategories() {
+            updateCategoriesList();
+            document.getElementById('modalCategories').classList.remove('hidden');
+            setTimeout(() => document.getElementById('inputCategory').focus(), 100);
+        }
+        function closeModalCategories() { document.getElementById('modalCategories').classList.add('hidden'); updateUI(); }
+
+        function addCategory() {
+            const input = document.getElementById('inputCategory');
+            const name = input.value.trim();
+            if (name && !gameState.categories.includes(name)) {
+                gameState.categories.push(name);
+                input.value = '';
+                updateCategoriesList();
+                input.focus();
+            }
+        }
+
+        function removeCategory(index) {
+            if (gameState.isPlaying) return;
+            if (gameState.categories.length <= 1) { alert('Debe haber al menos 1 categoría'); return; }
+            gameState.categories.splice(index, 1);
+            updateCategoriesList();
+        }
+
+        function updateCategoriesList() {
+            const container = document.getElementById('categoriesList');
+            if (!gameState.categories.length) {
+                container.innerHTML = '<p class="text-gray-500 text-sm w-full text-center py-4">Sin categorías</p>';
+                return;
+            }
+            container.innerHTML = gameState.categories.map((c, i) => {
+                const icon = getCategoryIcon(c);
+                return `<span class="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-800/80 text-gray-200 rounded-full text-xs border border-gray-700/50">
+                    <i class="fa-solid ${icon} text-purple-400/70 text-xs"></i>${c}
+                    <i class="fa-solid fa-xmark cursor-pointer hover:text-red-400 transition-colors ml-1" onclick="removeCategory(${i})"></i>
+                </span>`;
+            }).join('');
+        }
+
+        // ========== MODAL LETRAS ==========
+        function openModalLetters() {
+            updateLettersGrid();
+            document.getElementById('modalLetters').classList.remove('hidden');
+        }
+        function closeModalLetters() { document.getElementById('modalLetters').classList.add('hidden'); updateUI(); }
+
+        function toggleLetter(letter) {
+            if (gameState.isPlaying) return;
+            const index = gameState.letters.indexOf(letter);
+            if (index > -1) {
+                if (gameState.letters.length <= 1) {
+                    alert('Debe haber al menos 1 letra disponible');
+                    return;
+                }
+                gameState.letters.splice(index, 1);
+            } else {
+                gameState.letters.push(letter);
+                gameState.letters.sort();
+            }
+            updateLettersGrid();
+        }
+
+        function selectAllLetters() {
+            if (gameState.isPlaying) return;
+            gameState.letters = [...DEFAULT_LETTERS];
+            updateLettersGrid();
+        }
+
+        function deselectAllLetters() {
+            if (gameState.isPlaying) return;
+            gameState.letters = [];
+            updateLettersGrid();
+        }
+
+        function updateLettersGrid() {
+            const container = document.getElementById('lettersGrid');
+            container.innerHTML = DEFAULT_LETTERS.map(letter => {
+                const isActive = gameState.letters.includes(letter);
+                return `<button 
+                    onclick="toggleLetter('${letter}')" 
+                    class="aspect-square rounded-xl text-lg font-bold transition-all duration-200 flex items-center justify-center
+                    ${isActive 
+                        ? 'bg-purple-600/30 text-purple-300 border-2 border-purple-500/60 shadow-lg shadow-purple-500/20' 
+                        : 'bg-gray-800/50 text-gray-600 border-2 border-gray-700/30 hover:border-gray-600/50'
+                    } ${gameState.isPlaying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}"
+                    ${gameState.isPlaying ? 'disabled' : ''}
+                >${letter}</button>`;
+            }).join('');
+        }
+
+        // ========== EVENTOS ==========
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const activeId = document.activeElement?.id;
+                if (activeId === 'inputCategory') addCategory();
+            }
+        });
+
+        document.querySelectorAll('.modal-centered').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) { this.classList.add('hidden'); updateUI(); }
+            });
+        });
+
+        // ========== INICIALIZAR ==========
+        updateUI();
+        document.getElementById('timerDisplay').textContent = gameState.timer;
+        document.getElementById('passButton').innerHTML = '<i class="fa-solid fa-play pass-icon"></i><span class="pass-text">Iniciar</span>';
+    </script>
+</body>
+</html>
