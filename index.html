@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyRules - Panel Personal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MyRules — Centro de Juegos & Herramientas de Mesa</title>
+    <meta name="description" content="Plataforma interactiva para partidas con amigos: Ruleta Rusa, Saldo de Blackjack, Sorteador de Equipos, Stop, Basta, Contador de Puntos y Minijuegos especiales.">
+    <meta name="theme-color" content="#090d16">
+
+    <!-- Preconnect Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,439 +27,1480 @@
                         'mono': ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        'bg-dark': '#0b0f19',
-                        'bg-card': '#131a2b',
-                        'accent': '#ef4444',
-                        'accent2': '#f59e0b',
-                        'accent3': '#8b5cf6',
+                        'canvas': '#090d16',
+                        'canvas-elevated': '#0e1424',
+                        'surface': '#12192c',
+                        'surface-subtle': '#18223c',
+                        'border-subtle': 'rgba(255, 255, 255, 0.08)',
+                        'border-hover': 'rgba(255, 255, 255, 0.2)',
                     },
                     animation: {
-                        'glow': 'glow 2s ease-in-out infinite alternate',
-                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                        'glow-pulse': 'glowPulse 3s ease-in-out infinite alternate',
+                        'float': 'float 4s ease-in-out infinite',
                     },
                     keyframes: {
-                        glow: {
-                            '0%': { boxShadow: '0 0 20px rgba(239, 68, 68, 0.2)' },
-                            '100%': { boxShadow: '0 0 40px rgba(239, 68, 68, 0.5)' },
+                        glowPulse: {
+                            '0%': { opacity: '0.35', transform: 'scale(1)' },
+                            '100%': { opacity: '0.7', transform: 'scale(1.05)' },
                         },
-                    },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
                 }
             }
         }
     </script>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+        }
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        /* Fluid Typography */
+        .fluid-hero-title {
+            font-size: clamp(2.2rem, 1.4rem + 3.8vw, 4.4rem);
+            line-height: 1.1;
+            letter-spacing: -0.025em;
+        }
+
+        .fluid-hero-subtitle {
+            font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+            line-height: 1.6;
+        }
+
+        /* Glassmorphism & Borders */
+        .glass-panel {
+            background: rgba(14, 20, 36, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(18, 25, 44, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.25s ease, 
+                        box-shadow 0.25s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        /* Focus rings for accessibility (WCAG AA/AAA) */
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid #38bdf8;
+            outline-offset: 3px;
+        }
+
+        /* Safe padding for modern mobile devices (iPhone home indicator) */
+        .safe-bottom-padding {
+            padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
 </head>
-<body class="bg-bg-dark min-h-screen font-body text-white antialiased">
+<body class="bg-canvas text-slate-100 min-h-screen font-body antialiased selection:bg-red-500/30 selection:text-white flex flex-col relative overflow-x-hidden">
 
-    <!-- Fondo decorativo -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-red-500/5 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[120px]"></div>
+    <!-- Luces de fondo ambientales optimizadas (GPU friendly) -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="absolute -top-32 -left-32 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-red-600/10 rounded-full blur-[140px] animate-glow-pulse"></div>
+        <div class="absolute top-1/3 -right-40 w-96 sm:w-[550px] h-96 sm:h-[550px] bg-purple-600/10 rounded-full blur-[150px] animate-glow-pulse" style="animation-delay: 1.5s;"></div>
+        <div class="absolute -bottom-32 left-1/4 w-96 sm:w-[600px] h-96 sm:h-[600px] bg-blue-600/10 rounded-full blur-[160px] animate-glow-pulse" style="animation-delay: 0.8s;"></div>
+        <!-- Malla de gradiente sutil -->
+        <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
     </div>
 
-    <!-- Contenedor principal -->
-    <div class="relative z-10 flex flex-col min-h-screen">
-        
-        <!-- Header -->
-        <header class="border-b border-white/5 backdrop-blur-xl bg-bg-dark/70 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16 lg:h-20">
-                    
-                    <!-- Logo -->
-                    <a href="#" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-amber-500 rounded-xl flex items-center justify-center 
-                                    shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-shadow duration-300">
-                            <span class="font-mono font-bold text-lg text-white">M</span>
+    <!-- Barra de Navegación Principal -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-border-subtle transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <a href="index.html" class="flex items-center gap-3 group focus:outline-none" aria-label="MyRules Inicio">
+                        <div class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-red-600 via-amber-500 to-purple-600 p-[1.5px] shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-all duration-300">
+                            <div class="w-full h-full bg-canvas rounded-[10px] flex items-center justify-center">
+                                <span class="font-title font-extrabold text-lg sm:text-xl bg-gradient-to-r from-red-400 to-amber-300 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                                    MR
+                                </span>
+                            </div>
                         </div>
-                        <span class="font-title font-bold text-xl lg:text-2xl tracking-tight">
-                            My<span class="text-red-400">Rules</span>
-                        </span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-title font-bold text-xl tracking-tight text-white">
+                                    My<span class="text-red-400">Rules</span>
+                                </span>
+                                <span class="hidden sm:inline-flex px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider rounded bg-red-500/15 text-red-300 border border-red-500/20">
+                                    Hub
+                                </span>
+                            </div>
+                            <p class="hidden sm:block text-[11px] text-slate-400 font-mono -mt-0.5">Game Night & Party Suite</p>
+                        </div>
                     </a>
+                </div>
 
-                    <!-- Navegación Desktop -->
-                    <nav class="hidden md:flex items-center gap-1">
-                        <a href="vista/ruleta.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-skull text-red-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Ruleta Rusa</span>
-                        </a>
-                        
-                        <a href="vista/apuestas.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-coins text-amber-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Blackjack</span>
-                        </a>
-                        
-                        <a href="vista/sorteador.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-people-group text-purple-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Sorteador</span>
-                        </a>
-
-                        <a href="vista/stop.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-hand text-red-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Stop</span>
-                        </a>
-
-                        <a href="vista/basta.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-font text-green-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Basta!</span>
-                        </a>
-
-                        <a href="vista/contador.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-calculator text-green-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Contador</span>
-                        </a>
-
-                        <a href="vista/minijuegos.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-gamepad text-amber-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>Minijuegos</span>
-                        </a>
-
-                        <a href="vista/minijuegos-uno.html" 
-                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-gray-300 
-                                  hover:text-white hover:bg-white/5 transition-all duration-200 group">
-                            <i class="fa-solid fa-clone text-yellow-400 text-sm group-hover:scale-110 transition-transform duration-300"></i>
-                            <span>UNO</span>
-                        </a>
-                    </nav>
-
-                    <!-- Estado / Usuario -->
-                    <div class="hidden md:flex items-center gap-3">
-                        <span class="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">
-                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                            Online
+                <!-- Buscador Rápido Central en Header (Desktop) -->
+                <div class="hidden md:flex items-center flex-1 max-w-md mx-6">
+                    <div class="relative w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" 
+                               id="headerSearchInput" 
+                               placeholder="Buscar juego o herramienta... (Presiona /)"
+                               class="w-full bg-slate-900/80 border border-border-subtle rounded-xl pl-10 pr-12 py-2 text-sm text-slate-200 placeholder-slate-400 focus:border-red-500/60 focus:bg-slate-900 transition-all">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 rounded border border-slate-700 pointer-events-none">
+                            /
                         </span>
+                    </div>
+                </div>
+
+                <!-- Acciones Header Derecha -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    
+                    <!-- Botón de Reglas Oficiales -->
+                    <button type="button" 
+                            id="openRulesBtn" 
+                            class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-surface hover:bg-surface-subtle text-slate-200 border border-border-subtle hover:border-border-hover transition-all duration-200">
+                        <i class="fa-solid fa-book-open text-amber-400 text-xs"></i>
+                        <span class="hidden sm:inline">Reglas de Póker</span>
+                        <span class="sm:hidden">Reglas</span>
+                    </button>
+
+                    <!-- Acceso rápido a vista desplegable -->
+                    <div class="relative hidden lg:block">
+                        <button type="button" 
+                                id="quickMenuBtn"
+                                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-border-subtle transition-all">
+                            <i class="fa-solid fa-layer-group text-slate-400 text-xs"></i>
+                            <span>Herramientas (8)</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="quickMenuChevron"></i>
+                        </button>
+                        <!-- Desplegable -->
+                        <div id="quickMenuDropdown" class="hidden absolute right-0 mt-2 w-64 glass-panel rounded-2xl shadow-2xl p-2 z-50 border border-white/10">
+                            <div class="px-3 py-2 text-[11px] font-mono uppercase text-slate-400 tracking-wider">Acceso Directo</div>
+                            <div class="space-y-0.5">
+                                <a href="vista/ruleta.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-red-500/10 transition-colors">
+                                    <i class="fa-solid fa-skull text-red-400 w-4 text-center"></i> Ruleta Rusa
+                                </a>
+                                <a href="vista/apuestas.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-amber-500/10 transition-colors">
+                                    <i class="fa-solid fa-coins text-amber-400 w-4 text-center"></i> Blackjack (Saldo)
+                                </a>
+                                <a href="vista/sorteador.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-purple-500/10 transition-colors">
+                                    <i class="fa-solid fa-people-group text-purple-400 w-4 text-center"></i> Sorteador de Equipos
+                                </a>
+                                <a href="vista/stop.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-rose-500/10 transition-colors">
+                                    <i class="fa-solid fa-hand text-rose-400 w-4 text-center"></i> Stop (Contrarreloj)
+                                </a>
+                                <a href="vista/basta.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-emerald-500/10 transition-colors">
+                                    <i class="fa-solid fa-font text-emerald-400 w-4 text-center"></i> Basta! (Letras)
+                                </a>
+                                <a href="vista/contador.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-cyan-500/10 transition-colors">
+                                    <i class="fa-solid fa-calculator text-cyan-400 w-4 text-center"></i> Contador de Puntos
+                                </a>
+                                <a href="vista/minijuegos.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-amber-500/10 transition-colors">
+                                    <i class="fa-solid fa-gamepad text-amber-400 w-4 text-center"></i> Minijuegos Poker
+                                </a>
+                                <a href="vista/minijuegos-uno.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-yellow-500/10 transition-colors">
+                                    <i class="fa-solid fa-clone text-yellow-400 w-4 text-center"></i> Minijuegos UNO
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicador de Estado Activo -->
+                    <div class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Listo</span>
                     </div>
 
                     <!-- Botón menú móvil -->
-                    <button id="menuToggle" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Menú">
-                        <i class="fa-solid fa-bars text-xl"></i>
+                    <button type="button" 
+                            id="mobileMenuToggle" 
+                            class="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-border-subtle focus:outline-none transition-all" 
+                            aria-expanded="false" 
+                            aria-controls="mobileDrawer" 
+                            aria-label="Abrir menú de navegación">
+                        <i class="fa-solid fa-bars text-lg" id="mobileMenuIcon"></i>
                     </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Menú móvil -->
-            <div id="mobileMenu" class="md:hidden hidden border-t border-white/5 bg-bg-dark/95 backdrop-blur-xl">
-                <div class="px-4 py-4 space-y-1">
-                    <a href="vista/ruleta.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-skull text-red-400"></i>
-                        <span>Ruleta Rusa</span>
+        <!-- Menú Móvil Desplegable (Sheet) -->
+        <div id="mobileDrawer" class="hidden md:hidden border-t border-border-subtle bg-slate-950/95 backdrop-blur-2xl transition-all duration-300">
+            <div class="p-4 space-y-4">
+                <!-- Buscador móvil -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" 
+                           id="mobileSearchInput" 
+                           placeholder="Buscar herramienta..." 
+                           class="w-full bg-surface border border-border-subtle rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-400 focus:border-red-500/50">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="vista/ruleta.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-red-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-skull text-red-400"></i> Ruleta Rusa
                     </a>
-                    <a href="vista/apuestas.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-coins text-amber-400"></i>
-                        <span>Blackjack - Saldo</span>
+                    <a href="vista/apuestas.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-amber-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-coins text-amber-400"></i> Blackjack Saldo
                     </a>
-                    <a href="vista/sorteador.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-people-group text-purple-400"></i>
-                        <span>Sorteador de Equipos</span>
+                    <a href="vista/sorteador.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-purple-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-people-group text-purple-400"></i> Sorteador
                     </a>
-                    <a href="vista/stop.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-hand text-red-400"></i>
-                        <span>Stop - Juego de Palabras</span>
+                    <a href="vista/stop.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-rose-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-hand text-rose-400"></i> Stop Palabras
                     </a>
-                    <a href="vista/basta.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-font text-green-400"></i>
-                        <span>Basta! - Juego de Letras</span>
+                    <a href="vista/basta.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-emerald-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-font text-emerald-400"></i> Basta! Letras
                     </a>
-                    <a href="vista/contador.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-calculator text-green-400"></i>
-                        <span>Contador de Puntos</span>
+                    <a href="vista/contador.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-cyan-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-calculator text-cyan-400"></i> Marcador
                     </a>
-                    <a href="vista/minijuegos.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-gamepad text-amber-400"></i>
-                        <span>Minijuegos Poker</span>
+                    <a href="vista/minijuegos.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-amber-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-gamepad text-amber-400"></i> Minijuegos Poker
                     </a>
-                    <a href="vista/minijuegos-uno.html" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-300 
-                              hover:text-white hover:bg-white/5 transition-all duration-200">
-                        <i class="fa-solid fa-clone text-yellow-400"></i>
-                        <span>Minijuegos UNO</span>
+                    <a href="vista/minijuegos-uno.html" class="flex items-center gap-2.5 p-3 rounded-xl bg-surface border border-border-subtle hover:border-yellow-500/30 text-xs font-medium text-slate-200">
+                        <i class="fa-solid fa-clone text-yellow-400"></i> Minijuegos UNO
                     </a>
                 </div>
-            </div>
-        </header>
 
-        <!-- Contenido Principal -->
-        <main class="flex-1 flex items-center justify-center px-4 py-12 lg:py-20">
-            <div class="max-w-4xl w-full text-center">
+                <div class="pt-2 border-t border-border-subtle flex items-center justify-between text-xs text-slate-400">
+                    <button type="button" id="mobileOpenRulesBtn" class="flex items-center gap-2 text-amber-400 font-medium">
+                        <i class="fa-solid fa-book-open"></i> Ver Reglas Oficiales de Poker
+                    </button>
+                    <span class="font-mono">v3.0 PRO</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 safe-bottom-padding">
+        <div class="max-w-7xl mx-auto space-y-10 sm:space-y-14">
+            
+            <!-- Hero Section -->
+            <section class="text-center max-w-4xl mx-auto space-y-5">
                 
-                <!-- Título Hero -->
-                <div class="mb-12">
-                    <div class="inline-flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full text-xs font-mono text-gray-400 mb-6 
-                                border border-white/5">
-                        <span class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
-                        Panel Personal v2.0
+                <!-- Pill / Tagline -->
+                <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-white/10 text-xs sm:text-sm font-medium text-slate-300 shadow-inner">
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    <span class="font-mono text-slate-400">MyRules Suite</span>
+                    <span class="text-slate-600">/</span>
+                    <span class="text-slate-200">Tablero para tus Noches de Juegos</span>
+                </div>
+
+                <!-- Título Principal -->
+                <h1 class="fluid-hero-title font-title font-extrabold text-white tracking-tight">
+                    Todo el control de tus partidas en 
+                    <span class="bg-gradient-to-r from-red-400 via-amber-300 to-purple-400 bg-clip-text text-transparent">
+                        un solo lugar
+                    </span>
+                </h1>
+
+                <!-- Subtítulo / Descripción -->
+                <p class="fluid-hero-subtitle text-slate-300 max-w-2xl mx-auto font-normal">
+                    Herramientas interactivas, sorteos, marcadores de saldo y juegos contrarreloj optimizados para jugar con amigos en móvil, tablet o pantalla grande.
+                </p>
+
+                <!-- Barra de Estadísticas Rápidas -->
+                <div class="pt-3 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-slate-400 font-mono">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface/80 border border-border-subtle">
+                        <i class="fa-solid fa-gamepad text-red-400"></i>
+                        <span><strong class="text-white">8</strong> Herramientas</span>
                     </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface/80 border border-border-subtle">
+                        <i class="fa-solid fa-bolt text-amber-400"></i>
+                        <span>Carga Instantánea</span>
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface/80 border border-border-subtle">
+                        <i class="fa-solid fa-mobile-screen text-purple-400"></i>
+                        <span>100% Responsive</span>
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface/80 border border-border-subtle">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                        <span>Sin Registro</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Barra de Filtros, Búsqueda y Modos de Vista -->
+            <section class="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-border-subtle space-y-4">
+                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                     
-                    <h1 class="font-title font-bold text-4xl sm:text-5xl lg:text-7xl leading-tight mb-6">
-                        Bienvenido a
-                        <span class="bg-gradient-to-r from-red-400 via-amber-400 to-purple-400 bg-clip-text text-transparent">
-                            MyRules
-                        </span>
-                    </h1>
+                    <!-- Pestañas de Categoría -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none" id="categoryFilterContainer" role="tablist" aria-label="Categorías de herramientas">
+                        <button type="button" 
+                                data-category="all" 
+                                role="tab"
+                                aria-selected="true"
+                                class="category-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 bg-red-500 text-white shadow-lg shadow-red-500/25">
+                            Todos <span class="ml-1 text-[11px] opacity-80" id="countAll">(8)</span>
+                        </button>
+                        <button type="button" 
+                                data-category="cartas" 
+                                role="tab"
+                                aria-selected="false"
+                                class="category-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 bg-surface hover:bg-surface-subtle text-slate-300 hover:text-white border border-border-subtle">
+                            <i class="fa-solid fa-coins text-amber-400 text-xs mr-1.5"></i> Cartas & Apuestas
+                        </button>
+                        <button type="button" 
+                                data-category="palabras" 
+                                role="tab"
+                                aria-selected="false"
+                                class="category-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 bg-surface hover:bg-surface-subtle text-slate-300 hover:text-white border border-border-subtle">
+                            <i class="fa-solid fa-font text-emerald-400 text-xs mr-1.5"></i> Palabras & Agilidad
+                        </button>
+                        <button type="button" 
+                                data-category="azar" 
+                                role="tab"
+                                aria-selected="false"
+                                class="category-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 bg-surface hover:bg-surface-subtle text-slate-300 hover:text-white border border-border-subtle">
+                            <i class="fa-solid fa-dice text-purple-400 text-xs mr-1.5"></i> Azar & Equipos
+                        </button>
+                        <button type="button" 
+                                data-category="utilidades" 
+                                role="tab"
+                                aria-selected="false"
+                                class="category-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 bg-surface hover:bg-surface-subtle text-slate-300 hover:text-white border border-border-subtle">
+                            <i class="fa-solid fa-calculator text-cyan-400 text-xs mr-1.5"></i> Utilidades
+                        </button>
+                        <button type="button" 
+                                data-category="favorites" 
+                                role="tab"
+                                aria-selected="false"
+                                class="category-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 bg-surface hover:bg-surface-subtle text-slate-300 hover:text-white border border-border-subtle">
+                            <i class="fa-solid fa-star text-yellow-400 text-xs mr-1.5"></i> Favoritos <span class="ml-1 text-[11px] opacity-80" id="favCount">(0)</span>
+                        </button>
+                    </div>
+
+                    <!-- Buscador en tiempo real y vista -->
+                    <div class="flex items-center gap-2.5 w-full lg:w-auto">
+                        <div class="relative flex-1 lg:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" 
+                                   id="mainSearchInput" 
+                                   placeholder="Filtrar por nombre o etiqueta..." 
+                                   class="w-full bg-slate-900 border border-border-subtle rounded-xl pl-9 pr-8 py-2 text-xs sm:text-sm text-slate-200 placeholder-slate-400 focus:border-red-500/60 focus:bg-slate-950 transition-all">
+                            <button type="button" id="clearSearchBtn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1 text-xs" aria-label="Limpiar búsqueda">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <!-- Selector de Vista (Grid / Lista) -->
+                        <div class="flex items-center bg-slate-900 border border-border-subtle rounded-xl p-1 shrink-0">
+                            <button type="button" 
+                                    id="viewGridBtn" 
+                                    class="p-1.5 rounded-lg bg-surface text-white text-xs hover:text-white transition-colors" 
+                                    title="Vista Cuadrícula" 
+                                    aria-label="Vista Cuadrícula">
+                                <i class="fa-solid fa-grip"></i>
+                            </button>
+                            <button type="button" 
+                                    id="viewListBtn" 
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-white text-xs transition-colors" 
+                                    title="Vista Compacta" 
+                                    aria-label="Vista Compacta">
+                                <i class="fa-solid fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicador de resultados activos -->
+                <div class="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-border-subtle font-mono">
+                    <span id="resultsIndicator">Mostrando 8 herramientas disponibles</span>
+                    <button type="button" id="resetFiltersBtn" class="hidden text-red-400 hover:text-red-300 transition-colors">
+                        Restablecer filtros
+                    </button>
+                </div>
+            </section>
+
+            <!-- Grilla Principal de Herramientas -->
+            <section id="toolsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6" aria-label="Herramientas disponibles">
+                
+                <!-- 01. RULETA RUSA -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="ruleta" 
+                         data-category="azar" 
+                         data-name="ruleta rusa juego de azar extremo revólver"
+                         data-tags="3d animado sonido azar 2+ jugadores">
+                    <!-- Resplandor decorativo con color temático -->
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-red-600/15 rounded-full blur-2xl group-hover:bg-red-600/25 transition-all duration-300 pointer-events-none"></div>
                     
-                    <p class="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto font-light">
-                        Tu centro de control personal. Accede rápidamente a tus herramientas desde un solo lugar.
+                    <div class="space-y-4 relative z-10">
+                        <!-- Header de la Tarjeta -->
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-red-500/15 text-red-300 border border-red-500/25">
+                                <i class="fa-solid fa-dice text-xs"></i> Azar Extremo
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="ruleta" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Icono + Título -->
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-950/40 border border-red-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-red-500/60 transition-all duration-300 shadow-lg shadow-red-950/50">
+                                <i class="fa-solid fa-skull-crossbones text-2xl text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-red-300 transition-colors">
+                                    Ruleta Rusa
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/ruleta.html</span>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Simulador interactivo con revólver animado y tambor giratorio. Ideal para rondas de tensión, retos y decisiones extremas al azar.
+                        </p>
+
+                        <!-- Chips / Características -->
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Tambor 3D</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Efecto Sonoro</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">2+ Jugadores</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Acción -->
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/ruleta.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-red-600/20 hover:bg-red-600 text-red-200 hover:text-white border border-red-500/30 hover:border-red-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Jugar Ruleta</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 02. BLACKJACK - SALDO -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="apuestas" 
+                         data-category="cartas" 
+                         data-name="blackjack saldo control apuestas dinero fichas mesa"
+                         data-tags="banca fichas saldo apuestas multijugador">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-amber-600/15 rounded-full blur-2xl group-hover:bg-amber-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-amber-500/15 text-amber-300 border border-amber-500/25">
+                                <i class="fa-solid fa-coins text-xs"></i> Banca & Fichas
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="apuestas" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-950/40 border border-amber-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-amber-500/60 transition-all duration-300 shadow-lg shadow-amber-950/50">
+                                <i class="fa-solid fa-coins text-2xl text-amber-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-amber-300 transition-colors">
+                                    Blackjack Saldo
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/apuestas.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Control manual y visual de saldo, fichas y apuestas en vivo para partidas de cartas. Dile adiós a perder la cuenta de las apuestas.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Gestor de Banca</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Multi-jugador</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Sin Fichas Físicas</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/apuestas.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-amber-600/20 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/30 hover:border-amber-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Gestionar Saldo</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 03. SORTEADOR DE EQUIPOS -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="sorteador" 
+                         data-category="azar" 
+                         data-name="sorteador equipos grupos bombos aleatorio jugadores"
+                         data-tags="equipos bombos reparto justo al azar">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-purple-600/15 rounded-full blur-2xl group-hover:bg-purple-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-purple-500/15 text-purple-300 border border-purple-500/25">
+                                <i class="fa-solid fa-people-group text-xs"></i> Reparto Justo
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="sorteador" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-950/40 border border-purple-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-purple-500/60 transition-all duration-300 shadow-lg shadow-purple-950/50">
+                                <i class="fa-solid fa-people-group text-2xl text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-purple-300 transition-colors">
+                                    Sorteador de Equipos
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/sorteador.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Crea equipos equitativos al instante. Agrega nombres, define bombos y deja que el sistema sortee de manera imparcial.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Animación Roller</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Bombos</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Copiar Lista</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/sorteador.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-purple-600/20 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/30 hover:border-purple-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Sortear Equipos</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 04. STOP - CONTRARRELOJ -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="stop" 
+                         data-category="palabras" 
+                         data-name="stop juego de palabras contrarreloj temporizador timer turnos tuti fruti"
+                         data-tags="timer circular audio alarma por turnos agilidad">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-rose-600/15 rounded-full blur-2xl group-hover:bg-rose-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-rose-500/15 text-rose-300 border border-rose-500/25">
+                                <i class="fa-solid fa-stopwatch text-xs"></i> Contrarreloj
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="stop" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-rose-500/20 to-rose-950/40 border border-rose-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-rose-500/60 transition-all duration-300 shadow-lg shadow-rose-950/50">
+                                <i class="fa-solid fa-hand text-2xl text-rose-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-rose-300 transition-colors">
+                                    Stop (Tuti Fruti)
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/stop.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Juego dinámico de palabras por turnos. Incluye temporizador circular sonoro y conteo regresivo que eleva la adrenalina.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Timer Circular</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Sonido Beep</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Turno Dinámico</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/stop.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-rose-600/20 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/30 hover:border-rose-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Iniciar Stop</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 05. BASTA! - LETRAS ÚNICAS -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="basta" 
+                         data-category="palabras" 
+                         data-name="basta juego de letras abecedario palabras unico vocablo"
+                         data-tags="letras abecedario rapidez mental rondas">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-emerald-600/15 rounded-full blur-2xl group-hover:bg-emerald-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+                                <i class="fa-solid fa-font text-xs"></i> Letras Únicas
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="basta" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/40 border border-emerald-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-emerald-500/60 transition-all duration-300 shadow-lg shadow-emerald-950/50">
+                                <i class="fa-solid fa-font text-2xl text-emerald-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-emerald-300 transition-colors">
+                                    Basta! Letras
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/basta.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Agilidad mental con tablero alfabético: cada letra solo se utiliza una vez por ronda. Rastrea las letras restantes en tiempo real.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Teclado A-Z</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Sin Repeticiones</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Puntaje Automático</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/basta.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-emerald-600/20 hover:bg-emerald-600 text-emerald-200 hover:text-white border border-emerald-500/30 hover:border-emerald-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Jugar Basta!</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 06. CONTADOR DE PUNTOS -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="contador" 
+                         data-category="utilidades" 
+                         data-name="contador puntos marcador tablero score tablero universal"
+                         data-tags="marcador sumas rondas historial rapido">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-cyan-600/15 rounded-full blur-2xl group-hover:bg-cyan-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">
+                                <i class="fa-solid fa-calculator text-xs"></i> Marcador Universal
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="contador" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-950/40 border border-cyan-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-cyan-500/60 transition-all duration-300 shadow-lg shadow-cyan-950/50">
+                                <i class="fa-solid fa-calculator text-2xl text-cyan-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-cyan-300 transition-colors">
+                                    Contador de Puntos
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/contador.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Marcador multi-jugador digital para anotar tanteadores, sumas, restas y rondas de cualquier juego de cartas o mesa.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Historial Rondas</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Sumas Rápidas</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Reset Fácil</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/contador.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-cyan-600/20 hover:bg-cyan-600 text-cyan-200 hover:text-white border border-cyan-500/30 hover:border-cyan-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Abrir Marcador</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 07. MINIJUEGOS POKER -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="minijuegos" 
+                         data-category="cartas" 
+                         data-name="minijuegos poker sorteo eliminacion pascua suerte cartas baraja"
+                         data-tags="modos poker dados penalizaciones jugadas">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-orange-600/15 rounded-full blur-2xl group-hover:bg-orange-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-orange-500/15 text-orange-300 border border-orange-500/25">
+                                <i class="fa-solid fa-gamepad text-xs"></i> Reglas Especiales
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="minijuegos" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-950/40 border border-orange-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-orange-500/60 transition-all duration-300 shadow-lg shadow-orange-950/50">
+                                <i class="fa-solid fa-gamepad text-2xl text-orange-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-orange-300 transition-colors">
+                                    Minijuegos Poker
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/minijuegos.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Sortea modalidades dinámicas para tus rondas de póker: Eliminación progresiva, Pascua (jugada específica) y Suerte con dados.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Eliminación</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Pascua</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Dados & Cartas</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/minijuegos.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-orange-600/20 hover:bg-orange-600 text-orange-200 hover:text-white border border-orange-500/30 hover:border-orange-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Sortear Modo Poker</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- 08. MINIJUEGOS UNO -->
+                <article class="tool-card group relative rounded-2xl sm:rounded-3xl glass-card p-6 flex flex-col justify-between overflow-hidden" 
+                         data-id="minijuegos-uno" 
+                         data-category="cartas" 
+                         data-name="minijuegos uno cartas colores ruleta reversa comodines"
+                         data-tags="ruleta color caos cartas acumular">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-yellow-600/15 rounded-full blur-2xl group-hover:bg-yellow-600/25 transition-all duration-300 pointer-events-none"></div>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-yellow-500/15 text-yellow-300 border border-yellow-500/25">
+                                <i class="fa-solid fa-clone text-xs"></i> Caos & Giro
+                            </span>
+                            <button type="button" 
+                                    class="fav-toggle p-1.5 rounded-lg text-slate-500 hover:text-yellow-400 transition-colors" 
+                                    data-tool-id="minijuegos-uno" 
+                                    aria-label="Marcar como favorito" 
+                                    title="Marcar favorito">
+                                <i class="fa-regular fa-star text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-start gap-4 pt-1">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-yellow-500/20 via-red-500/20 to-yellow-950/40 border border-yellow-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:border-yellow-500/60 transition-all duration-300 shadow-lg shadow-yellow-950/50">
+                                <i class="fa-solid fa-clone text-2xl text-yellow-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-title font-bold text-lg sm:text-xl text-white group-hover:text-yellow-300 transition-colors">
+                                    Minijuegos UNO
+                                </h2>
+                                <span class="text-[11px] font-mono text-slate-400">/vista/minijuegos-uno.html</span>
+                            </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Rompe la rutina del juego UNO: ruletas de color sorpresa, acumulación implacable de cartas y efectos especiales inesperados.
+                        </p>
+
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Ruleta de Colores</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Reglas Sorpresa</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-300">Modo Caos</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 relative z-10">
+                        <a href="vista/minijuegos-uno.html" 
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm bg-yellow-600/20 hover:bg-yellow-600 text-yellow-200 hover:text-white border border-yellow-500/30 hover:border-yellow-500 shadow-sm transition-all duration-200 group/btn">
+                            <span>Activar Reglas UNO</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </article>
+
+            </section>
+
+            <!-- Mensaje de Sin Resultados (Oculto por defecto) -->
+            <div id="noResultsState" class="hidden text-center py-16 px-4 glass-panel rounded-3xl border border-dashed border-white/10 space-y-4">
+                <div class="w-16 h-16 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-slate-400 text-2xl">
+                    <i class="fa-solid fa-ghost"></i>
+                </div>
+                <h3 class="text-lg font-title font-semibold text-white">No encontramos ninguna herramienta</h3>
+                <p class="text-slate-400 text-sm max-w-md mx-auto">
+                    No hay resultados que coincidan con tu búsqueda o filtros actuales.
+                </p>
+                <button type="button" id="resetSearchFromEmpty" class="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-500 text-white transition-colors">
+                    Ver todas las herramientas
+                </button>
+            </div>
+
+            <!-- Banner de Reglas Rápidas / Cómo Jugar (Integración de Instrucciones.txt) -->
+            <section class="glass-panel p-6 sm:p-8 rounded-3xl border border-border-subtle relative overflow-hidden">
+                <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-300 text-xs font-mono font-medium mb-2 border border-amber-500/20">
+                                <i class="fa-solid fa-book-bookmark text-xs"></i> Reglas Oficiales de Juego
+                            </div>
+                            <h2 class="font-title font-bold text-2xl sm:text-3xl text-white">
+                                Modalidades Especiales de Póker
+                            </h2>
+                            <p class="text-slate-300 text-sm max-w-2xl mt-1">
+                                Consulta rápida de los modos configurados en MyRules para dinamizar cualquier mesa de juego.
+                            </p>
+                        </div>
+                        <button type="button" 
+                                id="bannerViewRulesBtn" 
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-all self-start sm:self-auto">
+                            <span>Ver Ficha Completa</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- 3 Cards de Reglas -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <!-- 01 Eliminación -->
+                        <div class="p-5 rounded-2xl bg-surface/90 border border-border-subtle space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-red-400">01. ELIMINACIÓN</span>
+                                <i class="fa-solid fa-user-slash text-red-400/60 text-sm"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-base text-white">Supervivencia por rondas</h3>
+                            <p class="text-slate-300 text-xs leading-relaxed">
+                                El ganador de cada ronda queda fuera y protegido. El último jugador restante recibe penalización directa de puntos.
+                            </p>
+                            <div class="pt-2">
+                                <span class="text-[11px] font-mono text-slate-400 block mb-1">Penalizaciones base:</span>
+                                <div class="flex flex-wrap gap-1 font-mono text-[10px] text-red-300">
+                                    <span class="bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">-5</span>
+                                    <span class="bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">-10</span>
+                                    <span class="bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">-15</span>
+                                    <span class="bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">... hasta -50</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 02 Pascua -->
+                        <div class="p-5 rounded-2xl bg-surface/90 border border-border-subtle space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-amber-400">02. PASCUA</span>
+                                <i class="fa-solid fa-award text-amber-400/60 text-sm"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-base text-white">Objetivo específico</h3>
+                            <p class="text-slate-300 text-xs leading-relaxed">
+                                Se sortea una jugada concreta. Todo jugador que logre armar esa mano específica en la ronda obtiene un bono de puntos.
+                            </p>
+                            <div class="pt-2">
+                                <span class="text-[11px] font-mono text-slate-400 block mb-1">Puntos por mano:</span>
+                                <div class="flex flex-wrap gap-1 font-mono text-[10px] text-amber-300">
+                                    <span class="bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Full House (+20)</span>
+                                    <span class="bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Poker (+30)</span>
+                                    <span class="bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Color (+40)</span>
+                                    <span class="bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Real (+50)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 03 Suerte -->
+                        <div class="p-5 rounded-2xl bg-surface/90 border border-border-subtle space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-purple-400">03. SUERTE</span>
+                                <i class="fa-solid fa-dice-d20 text-purple-400/60 text-sm"></i>
+                            </div>
+                            <h3 class="font-title font-semibold text-base text-white">Dados y cartas extra</h3>
+                            <p class="text-slate-300 text-xs leading-relaxed">
+                                Cada jugador tira el dado para robar cartas adicionales (máximo 2 lanzamientos). La mejor jugada final se lleva los puntos.
+                            </p>
+                            <div class="pt-2">
+                                <span class="text-[11px] font-mono text-slate-400 block mb-1">Puntos en juego:</span>
+                                <div class="flex flex-wrap gap-1 font-mono text-[10px] text-purple-300">
+                                    <span class="bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">10</span>
+                                    <span class="bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">15</span>
+                                    <span class="bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">20</span>
+                                    <span class="bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">25 o 30 pts</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal Accesible de Reglas Oficiales -->
+    <div id="rulesModalBackdrop" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="glass-panel w-full max-w-2xl max-h-[90vh] rounded-3xl border border-white/15 p-6 sm:p-8 overflow-y-auto space-y-6 shadow-2xl relative">
+            
+            <!-- Botón Cerrar -->
+            <button type="button" 
+                    id="closeRulesBtn" 
+                    class="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors" 
+                    aria-label="Cerrar modal de reglas">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Título Modal -->
+            <div class="space-y-1">
+                <span class="text-xs font-mono text-red-400 font-semibold uppercase tracking-wider">Documento Oficial</span>
+                <h2 id="modalTitle" class="font-title font-bold text-2xl sm:text-3xl text-white">
+                    Reglamento de Minijuegos
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400">
+                    Reglas vigentes para partidas de póker y variantes en MyRules.
+                </p>
+            </div>
+
+            <!-- Contenido de las Reglas -->
+            <div class="space-y-5 text-sm">
+                <!-- 01 Eliminación -->
+                <div class="p-4 sm:p-5 rounded-2xl bg-surface border border-red-500/20 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-mono text-xs font-bold">1</span>
+                        <h3 class="font-title font-bold text-lg text-white">ELIMINACIÓN</h3>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed text-xs sm:text-sm">
+                        Se jugarán rondas normales de póker. El ganador de cada ronda quedará fuera de la siguiente y estará protegido de la eliminación. El último jugador restante recibirá una penalización de puntos.
                     </p>
+                    <div class="bg-canvas p-3 rounded-xl border border-border-subtle mt-2">
+                        <span class="text-xs font-mono text-slate-400 block mb-1">Escala de penalización (Puntos base):</span>
+                        <p class="font-mono text-xs text-red-400 font-semibold tracking-wide">
+                            [-5, -10, -15, -20, -25, -30, -35, -40, -45, -50]
+                        </p>
+                    </div>
                 </div>
 
-                <!-- Tarjetas de Acceso Rápido -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 sm:gap-5 max-w-7xl mx-auto">
-                    
-                    <!-- Ruleta Rusa -->
-                    <a href="vista/ruleta.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-red-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-red-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-red-500/20 group-hover:animate-glow transition-all duration-300">
-                                <i class="fa-solid fa-skull text-xl text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Ruleta Rusa</h3>
-                            <p class="text-gray-500 text-xs">Juego de azar extremo</p>
+                <!-- 02 Pascua -->
+                <div class="p-4 sm:p-5 rounded-2xl bg-surface border border-amber-500/20 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-mono text-xs font-bold">2</span>
+                        <h3 class="font-title font-bold text-lg text-white">PASCUA</h3>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed text-xs sm:text-sm">
+                        Se sorteará una jugada específica a lograr para una ronda normal de póker. El o los jugadores que consigan la jugada específica recibirán una cantidad fija de puntos adicionales.
+                    </p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+                        <div class="bg-canvas p-2.5 rounded-xl border border-border-subtle text-center">
+                            <span class="text-[11px] text-slate-400 block">FULL HOUSE</span>
+                            <span class="font-mono font-bold text-amber-400 text-sm">20 pts</span>
                         </div>
-                    </a>
-
-                    <!-- Blackjack -->
-                    <a href="vista/apuestas.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-amber-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-amber-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-amber-500/20 transition-all duration-300">
-                                <i class="fa-solid fa-coins text-xl text-amber-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Blackjack</h3>
-                            <p class="text-gray-500 text-xs">Control manual de saldo</p>
+                        <div class="bg-canvas p-2.5 rounded-xl border border-border-subtle text-center">
+                            <span class="text-[11px] text-slate-400 block">POKER</span>
+                            <span class="font-mono font-bold text-amber-400 text-sm">30 pts</span>
                         </div>
-                    </a>
-
-                    <!-- Sorteador -->
-                    <a href="vista/sorteador.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-purple-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-purple-500/20 transition-all duration-300">
-                                <i class="fa-solid fa-people-group text-xl text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Sorteador</h3>
-                            <p class="text-gray-500 text-xs">Asignar equipos a jugadores</p>
+                        <div class="bg-canvas p-2.5 rounded-xl border border-border-subtle text-center">
+                            <span class="text-[11px] text-slate-400 block">ESCALERA COLOR</span>
+                            <span class="font-mono font-bold text-amber-400 text-sm">40 pts</span>
                         </div>
-                    </a>
-
-                    <!-- Stop -->
-                    <a href="vista/stop.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-red-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-red-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-red-500/20 group-hover:animate-glow transition-all duration-300">
-                                <i class="fa-solid fa-hand text-xl text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Stop</h3>
-                            <p class="text-gray-500 text-xs">Juego de palabras por turnos</p>
+                        <div class="bg-canvas p-2.5 rounded-xl border border-border-subtle text-center">
+                            <span class="text-[11px] text-slate-400 block">ESCALERA REAL</span>
+                            <span class="font-mono font-bold text-amber-400 text-sm">50 pts</span>
                         </div>
-                    </a>
-
-                    <!-- Basta! - NUEVO -->
-                    <a href="vista/basta.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-green-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-green-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-green-500/20 transition-all duration-300">
-                                <i class="fa-solid fa-font text-xl text-green-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Basta!</h3>
-                            <p class="text-gray-500 text-xs">Palabras con letras únicas</p>
-                        </div>
-                    </a>
-
-                    <!-- Contador -->
-                    <a href="vista/contador.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-blue-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-blue-500/20 transition-all duration-300">
-                                <i class="fa-solid fa-calculator text-xl text-blue-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Contador</h3>
-                            <p class="text-gray-500 text-xs">Contador de puntos</p>
-                        </div>
-                    </a>
-
-                    <!-- Minijuegos Poker -->
-                    <a href="vista/minijuegos.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-amber-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-amber-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-amber-500/20 transition-all duration-300">
-                                <i class="fa-solid fa-gamepad text-xl text-amber-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">Minijuegos</h3>
-                            <p class="text-gray-500 text-xs">Poker - Sorteo de modos</p>
-                        </div>
-                    </a>
-
-                    <!-- Minijuegos UNO -->
-                    <a href="vista/minijuegos-uno.html" 
-                       class="group relative bg-bg-card border border-white/5 rounded-2xl p-5 sm:p-6 
-                              hover:border-yellow-500/30 transition-all duration-300 hover:-translate-y-1
-                              hover:shadow-2xl hover:shadow-yellow-500/5">
-                        <div class="absolute inset-0 bg-gradient-to-b from-yellow-500/5 via-red-500/5 to-transparent rounded-2xl opacity-0 
-                                    group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative z-10">
-                            <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3
-                                        group-hover:bg-yellow-500/20 transition-all duration-300">
-                                <i class="fa-solid fa-clone text-xl text-yellow-400 group-hover:scale-110 transition-transform duration-300"></i>
-                            </div>
-                            <h3 class="font-title font-semibold text-sm mb-1">UNO</h3>
-                            <p class="text-gray-500 text-xs">Sorteo de modos</p>
-                        </div>
-                    </a>
+                    </div>
                 </div>
 
-                <!-- Descripciones detalladas -->
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto text-left">
-                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-skull text-red-400 text-xs"></i>
-                            <span class="font-mono text-xs text-red-400">/vista/ruleta.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Simulador de ruleta rusa. Ideal para decisiones extremas al azar entre los jugadores.</p>
+                <!-- 03 Suerte -->
+                <div class="p-4 sm:p-5 rounded-2xl bg-surface border border-purple-500/20 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-mono text-xs font-bold">3</span>
+                        <h3 class="font-title font-bold text-lg text-white">SUERTE</h3>
                     </div>
-                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
-                            <span class="font-mono text-xs text-amber-400">/vista/apuestas.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Control manual del saldo de cada jugador durante partidas de blackjack.</p>
-                    </div>
-                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-people-group text-purple-400 text-xs"></i>
-                            <span class="font-mono text-xs text-purple-400">/vista/sorteador.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Distribuye jugadores en equipos de forma aleatoria.</p>
-                    </div>
-                    <div class="bg-white/[0.02] border border-red-500/20 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-hand text-red-400 text-xs"></i>
-                            <span class="font-mono text-xs text-red-400">/vista/stop.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Juego de palabras por turnos. ¡Responde antes que se acabe el tiempo!</p>
-                    </div>
-                    <div class="bg-white/[0.02] border border-green-500/20 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-font text-green-400 text-xs"></i>
-                            <span class="font-mono text-xs text-green-400">/vista/basta.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Di palabras con letras únicas. ¡Cada letra solo se usa una vez!</p>
-                    </div>
-                    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-calculator text-blue-400 text-xs"></i>
-                            <span class="font-mono text-xs text-blue-400">/vista/contador.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Contador de puntos interactivo para cualquier juego o actividad.</p>
-                    </div>
-                    <div class="bg-white/[0.02] border border-amber-500/20 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-gamepad text-amber-400 text-xs"></i>
-                            <span class="font-mono text-xs text-amber-400">/vista/minijuegos.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Minijuegos Poker: sorteo de modos de juego con reglas especiales.</p>
-                    </div>
-                    <div class="bg-white/[0.02] border border-yellow-500/20 rounded-xl p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fa-solid fa-clone text-yellow-400 text-xs"></i>
-                            <span class="font-mono text-xs text-yellow-400">/vista/minijuegos-uno.html</span>
-                        </div>
-                        <p class="text-gray-500 text-xs leading-relaxed">Minijuegos UNO: modos con reversa, acumulación, comodines y ruletas de color.</p>
+                    <p class="text-slate-300 leading-relaxed text-xs sm:text-sm">
+                        Cada jugador lanzará un dado. Según el número obtenido, podrá robar esa cantidad de cartas del mazo. El dado podrá lanzarse un máximo de 2 veces. La mejor jugada obtendrá puntos.
+                    </p>
+                    <div class="bg-canvas p-3 rounded-xl border border-border-subtle mt-2">
+                        <span class="text-xs font-mono text-slate-400 block mb-1">Puntos base posibles:</span>
+                        <p class="font-mono text-xs text-purple-400 font-semibold tracking-wide">
+                            10, 15, 20, 25 o 30 pts
+                        </p>
                     </div>
                 </div>
             </div>
-        </main>
 
-        <!-- Footer -->
-        <footer class="border-t border-white/5 py-6">
-            <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-sm">
-                <p class="font-mono">MyRules &copy; 2024 — Panel Personal</p>
+            <!-- Botón Cerrar Inferior -->
+            <div class="pt-2 flex justify-end">
+                <button type="button" 
+                        id="closeRulesBottomBtn" 
+                        class="px-5 py-2.5 rounded-xl bg-surface hover:bg-surface-subtle text-white font-medium text-xs sm:text-sm border border-border-subtle transition-colors">
+                    Entendido, volver al tablero
+                </button>
             </div>
-        </footer>
+        </div>
     </div>
 
-    <!-- Script para menú móvil -->
+    <!-- Barra de Navegación Móvil Inferior (Estilo App Nativa) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 px-3 py-2 flex items-center justify-around" aria-label="Navegación móvil">
+        <a href="#top" class="flex flex-col items-center gap-1 py-1 px-3 text-slate-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="text-[10px] font-medium">Inicio</span>
+        </a>
+        <button type="button" id="mobileDockSearch" class="flex flex-col items-center gap-1 py-1 px-3 text-slate-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-magnifying-glass text-base"></i>
+            <span class="text-[10px] font-medium">Buscar</span>
+        </button>
+        <button type="button" id="mobileDockRules" class="flex flex-col items-center gap-1 py-1 px-3 text-amber-400 hover:text-amber-300 transition-colors">
+            <i class="fa-solid fa-book-open text-base"></i>
+            <span class="text-[10px] font-medium">Reglas</span>
+        </button>
+        <button type="button" id="mobileDockFavs" class="flex flex-col items-center gap-1 py-1 px-3 text-yellow-400 hover:text-yellow-300 transition-colors">
+            <i class="fa-solid fa-star text-base"></i>
+            <span class="text-[10px] font-medium">Favoritos</span>
+        </button>
+    </nav>
+
+    <!-- Footer Profesional -->
+    <footer class="border-t border-border-subtle bg-slate-950/70 py-10 relative z-10 text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center font-bold text-white font-title text-sm">
+                        MR
+                    </div>
+                    <div>
+                        <span class="font-title font-bold text-slate-200">MyRules Suite</span>
+                        <p class="text-[11px] text-slate-400">Diseñado para noches de póker, cartas y juegos entre amigos.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4 text-xs">
+                    <a href="vista/ruleta.html" class="hover:text-white transition-colors">Ruleta Rusa</a>
+                    <span class="text-slate-700">•</span>
+                    <a href="vista/apuestas.html" class="hover:text-white transition-colors">Blackjack</a>
+                    <span class="text-slate-700">•</span>
+                    <a href="vista/sorteador.html" class="hover:text-white transition-colors">Sorteador</a>
+                    <span class="text-slate-700">•</span>
+                    <a href="vista/stop.html" class="hover:text-white transition-colors">Stop</a>
+                    <span class="text-slate-700">•</span>
+                    <a href="vista/basta.html" class="hover:text-white transition-colors">Basta!</a>
+                    <span class="text-slate-700">•</span>
+                    <a href="vista/contador.html" class="hover:text-white transition-colors">Contador</a>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 font-mono text-[11px]">
+                <p>MyRules &copy; 2026 — Interfaz Profesional & Ultra Responsive.</p>
+                <div class="flex items-center gap-3">
+                    <span>Atajos: <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">/</kbd> buscar • <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">ESC</kbd> cerrar</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de Interactividad y Estado -->
     <script>
-        const menuToggle = document.getElementById('menuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
+        (function() {
+            // Referencias DOM
+            const toolCards = Array.from(document.querySelectorAll('.tool-card'));
+            const toolsContainer = document.getElementById('toolsContainer');
+            const noResultsState = document.getElementById('noResultsState');
+            const resultsIndicator = document.getElementById('resultsIndicator');
+            const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+            const categoryBtns = Array.from(document.querySelectorAll('.category-btn'));
+            const mainSearchInput = document.getElementById('mainSearchInput');
+            const headerSearchInput = document.getElementById('headerSearchInput');
+            const mobileSearchInput = document.getElementById('mobileSearchInput');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const favCountSpan = document.getElementById('favCount');
 
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+            // Quick Menu & Dropdown
+            const quickMenuBtn = document.getElementById('quickMenuBtn');
+            const quickMenuDropdown = document.getElementById('quickMenuDropdown');
+            const quickMenuChevron = document.getElementById('quickMenuChevron');
 
-        document.addEventListener('click', (e) => {
-            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
-                mobileMenu.classList.add('hidden');
+            // Mobile Menu
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileDrawer = document.getElementById('mobileDrawer');
+            const mobileMenuIcon = document.getElementById('mobileMenuIcon');
+
+            // Modal de Reglas
+            const rulesModalBackdrop = document.getElementById('rulesModalBackdrop');
+            const openRulesBtn = document.getElementById('openRulesBtn');
+            const mobileOpenRulesBtn = document.getElementById('mobileOpenRulesBtn');
+            const bannerViewRulesBtn = document.getElementById('bannerViewRulesBtn');
+            const mobileDockRules = document.getElementById('mobileDockRules');
+            const closeRulesBtn = document.getElementById('closeRulesBtn');
+            const closeRulesBottomBtn = document.getElementById('closeRulesBottomBtn');
+
+            // View Switcher
+            const viewGridBtn = document.getElementById('viewGridBtn');
+            const viewListBtn = document.getElementById('viewListBtn');
+
+            // Mobile Dock Buttons
+            const mobileDockSearch = document.getElementById('mobileDockSearch');
+            const mobileDockFavs = document.getElementById('mobileDockFavs');
+
+            // Estado de la aplicación
+            let currentCategory = 'all';
+            let currentSearchTerm = '';
+            let isListView = false;
+
+            // Gestión de Favoritos en LocalStorage
+            function getFavorites() {
+                try {
+                    return JSON.parse(localStorage.getItem('myrules_favorites')) || [];
+                } catch (e) {
+                    return [];
+                }
             }
-        });
+
+            function saveFavorites(favs) {
+                try {
+                    localStorage.setItem('myrules_favorites', JSON.stringify(favs));
+                } catch (e) {}
+                updateFavBadges();
+            }
+
+            function updateFavBadges() {
+                const favs = getFavorites();
+                if (favCountSpan) favCountSpan.textContent = `(${favs.length})`;
+
+                // Actualizar estrellas de cada tarjeta
+                document.querySelectorAll('.fav-toggle').forEach(btn => {
+                    const id = btn.dataset.toolId;
+                    const icon = btn.querySelector('i');
+                    if (favs.includes(id)) {
+                        icon.className = 'fa-solid fa-star text-sm text-yellow-400';
+                        btn.setAttribute('aria-label', 'Quitar de favoritos');
+                        btn.classList.add('text-yellow-400');
+                    } else {
+                        icon.className = 'fa-regular fa-star text-sm text-slate-500 hover:text-yellow-400';
+                        btn.setAttribute('aria-label', 'Marcar como favorito');
+                        btn.classList.remove('text-yellow-400');
+                    }
+                });
+            }
+
+            // Delegación de click para favoritos
+            document.addEventListener('click', (e) => {
+                const favBtn = e.target.closest('.fav-toggle');
+                if (favBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const toolId = favBtn.dataset.toolId;
+                    let favs = getFavorites();
+                    if (favs.includes(toolId)) {
+                        favs = favs.filter(id => id !== toolId);
+                    } else {
+                        favs.push(toolId);
+                    }
+                    saveFavorites(favs);
+                    if (currentCategory === 'favorites') {
+                        filterTools();
+                    }
+                }
+            });
+
+            // Función central de filtrado
+            function filterTools() {
+                const term = currentSearchTerm.toLowerCase().trim();
+                const favs = getFavorites();
+                let visibleCount = 0;
+
+                toolCards.forEach(card => {
+                    const category = card.dataset.category;
+                    const id = card.dataset.id;
+                    const name = (card.dataset.name || '').toLowerCase();
+                    const tags = (card.dataset.tags || '').toLowerCase();
+
+                    // Comprobación de categoría
+                    let matchesCategory = false;
+                    if (currentCategory === 'all') {
+                        matchesCategory = true;
+                    } else if (currentCategory === 'favorites') {
+                        matchesCategory = favs.includes(id);
+                    } else {
+                        matchesCategory = (category === currentCategory);
+                    }
+
+                    // Comprobación de búsqueda
+                    let matchesSearch = true;
+                    if (term !== '') {
+                        matchesSearch = name.includes(term) || tags.includes(term);
+                    }
+
+                    if (matchesCategory && matchesSearch) {
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // Actualizar estado de visualización
+                if (visibleCount === 0) {
+                    toolsContainer.classList.add('hidden');
+                    noResultsState.classList.remove('hidden');
+                } else {
+                    toolsContainer.classList.remove('hidden');
+                    noResultsState.classList.add('hidden');
+                }
+
+                // Indicador de resultados
+                let text = `Mostrando ${visibleCount} de ${toolCards.length} herramientas`;
+                if (term) text += ` para "${term}"`;
+                if (currentCategory !== 'all') {
+                    const activeBtn = categoryBtns.find(b => b.dataset.category === currentCategory);
+                    if (activeBtn) text += ` en ${activeBtn.textContent.trim()}`;
+                }
+                resultsIndicator.textContent = text;
+
+                // Botón reset
+                if (currentCategory !== 'all' || term !== '') {
+                    resetFiltersBtn.classList.remove('hidden');
+                } else {
+                    resetFiltersBtn.classList.add('hidden');
+                }
+            }
+
+            // Cambiar categoría
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    categoryBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-red-500', 'text-white', 'shadow-lg', 'shadow-red-500/25');
+                        b.classList.add('bg-surface', 'text-slate-300', 'border-border-subtle');
+                        b.setAttribute('aria-selected', 'false');
+                    });
+
+                    btn.classList.add('active', 'bg-red-500', 'text-white', 'shadow-lg', 'shadow-red-500/25');
+                    btn.classList.remove('bg-surface', 'text-slate-300', 'border-border-subtle');
+                    btn.setAttribute('aria-selected', 'true');
+
+                    currentCategory = btn.dataset.category;
+                    filterTools();
+                });
+            });
+
+            // Sincronización de búsquedas
+            function syncSearch(value) {
+                currentSearchTerm = value;
+                if (mainSearchInput && mainSearchInput.value !== value) mainSearchInput.value = value;
+                if (headerSearchInput && headerSearchInput.value !== value) headerSearchInput.value = value;
+                if (mobileSearchInput && mobileSearchInput.value !== value) mobileSearchInput.value = value;
+
+                if (clearSearchBtn) {
+                    if (value.trim() !== '') {
+                        clearSearchBtn.classList.remove('hidden');
+                    } else {
+                        clearSearchBtn.classList.add('hidden');
+                    }
+                }
+                filterTools();
+            }
+
+            [mainSearchInput, headerSearchInput, mobileSearchInput].forEach(input => {
+                if (!input) return;
+                input.addEventListener('input', (e) => syncSearch(e.target.value));
+            });
+
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', () => syncSearch(''));
+            }
+
+            // Reset completo de filtros
+            function resetAllFilters() {
+                syncSearch('');
+                const allBtn = categoryBtns.find(b => b.dataset.category === 'all');
+                if (allBtn) allBtn.click();
+            }
+
+            if (resetFiltersBtn) resetFiltersBtn.addEventListener('click', resetAllFilters);
+            const resetSearchFromEmpty = document.getElementById('resetSearchFromEmpty');
+            if (resetSearchFromEmpty) resetSearchFromEmpty.addEventListener('click', resetAllFilters);
+
+            // Modos de Vista (Grid vs Compact List)
+            if (viewGridBtn && viewListBtn) {
+                viewGridBtn.addEventListener('click', () => {
+                    isListView = false;
+                    viewGridBtn.classList.add('bg-surface', 'text-white');
+                    viewGridBtn.classList.remove('text-slate-400');
+                    viewListBtn.classList.remove('bg-surface', 'text-white');
+                    viewListBtn.classList.add('text-slate-400');
+
+                    toolsContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6';
+                });
+
+                viewListBtn.addEventListener('click', () => {
+                    isListView = true;
+                    viewListBtn.classList.add('bg-surface', 'text-white');
+                    viewListBtn.classList.remove('text-slate-400');
+                    viewGridBtn.classList.remove('bg-surface', 'text-white');
+                    viewGridBtn.classList.add('text-slate-400');
+
+                    toolsContainer.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4';
+                });
+            }
+
+            // Quick Menu Desplegable
+            if (quickMenuBtn && quickMenuDropdown) {
+                quickMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isHidden = quickMenuDropdown.classList.contains('hidden');
+                    quickMenuDropdown.classList.toggle('hidden');
+                    if (quickMenuChevron) {
+                        quickMenuChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!quickMenuBtn.contains(e.target) && !quickMenuDropdown.contains(e.target)) {
+                        quickMenuDropdown.classList.add('hidden');
+                        if (quickMenuChevron) quickMenuChevron.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
+
+            // Menú Móvil
+            if (mobileMenuToggle && mobileDrawer) {
+                mobileMenuToggle.addEventListener('click', () => {
+                    const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
+                    mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
+                    mobileDrawer.classList.toggle('hidden');
+                    if (mobileMenuIcon) {
+                        mobileMenuIcon.className = isExpanded ? 'fa-solid fa-bars text-lg' : 'fa-solid fa-xmark text-lg';
+                    }
+                });
+            }
+
+            // Modal de Reglas
+            function openRulesModal() {
+                if (!rulesModalBackdrop) return;
+                rulesModalBackdrop.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeRulesModal() {
+                if (!rulesModalBackdrop) return;
+                rulesModalBackdrop.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            [openRulesBtn, mobileOpenRulesBtn, bannerViewRulesBtn, mobileDockRules].forEach(btn => {
+                if (btn) btn.addEventListener('click', openRulesModal);
+            });
+
+            [closeRulesBtn, closeRulesBottomBtn].forEach(btn => {
+                if (btn) btn.addEventListener('click', closeRulesModal);
+            });
+
+            if (rulesModalBackdrop) {
+                rulesModalBackdrop.addEventListener('click', (e) => {
+                    if (e.target === rulesModalBackdrop) closeRulesModal();
+                });
+            }
+
+            // Atajos de Teclado
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeRulesModal();
+                    if (quickMenuDropdown) quickMenuDropdown.classList.add('hidden');
+                    if (mobileDrawer) mobileDrawer.classList.add('hidden');
+                } else if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    if (mainSearchInput) {
+                        mainSearchInput.focus();
+                        mainSearchInput.select();
+                    }
+                }
+            });
+
+            // Mobile Dock Shortcuts
+            if (mobileDockSearch) {
+                mobileDockSearch.addEventListener('click', () => {
+                    if (mainSearchInput) {
+                        mainSearchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        mainSearchInput.focus();
+                    }
+                });
+            }
+
+            if (mobileDockFavs) {
+                mobileDockFavs.addEventListener('click', () => {
+                    const favBtn = categoryBtns.find(b => b.dataset.category === 'favorites');
+                    if (favBtn) {
+                        favBtn.click();
+                        toolsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            }
+
+            // Inicializar estado
+            updateFavBadges();
+            filterTools();
+        })();
     </script>
 </body>
 </html>
